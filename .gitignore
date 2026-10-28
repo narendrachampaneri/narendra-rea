@@ -1,0 +1,11 @@
+# Build outputs and binaries belong in GitHub Releases, not in git
+*.apk
+*.aab
+*.xapk
+*.idsig
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
