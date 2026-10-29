@@ -24,13 +24,11 @@
  ****************************************************************************/
 
 #include "AppDelegate.h"
-#include "MainScene.h"
 
-#define USE_AUDIO_ENGINE 1
-
-#if USE_AUDIO_ENGINE
-#    include "audio/AudioEngine.h"
-#endif
+#include "app/AssetManager.h"
+#include "app/AssetViewerScene.h"
+#include "app/AudioSystem.h"
+#include "assets/Resolution.h"
 
 #if _AX_TESTS
 #   include "doctest/doctest.h"
@@ -38,7 +36,8 @@
 
 using namespace ax;
 
-static ax::Size designResolutionSize = ax::Size(1280, 720);
+// Desktop window size; phones always use their full screen.
+static ax::Size desktopWindowSize = ax::Size(1200, 540);
 
 AppDelegate::AppDelegate() {}
 
@@ -65,7 +64,7 @@ bool AppDelegate::applicationDidFinishLaunching()
     {
 #if (AX_TARGET_PLATFORM != AX_PLATFORM_ANDROID) && (AX_TARGET_PLATFORM != AX_PLATFORM_IOS)
         renderView = RenderViewImpl::createWithRect(
-            "Mini Militia by Kadiyafali", ax::Rect(0, 0, designResolutionSize.width, designResolutionSize.height));
+            "Mini Militia by Kadiyafali", ax::Rect(0, 0, desktopWindowSize.width, desktopWindowSize.height));
 #else
         renderView = RenderViewImpl::create("Mini Militia by Kadiyafali");
 #endif
@@ -80,16 +79,19 @@ bool AppDelegate::applicationDidFinishLaunching()
     // set FPS. the default value is 1.0/60 if you don't call this
     director->setAnimationInterval(1.0f / 60);
 
-    // Set the design resolution
-    renderView->setDesignResolutionSize(designResolutionSize.width, designResolutionSize.height,
-                                    ResolutionPolicy::FIXED_HEIGHT);
+    // The original's coordinate system: 480x320 design points, fixed height, so wider phones
+    // see more of the map sideways (AppDelegate::applicationDidFinishLaunching).
+    renderView->setDesignResolutionSize(mm::assets::kDesignWidth, mm::assets::kDesignHeight,
+                                        ResolutionPolicy::FIXED_HEIGHT);
+
+    // Art resolution: the original rule for now; Settings > Graphics quality overrides it in M7.
+    const auto frame = renderView->getFrameSize();
+    mm::app::AssetManager::get().configure(mm::assets::chooseOriginal(frame.width, frame.height));
+    mm::app::AssetManager::get().loadSharedAtlases();
+    mm::app::AudioSystem::get().preloadEffects();
 
 #if !_AX_TESTS
-    // create a scene. it's an autorelease object
-    auto scene = utils::createInstance<MainScene>();
-
-    // run
-    director->runWithScene(scene);
+    director->runWithScene(utils::createInstance<mm::app::AssetViewerScene>());
 #endif
 
     return true;
@@ -100,9 +102,7 @@ void AppDelegate::applicationDidEnterBackground()
 {
     Director::getInstance()->stopAnimation();
 
-#if USE_AUDIO_ENGINE
-    AudioEngine::pauseAll();
-#endif
+    mm::app::AudioSystem::get().pauseAll();
 }
 
 // this function will be called when the app is active again
@@ -110,9 +110,7 @@ void AppDelegate::applicationWillEnterForeground()
 {
     Director::getInstance()->startAnimation();
 
-#if USE_AUDIO_ENGINE
-    AudioEngine::resumeAll();
-#endif
+    mm::app::AudioSystem::get().resumeAll();
 }
 
 void AppDelegate::applicationWillQuit() {}

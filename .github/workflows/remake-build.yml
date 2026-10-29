@@ -16,7 +16,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: remake/tools/fetch-axmol.sh
-      - run: remake/tools/run-host-tests.sh
+      - name: Unit and asset tests
+        run: remake/tools/run-host-tests.sh
+      - name: Type-check app sources against Axmol headers
+        run: remake/tools/check-app-syntax.sh
 
   debug-apk:
     runs-on: ubuntu-24.04
