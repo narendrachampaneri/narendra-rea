@@ -36,6 +36,12 @@ endif()
 set(_is_axmol_embed FALSE)
 set(_AX_USE_PREBUILT FALSE)
 
+# The engine is checked out next to this file by tools/fetch-axmol.sh. Axmol's build set looks for
+# its tools (axslcc) under $ENV{AX_ROOT}, so point it there; no user environment variable needed.
+if(IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/axmol")
+  set(ENV{AX_ROOT} "${CMAKE_CURRENT_SOURCE_DIR}/axmol")
+endif()
+
 set(CMAKE_MODULE_PATH
   ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules
 )
