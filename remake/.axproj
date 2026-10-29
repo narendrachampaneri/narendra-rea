@@ -5,5 +5,6 @@ min_sdk=35
 target_sdk=36
 # 16 KB page-aligned native libraries need NDK r27 or newer
 ndk=r27c
-# SDK Manager ships cmake 3.31.x; the engine default (4.2+) is not required
-cmake=3.28.0+
+# Exact CMake used by CI and Android Studio (SDK Manager > SDK Tools > CMake 3.31.6).
+# No trailing '+': Axmol then skips newer installed CMakes (e.g. 4.1.2) and uses exactly this one.
+cmake=3.31.6

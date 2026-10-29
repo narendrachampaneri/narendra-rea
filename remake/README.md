@@ -18,7 +18,7 @@ continues from the next unfinished milestone. Private project: never publish to 
 | | Milestone | Status |
 |---|---|---|
 | M0 | Report | done, approved |
-| M1 | Skeleton + release workflow | **code complete, awaiting CI/Android Studio build confirmation** |
+| M1 | Skeleton + release workflow | **fixing CI build (axslcc, CMake pin); not merged until `Remake build` is green** |
 | M2 | Assets | not started |
 | M3 | Single-device slice | not started |
 | M4 | Full single-device game | not started |
@@ -43,11 +43,15 @@ continues from the next unfinished milestone. Private project: never publish to 
 
 ## Build and run
 One-time setup (Android Studio > SDK Manager): SDK Platform 36, Build-Tools 36.0.0,
-NDK **27.2.12479018 (r27c)**, CMake 3.31.x, JDK 17+ (Android Studio's bundled JBR is fine).
+NDK **27.2.12479018 (r27c)**, CMake **3.31.6** exactly (tick "Show Package Details" to pick it),
+JDK 17+ (Android Studio's bundled JBR is fine). Newer CMakes may stay installed; the build
+ignores them and uses 3.31.6 (pinned in `.axproj`).
 
 ```bash
 cd remake
-tools/fetch-axmol.sh                 # clones Axmol v2.11.5 into remake/axmol (git-ignored)
+tools/fetch-axmol.sh                 # clones Axmol v2.11.5 into remake/axmol and downloads axslcc
+                                     # (shader compiler) into axmol/tools/external/axslcc.
+                                     # Needs bash, git, curl, tar/unzip (Git Bash on Windows). Re-run any time.
 cd proj.android
 ./gradlew assembleDebug              # APK: app/build/outputs/apk/debug/
 adb install -r app/build/outputs/apk/debug/app-debug.apk
@@ -78,7 +82,8 @@ Keep the file out of git (it is git-ignored); losing it means future updates can
 ## Known problems / not reproduced yet
 - M1 was written without being able to run Gradle in the authoring sandbox (no Android SDK there);
   only the host unit tests were run. First CI / Android Studio build may need small fixes.
-- Axmol's profile asks for cmake 4.2+; `.axproj` relaxes it to 3.28+ (SDK Manager's 3.31).
+- Axmol's profile asks for cmake 4.2+; `.axproj` pins CMake 3.31.6 exactly instead.
+- Do not run Axmol's own `setup.ps1`: `tools/fetch-axmol.sh` replaces it and changes nothing system-wide.
 - Android 16+ local-network permission rules to be checked in M5.
 
 ## Next step
