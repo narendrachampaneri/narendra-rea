@@ -1,0 +1,17 @@
+{
+  "folders": [
+    { "name": "Repository (docs, tools, evidence)", "path": "." },
+    { "name": "Game C++ (pseudo-C)", "path": "source/native" },
+    { "name": "Java (reference)", "path": "source/java-reference" },
+    { "name": "APK project (edit + build)", "path": "source/apk-project" }
+  ],
+  "settings": {
+    "search.exclude": {
+      "**/com/google/**": true,
+      "**/android/support/**": true,
+      "_libraries/**": true,
+      "source/**": true,
+      "res/**": true
+    }
+  }
+}
