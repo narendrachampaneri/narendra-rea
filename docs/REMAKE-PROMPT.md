@@ -1,7 +1,13 @@
 # Remake prompt: "Mini Militia by Kadiyafali"
 
-Paste everything below the line into a new Claude Code session with this repository
-(`narendrachampaneri/narendra-rea`, branch `main`) selected.
+Recommended: run Claude Code on your own computer (desktop app or CLI), opened in your local
+clone of `narendrachampaneri/narendra-rea` (branch `main`), with Android Studio installed and
+your phone connected by USB (see "Local setup" below). Then start the session with:
+
+> Read docs/REMAKE-PROMPT.md in this repository and follow it exactly. Start with the M0
+> report and wait for my OK.
+
+Or paste everything below the line into the session.
 
 ---
 
@@ -145,7 +151,10 @@ add. Never commit keys or APKs.
 Compare Axmol, Unity and Godot on: (1) faithful reuse of the original assets and of the
 pseudo-C logic, (2) smooth 60-120 fps and low memory on 4 GB RAM Android 15 phones, (3) APK
 size and startup time, (4) native UDP/LAN networking (RakNet/SLikeNet or equivalent), (5)
-licence and cost for private use. Recommend one with reasons (Axmol is the expected fit:
+licence and cost for private use, (6) the Android project builds from the command line with
+Gradle (on my computer and on GitHub Actions) and opens in Android Studio for run/debug, (7)
+optional desktop build (Windows/macOS/Linux) for fast gameplay iteration. Recommend one with
+reasons (Axmol is the expected fit:
 C++, a maintained cocos2d-x successor that loads the TMX maps, plist atlases and particle
 plists as they are). Wait for my OK.
 
@@ -180,6 +189,8 @@ SoldierRemoteController for remote players; Weapon/ROCKET/SAW::updateRemoteWeapo
   web views.
 - Permissions: only what the features above need (network/Wi-Fi state, multicast for LAN
   discovery, camera only for QR, vibration). No location, microphone, phone or storage.
+- Keep build outputs and local files out of git (add `.gitignore` entries under remake/ for
+  `build/`, `.gradle/`, `.cxx/`, `local.properties`, `.idea/`, keystores, APKs).
 
 ## Milestones (one at a time; the build must pass after each; commit and push to main)
 M0 Report: engine recommendation, remake/ structure, and from the pseudo-C: the list of
@@ -207,14 +218,37 @@ M7 Performance and polish: 4 GB RAM phones, quality presets, 120 fps; then the e
 M8 Release v1 through GitHub Releases, plus an on-device test checklist (Android 15/16,
    2-6 phones over a hotspot).
 
+## Local setup (my computer)
+This session normally runs on my computer, in my local clone of this repository, with
+Android Studio installed and Android 15+ phones connected by USB (USB debugging on) or by
+wireless debugging.
+- At the start, check the toolchain and report what's missing, with exact install steps:
+  Java (JDK 17+), Android SDK location (`ANDROID_HOME` / `local.properties`), SDK
+  Platform 36, build-tools, NDK and CMake versions (installed via Android Studio's SDK
+  Manager), Git, any engine tools, and `adb devices`. Don't install system-wide software or
+  change system settings without asking me.
+- Build and run loop: build with Gradle from the command line (`./gradlew assembleDebug`),
+  install with `adb install -r`, start the app with `adb shell am start`, read crashes with
+  `adb logcat` filtered to the app, and check smoothness and memory with
+  `adb shell dumpsys gfxinfo` / `meminfo` (the 4 GB RAM target). I can also open the Android
+  project in Android Studio and press Run, or use its Profiler.
+- Multiplayer tests: install the same build on every phone listed by `adb devices`, turn on
+  the hotspot on one phone, and read logs from all of them.
+- Use the engine's desktop build (if available) for quick gameplay iteration, but always
+  confirm on a phone.
+- If no phone is connected, or the session runs in the cloud: keep going with builds and
+  unit tests, and give me a short on-device test list for the APK built by GitHub Actions.
+
 ## How to work
 - Start with the M0 report and wait for my OK.
-- The cloud container probably can't run an emulator or several phones: verify with Gradle
-  builds and unit tests (include tests for the network message encoding and the Coins
-  rules), and give me a short on-device test list per milestone. I'll test on my phones.
+- Verify every milestone with a Gradle build and unit tests (include tests for the network
+  message encoding and the Coins rules), run it on my phone when one is connected, and give
+  me a short on-device test list.
+- This project spans many sessions. Keep remake/README.md current: milestone status, what
+  works, how to build and run, known problems, original behaviour not reproduced yet, and
+  the exact next step. A new session must read docs/REMAKE-PROMPT.md and remake/README.md
+  and continue from the next unfinished milestone.
 - REA (Ghidra/JADX) is optional. The repo already has everything; if you need deeper
   analysis, set it up as in docs/setup/TOOLCHAIN.md (Ghidra needs GHIDRA_HEADLESS_MAXMEM=8G
   and REA_GHIDRA_STARTUP_TIMEOUT_MS=5400000 for this library).
-- Small, focused commits on main (the only branch). At the end of each milestone update
-  remake/README.md: what works, what's next, and any original behaviour you couldn't
-  reproduce yet.
+- Small, focused commits on main (the only branch); push after each milestone.
