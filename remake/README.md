@@ -18,7 +18,7 @@ continues from the next unfinished milestone. Private project: never publish to 
 | | Milestone | Status |
 |---|---|---|
 | M0 | Report | done, approved |
-| M1 | Skeleton + release workflow | **fixing CI build (axslcc, CMake pin); not merged until `Remake build` is green** |
+| M1 | Skeleton + release workflow | **done: `Remake build` green on `remake/m1-skeleton` (host tests, debug APK, 16 KB alignment check); awaiting owner merge** |
 | M2 | Assets | not started |
 | M3 | Single-device slice | not started |
 | M4 | Full single-device game | not started |
@@ -80,8 +80,7 @@ Create the key once: `keytool -genkeypair -v -keystore release.jks -alias kadiya
 Keep the file out of git (it is git-ignored); losing it means future updates cannot install over old ones.
 
 ## Known problems / not reproduced yet
-- M1 was written without being able to run Gradle in the authoring sandbox (no Android SDK there);
-  only the host unit tests were run. First CI / Android Studio build may need small fixes.
+- The authoring sandbox cannot run Gradle (no Android SDK); builds are verified by GitHub Actions. Not yet run on a phone.
 - Axmol's profile asks for cmake 4.2+; `.axproj` pins CMake 3.31.6 exactly instead.
 - Do not run Axmol's own `setup.ps1`: `tools/fetch-axmol.sh` replaces it and changes nothing system-wide.
 - Android 16+ local-network permission rules to be checked in M5.
