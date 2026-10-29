@@ -1,0 +1,10 @@
+original entries 878, rebuilt entries 833, byte-identical 345, changed 486, only-original 47, only-rebuilt 2
+changed: ['AndroidManifest.xml', 'META-INF/MANIFEST.MF', 'classes.dex', 'classes2.dex', 'res/anim/abc_fade_in.xml', 'res/anim/abc_fade_out.xml', 'res/anim/abc_grow_fade_in_from_bottom.xml', 'res/anim/abc_popup_enter.xml', 'res/anim/abc_popup_exit.xml', 'res/anim/abc_shrink_fade_out_from_bottom.xml', 'res/anim/abc_slide_in_bottom.xml', 'res/anim/abc_slide_in_top.xml'] ...
+only-original by dir: {'res/drawable': 18, 'res/layout': 18, 'res/drawable-v19': 5, 'META-INF': 2, 'res/color': 2, 'res/layout-v13': 2}
+  e.g. ['META-INF/CERT.RSA', 'META-INF/CERT.SF', 'res/color/abc_background_cache_hint_selector_material_dark.xml', 'res/color/abc_background_cache_hint_selector_material_light.xml', 'res/drawable-v19/abc_ic_ab_back_material.xml', 'res/drawable-v19/abc_ic_menu_copy_material.xml', 'res/drawable-v19/abc_ic_menu_cut_material.xml', 'res/drawable-v19/abc_ic_menu_paste_material.xml']
+only-rebuilt by dir: {'META-INF': 2}
+  e.g. ['META-INF/TEST.RSA', 'META-INF/TEST.SF']
+lib/armeabi-v7a/libcocos2dcpp.so: IDENTICAL
+assets/da2sound16.ckb: IDENTICAL
+assets/api_key.txt: IDENTICAL
+all assets/ identical: True | all lib/ identical: True

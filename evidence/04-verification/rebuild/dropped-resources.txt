@@ -1,0 +1,45 @@
+res/color/abc_background_cache_hint_selector_material_dark.xml -> res/color-v11/abc_background_cache_hint_selector_material_dark.xml 
+res/color/abc_background_cache_hint_selector_material_light.xml -> res/color-v11/abc_background_cache_hint_selector_material_light.xml 
+res/drawable-v19/abc_ic_ab_back_material.xml -> res/drawable-v21/abc_ic_ab_back_material.xml res/drawable/abc_ic_ab_back_material.xml 
+res/drawable-v19/abc_ic_menu_copy_material.xml -> res/drawable-v21/abc_ic_menu_copy_material.xml res/drawable/abc_ic_menu_copy_material.xml 
+res/drawable-v19/abc_ic_menu_cut_material.xml -> res/drawable-v21/abc_ic_menu_cut_material.xml res/drawable/abc_ic_menu_cut_material.xml 
+res/drawable-v19/abc_ic_menu_paste_material.xml -> res/drawable-v21/abc_ic_menu_paste_material.xml res/drawable/abc_ic_menu_paste_material.xml 
+res/drawable-v19/abc_ic_menu_selectall_material.xml -> res/drawable-v21/abc_ic_menu_selectall_material.xml res/drawable/abc_ic_menu_selectall_material.xml 
+res/drawable/abc_btn_checkbox_checked_mtrl.xml -> res/drawable-v21/abc_btn_checkbox_checked_mtrl.xml 
+res/drawable/abc_btn_checkbox_unchecked_mtrl.xml -> res/drawable-v21/abc_btn_checkbox_unchecked_mtrl.xml 
+res/drawable/abc_btn_colored_material.xml -> res/drawable-v21/abc_btn_colored_material.xml 
+res/drawable/abc_btn_radio_off_mtrl.xml -> res/drawable-v21/abc_btn_radio_off_mtrl.xml 
+res/drawable/abc_btn_radio_on_mtrl.xml -> res/drawable-v21/abc_btn_radio_on_mtrl.xml 
+res/drawable/abc_edit_text_material.xml -> res/drawable-v21/abc_edit_text_material.xml 
+res/drawable/abc_ic_ab_back_material.xml -> res/drawable-v19/abc_ic_ab_back_material.xml res/drawable-v21/abc_ic_ab_back_material.xml 
+res/drawable/abc_ic_clear_material.xml -> res/drawable-v21/abc_ic_clear_material.xml 
+res/drawable/abc_ic_go_search_api_material.xml -> res/drawable-v21/abc_ic_go_search_api_material.xml 
+res/drawable/abc_ic_menu_copy_material.xml -> res/drawable-v19/abc_ic_menu_copy_material.xml res/drawable-v21/abc_ic_menu_copy_material.xml 
+res/drawable/abc_ic_menu_cut_material.xml -> res/drawable-v19/abc_ic_menu_cut_material.xml res/drawable-v21/abc_ic_menu_cut_material.xml 
+res/drawable/abc_ic_menu_overflow_material.xml -> res/drawable-v21/abc_ic_menu_overflow_material.xml 
+res/drawable/abc_ic_menu_paste_material.xml -> res/drawable-v19/abc_ic_menu_paste_material.xml res/drawable-v21/abc_ic_menu_paste_material.xml 
+res/drawable/abc_ic_menu_selectall_material.xml -> res/drawable-v19/abc_ic_menu_selectall_material.xml res/drawable-v21/abc_ic_menu_selectall_material.xml 
+res/drawable/abc_ic_menu_share_material.xml -> res/drawable-v21/abc_ic_menu_share_material.xml 
+res/drawable/abc_ic_voice_search_api_material.xml -> res/drawable-v21/abc_ic_voice_search_api_material.xml 
+res/drawable/abc_ratingbar_indicator_material.xml -> res/drawable-v21/abc_ratingbar_indicator_material.xml 
+res/drawable/abc_ratingbar_small_material.xml -> res/drawable-v21/abc_ratingbar_small_material.xml 
+res/layout-v13/select_dialog_multichoice_material.xml -> res/layout-v17/select_dialog_multichoice_material.xml res/layout/select_dialog_multichoice_material.xml 
+res/layout-v13/select_dialog_singlechoice_material.xml -> res/layout-v17/select_dialog_singlechoice_material.xml res/layout/select_dialog_singlechoice_material.xml 
+res/layout/abc_alert_dialog_button_bar_material.xml -> res/layout-v17/abc_alert_dialog_button_bar_material.xml 
+res/layout/abc_alert_dialog_material.xml -> res/layout-v17/abc_alert_dialog_material.xml 
+res/layout/abc_dialog_title_material.xml -> res/layout-v17/abc_dialog_title_material.xml 
+res/layout/abc_screen_toolbar.xml -> res/layout-v21/abc_screen_toolbar.xml 
+res/layout/abc_search_view.xml -> res/layout-v17/abc_search_view.xml 
+res/layout/mr_media_route_list_item.xml -> res/layout-v17/mr_media_route_list_item.xml 
+res/layout/notification_template_big_media.xml -> res/layout-v17/notification_template_big_media.xml 
+res/layout/notification_template_big_media_narrow.xml -> res/layout-v17/notification_template_big_media_narrow.xml 
+res/layout/notification_template_lines.xml -> res/layout-v17/notification_template_lines.xml 
+res/layout/notification_template_media.xml -> res/layout-v17/notification_template_media.xml 
+res/layout/notification_template_part_chronometer.xml -> res/layout-v17/notification_template_part_chronometer.xml 
+res/layout/notification_template_part_time.xml -> res/layout-v17/notification_template_part_time.xml 
+res/layout/place_autocomplete_fragment.xml -> res/layout-v21/place_autocomplete_fragment.xml 
+res/layout/place_autocomplete_item_powered_by_google.xml -> res/layout-v17/place_autocomplete_item_powered_by_google.xml 
+res/layout/place_autocomplete_item_prediction.xml -> res/layout-v17/place_autocomplete_item_prediction.xml 
+res/layout/place_autocomplete_progress.xml -> res/layout-v21/place_autocomplete_progress.xml 
+res/layout/select_dialog_multichoice_material.xml -> res/layout-v13/select_dialog_multichoice_material.xml res/layout-v17/select_dialog_multichoice_material.xml 
+res/layout/select_dialog_singlechoice_material.xml -> res/layout-v13/select_dialog_singlechoice_material.xml res/layout-v17/select_dialog_singlechoice_material.xml 
