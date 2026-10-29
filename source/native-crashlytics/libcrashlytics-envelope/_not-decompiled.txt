@@ -1,0 +1,40 @@
+Decompiler failures (see _failed-disassembly/):
+0x16bf0  FUN_00016bf0  failed
+
+Game functions not decompiled:
+
+
+External imports (no body in this library, 33):
+EXTERNAL:0x1  <EXTERNAL>::__cxa_finalize
+EXTERNAL:0x2  <EXTERNAL>::__cxa_atexit
+EXTERNAL:0x3  <EXTERNAL>::_Uarm_create_addr_space
+EXTERNAL:0x4  <EXTERNAL>::_Uarm_set_caching_policy
+EXTERNAL:0x5  <EXTERNAL>::_UPT_create
+EXTERNAL:0x6  <EXTERNAL>::_Uarm_get_proc_name_by_ip
+EXTERNAL:0x7  <EXTERNAL>::_Uarm_init_local
+EXTERNAL:0x8  <EXTERNAL>::_Uarm_get_reg
+EXTERNAL:0x9  <EXTERNAL>::_Uarm_step
+EXTERNAL:0xa  <EXTERNAL>::_Uarm_init_remote
+EXTERNAL:0xb  <EXTERNAL>::_UPT_destroy
+EXTERNAL:0xc  <EXTERNAL>::malloc
+EXTERNAL:0xd  <EXTERNAL>::pthread_key_delete
+EXTERNAL:0xe  <EXTERNAL>::free
+EXTERNAL:0xf  <EXTERNAL>::pthread_getspecific
+EXTERNAL:0x10  <EXTERNAL>::pthread_setspecific
+EXTERNAL:0x11  <EXTERNAL>::pthread_key_create
+EXTERNAL:0x12  <EXTERNAL>::abort
+EXTERNAL:0x13  <EXTERNAL>::memset
+EXTERNAL:0x14  <EXTERNAL>::pthread_mutex_lock
+EXTERNAL:0x15  <EXTERNAL>::pthread_mutex_unlock
+EXTERNAL:0x16  <EXTERNAL>::write
+EXTERNAL:0x17  <EXTERNAL>::strcmp
+EXTERNAL:0x18  <EXTERNAL>::fwrite
+EXTERNAL:0x19  <EXTERNAL>::fputs
+EXTERNAL:0x1a  <EXTERNAL>::fputc
+EXTERNAL:0x1b  <EXTERNAL>::memcmp
+EXTERNAL:0x1c  <EXTERNAL>::memcpy
+EXTERNAL:0x1d  <EXTERNAL>::realloc
+EXTERNAL:0x1e  <EXTERNAL>::strlen
+EXTERNAL:0x1f  <EXTERNAL>::sprintf
+EXTERNAL:0x20  <EXTERNAL>::strncmp
+EXTERNAL:0x21  <EXTERNAL>::__gnu_Unwind_Find_exidx
