@@ -1,0 +1,9 @@
+package_name=com.narendra.minimilitia
+engine_version=2.11.5
+project_type=cpp
+min_sdk=35
+target_sdk=36
+# 16 KB page-aligned native libraries need NDK r27 or newer
+ndk=r27c
+# SDK Manager ships cmake 3.31.x; the engine default (4.2+) is not required
+cmake=3.28.0+

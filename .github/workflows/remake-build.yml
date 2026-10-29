@@ -1,0 +1,53 @@
+name: Remake build
+
+on:
+  push:
+    paths: ['remake/**', '.github/workflows/remake-build.yml']
+  pull_request:
+    paths: ['remake/**', '.github/workflows/remake-build.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  host-tests:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: remake/tools/fetch-axmol.sh
+      - run: remake/tools/run-host-tests.sh
+
+  debug-apk:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Fetch Axmol
+        run: remake/tools/fetch-axmol.sh
+      - name: Install Android SDK parts
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0" "ndk;27.2.12479018" "cmake;3.31.6"
+      - uses: actions/cache@v4
+        with:
+          path: ~/.gradle
+          key: gradle-${{ hashFiles('remake/proj.android/**/*.gradle', 'remake/proj.android/gradle/wrapper/gradle-wrapper.properties') }}
+      - name: Build debug APK
+        working-directory: remake/proj.android
+        run: ./gradlew assembleDebug --stacktrace
+      - name: Check 16 KB alignment
+        run: |
+          APK=$(ls remake/proj.android/app/build/outputs/apk/debug/*.apk | head -1)
+          mkdir -p /tmp/apk && unzip -q -o "$APK" 'lib/*' -d /tmp/apk
+          for so in /tmp/apk/lib/*/*.so; do
+            readelf -lW "$so" | awk -v f="$so" '$1=="LOAD"{ if ($NF != "0x4000" && $NF != "0x10000") { print f ": LOAD align " $NF; bad=1 } } END{exit bad}'
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MiniMilitia-debug-apk
+          path: remake/proj.android/app/build/outputs/apk/debug/*.apk
+          retention-days: 14

@@ -1,0 +1,17 @@
+# build outputs and local files
+build/
+.gradle/
+.cxx/
+.externalNativeBuild/
+local.properties
+.idea/
+captures/
+*.iml
+.DS_Store
+*.apk
+*.aab
+*.jks
+*.keystore
+keystore.properties
+# engine checkout (fetched by tools/fetch-axmol.sh, pinned version)
+/axmol/
