@@ -15,3 +15,5 @@ captures/
 keystore.properties
 # engine checkout (fetched by tools/fetch-axmol.sh, pinned version)
 /axmol/
+# sound pipeline download cache
+/tools/sounds/.cache/
