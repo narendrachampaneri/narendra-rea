@@ -1,0 +1,9 @@
+# Keep the apktool project byte-exact on every OS so rebuilds stay deterministic
+source/apk-project/** -text
+
+# Decompiler and tool output: generated, keep out of language stats
+source/apk-project/** linguist-generated=true
+source/java-reference/** linguist-generated=true
+source/native/** linguist-generated=true
+source/native-index/** linguist-generated=true
+evidence/** linguist-generated=true

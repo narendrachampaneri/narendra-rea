@@ -1,0 +1,19 @@
+version: 3.0.3
+apkFileName: Mini.Militia.mod.by.sahadikr.in.apk
+usesFramework:
+  ids:
+  - 1
+sdkInfo:
+  minSdkVersion: 25
+  targetSdkVersion: 25
+versionInfo:
+  versionCode: 100
+  versionName: 2.2.23
+resourcesInfo:
+  packageId: 127
+  keepRawValues: true
+doNotCompress:
+- mp3
+- png
+- assets/da2sound16.ckb
+- res/raw/amazon_gc_prototype.zip
