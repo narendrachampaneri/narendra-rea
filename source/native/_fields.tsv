@@ -1,0 +1,83 @@
+class	offset	field	ghidra_type	accessors
+ArrowAlert	0xe4	ArrowScale	undefined4	ArrowAlert::setArrowScale, ArrowAlert::getArrowScale
+ArrowAlert	0xe8	Sprite	undefined4	ArrowAlert::getSprite
+CollisionObject	0xf0	DamageAmmoType	undefined4	CollisionObject::getDamageAmmoType
+CollisionObject	0xf4	TeamId	undefined4|int	CollisionObject::getTeamId, CollisionObject::setTeamId
+Enemy	0x180	RemoteRotation	undefined4	Enemy::setRemoteRotation
+HawkDrone	0x198	RemoteFireAngle	undefined4	HawkDrone::setRemoteFireAngle
+HawkDrone	0x1ac	HP	undefined4|int	HawkDrone::getHP, HawkDrone::setHP
+HawkDrone	0x1e0	FireAngle	undefined4	HawkDrone::getFireAngle
+HawkDrone	0x1f0	Weapon	undefined4	HawkDrone::getWeapon
+Item	0x114	UpdateElapsed	undefined4	Item::getUpdateElapsed, Item::setUpdateElapsed
+Joypad	0x124	FireAngle	undefined4	Joypad::getFireAngle
+Joypad	0x128	DirectionAngle	undefined4	Joypad::getDirectionAngle
+MapManager	0x14	Map	undefined4	MapManager::getMap
+MapManager	0x28	TileShapes	undefined4	MapManager::getTileShapes
+MapManager	0x38	PlayerSpawnPoints	undefined4	MapManager::getPlayerSpawnPoints
+MapManager	0x5c	GravityFactor	undefined4	MapManager::getGravityFactor
+NetworkManager	0xe8	PeerPlayers	undefined4	NetworkManager::getPeerPlayers
+NetworkManager	0xec	Messages	undefined4	NetworkManager::getMessages
+NetworkManager	0xf0	MessageIds	undefined4	NetworkManager::getMessageIds
+NetworkManager	0xfc	OnlineActivity	int	NetworkManager::setOnlineActivity
+NetworkManager	0x110	RakNetInstance	undefined4	NetworkManager::getRakNetInstance
+NetworkManager	0x120	MaxPlayers	int|undefined4	NetworkManager::setMaxPlayers, NetworkManager::getMaxPlayers
+PlayerDeath	0x48	BodyShapes	undefined4	PlayerDeath::getBodyShapes
+Projectile	0x48	DamageAmount	undefined4	Projectile::getDamageAmount, Projectile::setDamageAmount
+Projectile	0x74	CollisionType	undefined4	Projectile::getCollisionType
+Projectile	0x8c	AmmoType	undefined4	Projectile::getAmmoType
+ScoreKeeper	0x1c	PlayerInfo	undefined4	ScoreKeeper::getPlayerInfo
+ScoreKeeper	0x20	Score	int|undefined4	ScoreKeeper::setScore, ScoreKeeper::getScore
+ScoreKeeper	0x24	Suicides	undefined4	ScoreKeeper::getSuicides
+ScoreKeeper	0x2c	RankChange	undefined4	ScoreKeeper::getRankChange
+ScoreScreen	0xfc	ScoreList	undefined4	ScoreScreen::getScoreList
+SoldierAIController	0xfc	SoldierView	undefined4	SoldierAIController::getSoldierView
+SoldierAIController	0x10c	ThrustFactor	float	SoldierAIController::getThrustFactor
+SoldierAIController	0x110	FireAngle	undefined4	SoldierAIController::setFireAngle
+SoldierAIController	0x160	GrenadeCount	undefined4	SoldierAIController::getGrenadeCount
+SoldierAIController	0x198	Power	undefined4	SoldierAIController::setPower, SoldierAIController::getPower
+SoldierAIController	0x1b4	MassFactor	undefined4	SoldierAIController::getMassFactor
+SoldierController	0xfc	SoldierView	undefined4	SoldierController::getSoldierView
+SoldierController	0x10c	ThrustFactor	float|undefined4	SoldierController::getThrustFactor, SoldierController::setThrustFactor
+SoldierController	0x110	FireAngle|DualFireAngle	undefined4	SoldierController::setFireAngle, SoldierController::getDualFireAngle, SoldierController::getFireAngle
+SoldierController	0x144	HP	float	SoldierController::getHP
+SoldierController	0x148	PrimaryWeapon	undefined4	SoldierController::getPrimaryWeapon
+SoldierController	0x14c	SecondaryWeapon	undefined4	SoldierController::getSecondaryWeapon
+SoldierController	0x150	DualWeapon	undefined4	SoldierController::getDualWeapon
+SoldierController	0x154	SideWeapon	undefined4	SoldierController::getSideWeapon
+SoldierController	0x164	HitSound	short	SoldierController::setHitSound
+SoldierController	0x180	MaxPower	int|undefined4	SoldierController::setMaxPower, SoldierController::getMaxPower
+SoldierHostController	0xfc	SoldierView	undefined4	SoldierHostController::getSoldierView
+SoldierHostController	0x10c	ThrustFactor	float	SoldierHostController::getThrustFactor
+SoldierHostController	0x110	FireAngle	undefined4	SoldierHostController::setFireAngle
+SoldierHostController	0x198	Power	undefined4	SoldierHostController::setPower, SoldierHostController::getPower
+SoldierHostController	0x1a4	ViewOffset	int	SoldierHostController::setViewOffset
+SoldierHostController	0x1b0	MassFactor	undefined4	SoldierHostController::getMassFactor
+SoldierHostController	0x1f8	BackupNadeWeapon	undefined4	SoldierHostController::getBackupNadeWeapon
+SoldierManager	0x18	RespawnTime	undefined4	SoldierManager::getRespawnTime
+SoldierRemoteController	0xfc	SoldierView	undefined4	SoldierRemoteController::getSoldierView
+SoldierRemoteController	0x110	FireAngle	undefined4	SoldierRemoteController::setFireAngle
+SoldierRemoteController	0x148	PrimaryWeapon	undefined4	SoldierRemoteController::getPrimaryWeapon
+SoldierRemoteController	0x14c	SecondaryWeapon	undefined4	SoldierRemoteController::getSecondaryWeapon
+SoldierRemoteController	0x150	DualWeapon	undefined4	SoldierRemoteController::getDualWeapon
+SoldierRemoteController	0x184	RemoteRotation	undefined4	SoldierRemoteController::setRemoteRotation
+SoldierRemoteController	0x1a8	RemoteFiringAngle	undefined4	SoldierRemoteController::setRemoteFiringAngle
+SoldierView	0x1a0	BodyRotation	undefined4	SoldierView::getBodyRotation
+SoldierView	0x1b8	FiringAngle	undefined4	SoldierView::setFiringAngle
+SoldierView	0x1bc	FiringAngleOffset	undefined4	SoldierView::setFiringAngleOffset, SoldierView::getFiringAngleOffset
+SoldierView	0x1c0	WeaponAngleOffset	undefined4	SoldierView::setWeaponAngleOffset
+Weapon	0x148	ZoomScale	undefined4	Weapon::getZoomScale
+Weapon	0x168	AccuracyMod	undefined4	Weapon::setAccuracyMod
+Weapon	0x174	AmmoCapacity	undefined4	Weapon::getAmmoCapacity
+Weapon	0x178	ClipCapacityMod	int	Weapon::setClipCapacityMod
+Weapon	0x17c	ClipReloadMod	undefined4	Weapon::setClipReloadMod
+Weapon	0x188	Type|AmmoType	undefined4	Weapon::getType, Weapon::getAmmoType
+Weapon	0x18c	ViewOffset	undefined4	Weapon::getViewOffset
+Weapon	0x198	Damage	undefined4	Weapon::getDamage
+Weapon	0x19c	MeleeDamage	undefined4	Weapon::getMeleeDamage
+Weapon	0x1a0	MeleeLength	undefined4	Weapon::getMeleeLength
+Weapon	0x1a4	Range	undefined4	Weapon::getRange
+Weapon	0x1b8	ArmAngle	undefined4	Weapon::getArmAngle
+Weapon	0x1bc	BulletSpeed	undefined4	Weapon::getBulletSpeed
+Weapon	0x1c8	FireAngle	undefined4	Weapon::setFireAngle
+Weapon	0x1cc	WeightFactor	undefined4	Weapon::getWeightFactor
+WormDrone	0x1a8	HP	undefined4|int	WormDrone::getHP, WormDrone::setHP

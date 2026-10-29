@@ -6,4 +6,6 @@ source/apk-project/** linguist-generated=true
 source/java-reference/** linguist-generated=true
 source/native/** linguist-generated=true
 source/native-index/** linguist-generated=true
+source/native-crashlytics/** linguist-generated=true
+source/embedded/** linguist-generated=true
 evidence/** linguist-generated=true
