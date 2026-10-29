@@ -3,6 +3,12 @@
 *.aab
 *.xapk
 *.idsig
+/build/
+/source/apk-project/build/
+
+# Signing keys are never committed (tools/build.sh creates tools/dev-key.jks locally)
+*.jks
+*.keystore
 
 # OS / editor
 .DS_Store

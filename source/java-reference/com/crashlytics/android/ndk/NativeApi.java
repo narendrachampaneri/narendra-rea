@@ -1,0 +1,8 @@
+package com.crashlytics.android.ndk;
+
+import android.content.res.AssetManager;
+
+/* JADX INFO: loaded from: classes2.dex */
+interface NativeApi {
+    boolean initialize(String str, AssetManager assetManager);
+}

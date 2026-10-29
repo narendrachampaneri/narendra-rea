@@ -1,0 +1,23 @@
+package com.chartboost.sdk.Model;
+
+import com.chartboost.sdk.Libraries.g;
+import com.google.android.exoplayer.util.MimeTypes;
+import com.google.android.gms.appinvite.PreviewActivity;
+import com.inmobi.commons.analytics.db.AnalyticsEvent;
+import com.inmobi.monetization.internal.Ad;
+import com.mopub.mobileads.VastIconXmlManager;
+import com.newrelic.agent.android.analytics.AnalyticAttribute;
+import io.fabric.sdk.android.services.settings.SettingsJsonConstants;
+
+/* JADX INFO: loaded from: classes.dex */
+public class b {
+    private static g.a e = g.a(g.a("url", g.a()), g.a(AnalyticsEvent.EVENT_ID, g.a()), g.a("local-file", g.a()), g.a("buffer", g.a(g.b())));
+    private static g.a f = g.a(g.a("url", g.a()), g.a("scale", g.a(g.b())), g.a(VastIconXmlManager.OFFSET, g.a(g.b(g.a("x", g.b()), g.a("y", g.b())))));
+    private static g.a g = g.a(g.a("video-landscape", g.a(e)), g.a("video-portrait", g.a(e)), g.a("ad-landscape", g.a(f)), g.a("frame-landscape", g.a(f)), g.a("close-landscape", g.a(f)), g.a("replay-landscape", g.a(f)), g.a("ad-portrait", g.a(f)), g.a("frame-portrait", g.a(f)), g.a("close-portrait", g.a(f)), g.a("replay-portrait", g.a(f)), g.a("video-click-button", g.a(f)), g.a("post-video-icon", g.a(f)), g.a("post-video-button", g.a(f)), g.a("video-confirmation-icon", g.a(f)), g.a("video-confirmation-button", g.a(f)), g.a("post-video-reward-icon", g.a(f)), g.a("blur-background", g.a(f)));
+    private static g.a h = g.a(g.a(g.a("progress", g.a(g.b(g.a("delay", g.b()), g.a("background-color", g.a()), g.a("progress-color", g.a()), g.a("border-color", g.a()), g.a("radius", g.b())))), g.a("video-controls-togglable", g.a(g.c())), g.a("video-controls-background", g.b(g.a("color", g.a()), g.a("border-color", g.a()))), g.a("post-video-toaster", g.a(g.b(g.a("title", g.a()), g.a("tagline", g.a())))), g.a("pre-popup", g.a(g.b(g.a("title", g.a()), g.a(MimeTypes.BASE_TYPE_TEXT, g.a()), g.a("confirm", g.a()), g.a("cancel", g.a())))), g.a("post-popup", g.a(g.b(g.a("title", g.a()), g.a(MimeTypes.BASE_TYPE_TEXT, g.a()), g.a("confirm", g.a())))), g.a("cancel-popup", g.a(g.b(g.a("title", g.a()), g.a(MimeTypes.BASE_TYPE_TEXT, g.a()), g.a("confirm", g.a()), g.a("cancel", g.a())))), g.a("confirmation", g.a(g.b(g.a(MimeTypes.BASE_TYPE_TEXT, g.a()), g.a("color", g.a())))), g.a("video-progress-timer-enabled", g.a(g.c())), g.a("post-video-reward-toaster", g.a(g.b(g.a(MimeTypes.BASE_TYPE_TEXT, g.a()), g.a("position", g.a("inside-top", "outside-bottom"))))), g.a("play-another-popup", g.a(g.b(g.a("skip-confirmation", g.c()), g.a("title", g.a()), g.a(MimeTypes.BASE_TYPE_TEXT, g.a()), g.a("cancel", g.a()), g.a("confirm", g.a()))))));
+    public static g.a a = g.a(g.a(PreviewActivity.ON_CLICK_LISTENER_CLOSE, g.a(f)), g.a("header-center", g.a(f)), g.a("header-tile", g.a(f)), g.a("header-height", g.a(g.b())), g.a("background-color", g.a(g.a())), g.a("header-text", g.a(g.a())), g.a("text-color", g.a(g.a())), g.a("close-landscape", g.a(f)), g.a("header-landscape", g.a(f)), g.a("close-portrait", g.a(f)), g.a("header-portrait", g.a(f)), g.a("install-button", g.a(f)), g.a("play-button", g.a(f)), g.a(VastIconXmlManager.OFFSET, g.a(g.b(g.a("x", g.b()), g.a("y", g.b())))));
+    private static g.a i = g.b(g.a(g.a("type", g.a()), g.a(AnalyticAttribute.EVENT_NAME_ATTRIBUTE, g.a()), g.a("cgn", g.a()), g.a("more_type", g.a()), g.a("assets", g.a(g.a("icon", f))), g.a(MimeTypes.BASE_TYPE_TEXT, g.a(g.a())), g.a("link", g.a(g.a())), g.a("deep-link", g.a(g.a())), g.a("itunes_id", g.a(g.a())), g.a("publisher", g.a(g.a())), g.a("description", g.a(g.a())), g.a("border-color", g.a(g.a()))));
+    public static g.a b = g.a(g.a("status", com.chartboost.sdk.Libraries.a.a), g.a("ad_id", g.a()), g.a("to", g.a()), g.a("type", g.a()), g.a(Ad.AD_TYPE_NATIVE, g.a(g.a())), g.a(SettingsJsonConstants.PROMPT_MESSAGE_KEY, g.a()), g.a("link", g.a()), g.a("deep-link", g.a(g.a())), g.a("cgn", g.a()), g.a("creative", g.a()), g.a("assets", g), g.a("ux", h), g.a("reward", g.a(g.a((Class<?>) Object.class))));
+    public static g.a c = g.a(g.a("status", com.chartboost.sdk.Libraries.a.a), g.a(SettingsJsonConstants.PROMPT_MESSAGE_KEY, g.a()), g.a("type", g.a()), g.a("assets", a), g.a("cells", i));
+    public static g.a d = g.a(g.a("status", com.chartboost.sdk.Libraries.a.a), g.a("ad_id", g.a()), g.a("to", g.a(g.a())), g.a("type", g.a(g.a())), g.a(Ad.AD_TYPE_NATIVE, g.a(g.a())), g.a(SettingsJsonConstants.PROMPT_MESSAGE_KEY, g.a(g.a())), g.a("link", g.a()), g.a(AnalyticAttribute.EVENT_NAME_ATTRIBUTE, g.a()), g.a("deep-link", g.a(g.a())), g.a("cgn", g.a()), g.a("creative", g.a()), g.a("icons", g.a(g.a("sm", g.a()), g.a("md", g.a()), g.a("lg", g.a()))));
+}

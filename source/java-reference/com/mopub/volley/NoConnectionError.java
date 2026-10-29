@@ -1,0 +1,11 @@
+package com.mopub.volley;
+
+/* JADX INFO: loaded from: classes2.dex */
+public class NoConnectionError extends NetworkError {
+    public NoConnectionError() {
+    }
+
+    public NoConnectionError(Throwable reason) {
+        super(reason);
+    }
+}

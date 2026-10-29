@@ -1,0 +1,25 @@
+{
+  "source": "assets/api_key.txt (signed Amazon API key; header and payload base64-decoded, signature not verified)",
+  "header": {
+    "alg": "RSA-SHA256",
+    "ver": "1"
+  },
+  "payload": {
+    "ver": "3",
+    "endpoints": {
+      "authz": "https://www.amazon.com/ap/oa",
+      "tokenExchange": "https://api.amazon.com/auth/o2/token"
+    },
+    "clientId": "amzn1.application-oa2-client.15f214225f4e4bb982fef062e2bc4384",
+    "appFamilyId": "amzn1.application.20ae254014ec4be78ee899559fc12b09",
+    "iss": "Amazon",
+    "type": "APIKey",
+    "pkg": "com.appsomniacs.da2",
+    "appVariantId": "amzn1.application-client.93a38a8899fa43dead878efa92887c7b",
+    "trustPool": null,
+    "appsig": "2A:31:2B:B5:62:6C:B4:F7:E7:A5:EB:BC:03:F5:82:27",
+    "appId": "amzn1.application-client.93a38a8899fa43dead878efa92887c7b",
+    "id": "ee832982-16ab-11e5-b30c-0fbd3df64b63",
+    "iat": "1434736340186"
+  }
+}

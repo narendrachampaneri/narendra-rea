@@ -1,0 +1,13 @@
+package com.vungle.publisher.net.http;
+
+import javax.inject.Inject;
+
+/* JADX INFO: compiled from: vungle */
+/* JADX INFO: loaded from: classes.dex */
+public class FireAndForgetHttpResponseHandler extends MaxRetryAgeHttpResponseHandler {
+    @Inject
+    public FireAndForgetHttpResponseHandler() {
+        this.i = 1;
+        this.h = 10;
+    }
+}

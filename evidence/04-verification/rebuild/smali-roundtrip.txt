@@ -1,0 +1,4 @@
+apktool d of the rebuilt APK vs source/apk-project (diff -rq of smali/ and smali_classes2/):
+smali files: source 13149, rebuilt 13149
+files differing: 0
+decoded AndroidManifest.xml: identical
