@@ -7,7 +7,7 @@ const [decompiledDir, gameTsv, outDir, extraClasses = ''] = process.argv.slice(2
 const index = JSON.parse(fs.readFileSync(path.join(decompiledDir, 'decompile-index.json'), 'utf8'));
 
 // Game classes and their Ghidra addresses (ELF address with the Thumb bit cleared, plus image base 0x10000).
-const gameRows = fs.readFileSync(gameTsv, 'utf8').trim().split('\n').map(l => l.split('\t'));
+const gameRows = fs.readFileSync(gameTsv, 'utf8').split('\n').filter(Boolean).map(l => l.split('\t'));
 const gameClasses = new Set([...gameRows.map(r => r[0]), ...extraClasses.split(',').filter(Boolean)]);
 const gameAddrs = new Map(gameRows.map(r => [((parseInt(r[1], 16) & ~1) + 0x10000), r[3]]));
 
@@ -21,6 +21,7 @@ for (const f of index.functions) {
   const addr = parseInt(f.address, 16);
   let bucket;
   if (f.name.startsWith('FUN_') || f.name.startsWith('thunk_FUN_')) bucket = `_unnamed/unnamed_${(addr >> 16).toString(16).padStart(4, '0')}xxxx.c`;
+  else if (f.name.startsWith('<EXTERNAL>::')) bucket = '_libraries/_plt-imports.cpp';
   else if (gameClasses.has(topLevel(f.name))) bucket = `${safe(topLevel(f.name))}.cpp`;
   else if (f.name.includes('::')) bucket = `_libraries/${safe(topLevel(f.name))}.cpp`;
   else bucket = '_free-functions.cpp';
