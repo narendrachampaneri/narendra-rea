@@ -1,0 +1,70 @@
+package com.mopub.mobileads;
+
+import android.app.Activity;
+import android.content.Context;
+import android.support.annotation.NonNull;
+import android.text.TextUtils;
+import android.util.Log;
+import com.chartboost.sdk.Chartboost;
+import com.mopub.common.Preconditions;
+import java.util.Map;
+
+/* JADX INFO: loaded from: classes.dex */
+class ChartboostInterstitial extends CustomEventInterstitial {
+
+    @NonNull
+    private String mLocation = "Default";
+
+    ChartboostInterstitial() {
+    }
+
+    @Override // com.mopub.mobileads.CustomEventInterstitial
+    protected void loadInterstitial(@NonNull Context context, @NonNull CustomEventInterstitial.CustomEventInterstitialListener interstitialListener, @NonNull Map<String, Object> localExtras, @NonNull Map<String, String> serverExtras) {
+        Preconditions.checkNotNull(context);
+        Preconditions.checkNotNull(interstitialListener);
+        Preconditions.checkNotNull(localExtras);
+        Preconditions.checkNotNull(serverExtras);
+        if (!(context instanceof Activity)) {
+            interstitialListener.onInterstitialFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+            return;
+        }
+        if (serverExtras.containsKey("location")) {
+            String location = serverExtras.get("location");
+            if (TextUtils.isEmpty(location)) {
+                location = this.mLocation;
+            }
+            this.mLocation = location;
+        }
+        if (ChartboostShared.getDelegate().hasInterstitialLocation(this.mLocation) && ChartboostShared.getDelegate().getInterstitialListener(this.mLocation) != interstitialListener) {
+            interstitialListener.onInterstitialFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+            return;
+        }
+        Activity activity = (Activity) context;
+        try {
+            ChartboostShared.initializeSdk(activity, serverExtras);
+            ChartboostShared.getDelegate().registerInterstitialListener(this.mLocation, interstitialListener);
+            Chartboost.onCreate(activity);
+            Chartboost.onStart(activity);
+            if (Chartboost.hasInterstitial(this.mLocation)) {
+                ChartboostShared.getDelegate().didCacheInterstitial(this.mLocation);
+            } else {
+                Chartboost.cacheInterstitial(this.mLocation);
+            }
+        } catch (IllegalStateException e) {
+            interstitialListener.onInterstitialFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+        } catch (NullPointerException e2) {
+            interstitialListener.onInterstitialFailed(MoPubErrorCode.ADAPTER_CONFIGURATION_ERROR);
+        }
+    }
+
+    @Override // com.mopub.mobileads.CustomEventInterstitial
+    protected void showInterstitial() {
+        Log.d("MoPub", "Showing Chartboost interstitial ad.");
+        Chartboost.showInterstitial(this.mLocation);
+    }
+
+    @Override // com.mopub.mobileads.CustomEventInterstitial
+    protected void onInvalidate() {
+        ChartboostShared.getDelegate().unregisterInterstitialListener(this.mLocation);
+    }
+}

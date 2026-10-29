@@ -1,0 +1,70 @@
+package com.newrelic.agent.android.instrumentation.httpclient;
+
+import com.newrelic.agent.android.instrumentation.io.CountingInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
+
+/* JADX INFO: loaded from: classes.dex */
+public class ContentBufferingResponseEntityImpl implements HttpEntity {
+    private CountingInputStream contentStream;
+    final HttpEntity impl;
+
+    public ContentBufferingResponseEntityImpl(HttpEntity impl) {
+        if (impl == null) {
+            throw new IllegalArgumentException("Missing wrapped entity");
+        }
+        this.impl = impl;
+    }
+
+    @Override // org.apache.http.HttpEntity
+    public void consumeContent() throws IOException {
+        this.impl.consumeContent();
+    }
+
+    @Override // org.apache.http.HttpEntity
+    public InputStream getContent() throws IllegalStateException, IOException {
+        if (this.contentStream != null) {
+            return this.contentStream;
+        }
+        this.contentStream = new CountingInputStream(this.impl.getContent(), true);
+        return this.contentStream;
+    }
+
+    @Override // org.apache.http.HttpEntity
+    public Header getContentEncoding() {
+        return this.impl.getContentEncoding();
+    }
+
+    @Override // org.apache.http.HttpEntity
+    public long getContentLength() {
+        return this.impl.getContentLength();
+    }
+
+    @Override // org.apache.http.HttpEntity
+    public Header getContentType() {
+        return this.impl.getContentType();
+    }
+
+    @Override // org.apache.http.HttpEntity
+    public boolean isChunked() {
+        return this.impl.isChunked();
+    }
+
+    @Override // org.apache.http.HttpEntity
+    public boolean isRepeatable() {
+        return this.impl.isRepeatable();
+    }
+
+    @Override // org.apache.http.HttpEntity
+    public boolean isStreaming() {
+        return this.impl.isStreaming();
+    }
+
+    @Override // org.apache.http.HttpEntity
+    public void writeTo(OutputStream outputStream) throws IOException {
+        this.impl.writeTo(outputStream);
+    }
+}
