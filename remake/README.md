@@ -19,7 +19,7 @@ continues from the next unfinished milestone. Private project: never publish to 
 |---|---|---|
 | M0 | Report | done, approved |
 | M1 | Skeleton + release workflow | done: `Remake build` green on `remake/m1-skeleton`; awaiting owner merge |
-| M2 | Assets | **code complete on `remake/m2-assets` (branched from M1); awaiting green CI and a phone check** |
+| M2 | Assets | **done on `remake/m2-assets` (branched from M1): `Remake build` green (tests, type-check, debug APK, 16 KB check); awaiting phone check and owner merge** |
 | M3 | Single-device slice | not started |
 | M4 | Full single-device game | not started |
 | M5 | Wi-Fi multiplayer | not started |
@@ -153,7 +153,7 @@ Keep the file out of git (it is git-ignored); losing it means future updates can
 - Android 16+ local-network permission rules to be checked in M5.
 
 ## Next step
-Get `Remake build` green on `remake/m2-assets`, run the on-device check above, merge M1 then M2.
+Run the on-device check above with the debug APK from the `Remake build` run, merge M1 then M2.
 Then M3 on branch `remake/m3-slice`: one soldier with the dual joysticks (Joypad,
 SoldierController, SoldierView), Chipmunk physics from the map tiles (PhysicsManager,
 MapManager::addStaticBodyShape), one weapon (Weapon + AK47), Projectile, Explosion, HUD.
