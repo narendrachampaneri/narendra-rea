@@ -14,17 +14,58 @@ The 6,843 Java classes are the **Android shell**: ~99.6% are third-party SDKs
 (`com/appsomniacs/**`, `org/cocos2dx/**`, `org/go3k/**`). Java does ads, billing,
 sign-in, and passes lifecycle events to the native code.
 
+## Every piece of code in the APK, and where it is
+
+| Code in the APK | Read it in | Change it in |
+|---|---|---|
+| Java/Dalvik, `classes.dex` + `classes2.dex` (6,843 classes) | `source/java-reference/` (Java) | `source/apk-project/smali/`, `smali_classes2/` (smali) |
+| Game C++, `lib/armeabi-v7a/libcocos2dcpp.so` (36,355 functions) | `source/native/<Class>.cpp` (pseudo-C), `source/native/_asm/<Class>.s` (assembly) | the `.so` bytes in `source/apk-project/lib/armeabi-v7a/` (patch at the file offsets in `_asm/`) |
+| Crashlytics NDK, `libcrashlytics.so`, `libcrashlytics-envelope.so` | `source/native-crashlytics/<lib>/` (pseudo-C) | the `.so` bytes (third-party SDK) |
+| Amazon GameCircle UI, `res/raw/amazon_gc_prototype.zip` (58 JS, 4 HTML, 3 CSS) | `source/embedded/amazon_gc_prototype/` | edit there, re-zip into `source/apk-project/res/raw/amazon_gc_prototype.zip` |
+| Manifest, resources, strings | `source/apk-project/AndroidManifest.xml`, `res/` | same files |
+
+Nothing else in the APK is executable code.
+
 ## How to change things
 
 - **Java side** (ads, billing, sign-in, Android behaviour, manifest, resources):
   find the method in `source/java-reference/`, edit the matching
   `source/apk-project/smali*/…/<Class>.smali` (same package path), run `tools/build.sh`.
-- **Assets** (textures, sounds, particle `.plist`s): replace files in
-  `source/apk-project/assets/` keeping names and formats, rebuild.
-- **Game logic** (C++): read the pseudo-C in `source/native/`, then patch the
-  library bytes at the function's address (ELF offset = Ghidra address − `0x10000`;
-  every function header in `source/native/` shows its Ghidra address), or redirect
-  behaviour from the Java side through the JNI bridge below. The pseudo-C does not compile.
+- **Game data** (no code needed): see "Game data you can edit" below.
+- **Game logic** (C++): read the pseudo-C in `source/native/<Class>.cpp`, find the same
+  function in `source/native/_asm/<Class>.s`, and patch the bytes of
+  `source/apk-project/lib/armeabi-v7a/libcocos2dcpp.so` (see "Patching the game library"),
+  or redirect behaviour from the Java side through the JNI bridge below. The pseudo-C
+  does not compile.
+
+## Patching the game library
+
+- The address column in `source/native/_asm/*.s` **is the file offset** in
+  `libcocos2dcpp.so` (its code segment is mapped at offset 0, address 0; checked for the
+  first instruction of every one of the 3,302 functions). Ghidra address = file offset + `0x10000`.
+- All game functions are **Thumb-2**: instructions are 2 or 4 bytes, shown as little-endian
+  halfwords (`f7e2 fa7c` = bytes `e2 f7 7c fa` in the file).
+- A patch must keep every instruction boundary and the function size; words after
+  `; --- end of code` are literal-pool constants loaded by `ldr …, [pc, #…]`.
+- `source/native/_fields.tsv` names 82 member offsets recovered from the developer's own
+  getters/setters (for example `Weapon +0x174 = AmmoCapacity`,
+  `SoldierController +0x144 = HP`), to read `this + 0x…` in the pseudo-C.
+- After patching, rebuild with `tools/build.sh` (it re-signs the APK).
+
+## Game data you can edit
+
+All under `source/apk-project/assets/`, in three resolutions (`sd/`, `hd/`, `hdr/`):
+
+| Data | Files | Format / editor |
+|---|---|---|
+| Maps | `0hunger_new.tmx`, `1outpost_new.tmx` … `12overseer_new.tmx`, `survival_new.tmx`, `training_new.tmx` (15 per resolution) | Tiled map XML ([Tiled](https://www.mapeditor.org/)) |
+| Tilesets | `t64_new.tsx`, `t64Desert_new.tsx`, `t64Moon_new.tsx`, `t64Snow_new.tsx` + `tile64*_new.png` | Tiled tileset XML + PNG |
+| Sprite atlases | `menuTexture.plist/.png`, `partsTexture.plist/.png`, `title_ret*_new.png` | cocos2d plist + PNG |
+| Particle effects | `files/{Blood,Grass,HeavySmoke,Ora,Path,Rock,Shell,Shrapnel,Smoke,Stars}.plist` | cocos2d particle plist |
+| Sound / music | `da2sound16.ckb` (Cricket audio bank), `presMix.mp3` | Cricket Audio tools / MP3 |
+| Fonts | `fonts/*.ttf` | TrueType |
+
+Keep file names and formats; the C++ loads them by name.
 
 ## Java ⇄ native bridge (where Android features plug in)
 

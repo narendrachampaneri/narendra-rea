@@ -16,8 +16,12 @@ Ghidra) and verified end to end. Starting point for modifying the app.
 ├── source/
 │   ├── apk-project/      Apktool project: smali, resources, assets, native lib  ← edit + build
 │   ├── java-reference/   JADX Java for all 6,843 classes                         (read-only)
-│   ├── native/           Ghidra pseudo-C of libcocos2dcpp.so, one .cpp per class (read-only)
-│   └── native-index/     native symbol tables (name ↔ address ↔ size)
+│   ├── native/           Ghidra pseudo-C of libcocos2dcpp.so (the game), one .cpp per class
+│   │   ├── _asm/         patchable ARM assembly per class; address = file offset in the .so
+│   │   └── _fields.tsv   82 class member names recovered from getters/setters
+│   ├── native-index/     native symbol tables (name ↔ address ↔ size)
+│   ├── native-crashlytics/  pseudo-C of the two Crashlytics NDK libraries
+│   └── embedded/         web code extracted from res/raw/amazon_gc_prototype.zip
 ├── tools/
 │   ├── build.sh          rebuild + sign the APK → build/app-signed.apk
 │   └── analysis/         scripts that produced source/ and evidence/
@@ -33,7 +37,8 @@ Ghidra) and verified end to end. Starting point for modifying the app.
 ## Quick start
 
 1. Open `minimilitia.code-workspace` in VS Code.
-2. Read `docs/PROJECT-MAP.md` to find the code for a feature.
+2. Read `docs/PROJECT-MAP.md`: where every piece of code is, how to patch the game
+   library, and which game data (maps, textures, effects, sounds) is editable directly.
 3. Make the change in `source/apk-project/` (see "How to change things" in the map).
 4. Build:
 

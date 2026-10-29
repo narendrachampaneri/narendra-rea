@@ -1,6 +1,11 @@
 # Changelog
 
 ## [Unreleased]
+- Deep analysis: patchable assembly with file offsets for all 3,302 game functions
+  (`source/native/_asm/`), 82 recovered member names (`source/native/_fields.tsv`),
+  Crashlytics NDK libraries decompiled (`source/native-crashlytics/`), GameCircle web
+  code extracted (`source/embedded/`), editable game data documented. PLT import stubs
+  moved from the hidden `_libraries/.cpp` to `_libraries/_plt-imports.cpp`.
 - Reverse-engineered source stack of the v1.0.0 APK: buildable Apktool project
   (`source/apk-project`), JADX Java reference, Ghidra pseudo-C of the native game
   library, symbol index, REA evidence, build script and documentation.

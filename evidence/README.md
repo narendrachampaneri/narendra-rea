@@ -53,3 +53,12 @@ common to both runs have identical SHA-256.
 | `rebuild/dropped-resources.txt` | the 45 resources aapt2 dropped, each with its version-qualified twin |
 | `rebuild/smali-roundtrip.txt` | rebuilt APK decoded again: 13,149 smali files, 0 differences |
 | `rebuild/apksigner-verify.txt`, `rebuild/zipalign-check.txt` | Android build-tools 37.0.0 checks on the rebuilt APK |
+
+## 05-deep-analysis
+
+| File | REA operation | What |
+|---|---|---|
+| `native-exports-libcocos2dcpp.json` | `inspect_native_exports` | 34,219 exported symbols (31,407 functions) with address and size; agrees with `source/native-index/` for every function |
+| `binary-layout-libcocos2dcpp.provider-unavailable.json` | `inspect_binary_layout` | not run: needs a pwntools Python provider (`REA_PWNTOOLS_PYTHON`); the offset mapping was verified byte-by-byte instead |
+| `crashlytics/*.decompile-all.json`, `crashlytics/*.decompile-index.json` | `decompile_all` (Ghidra) | `libcrashlytics.so`: 677 functions (602 written, 74 external, 1 failed); `libcrashlytics-envelope.so`: 271 (237 written, 33 external, 1 failed) |
+| `extract-amazon_gc_prototype.json` | `extract_artifact` | `res/raw/amazon_gc_prototype.zip`: 165 files with SHA-256, containment verified → `source/embedded/amazon_gc_prototype/` |

@@ -3,6 +3,8 @@
     { "name": "Repository (docs, tools, evidence)", "path": "." },
     { "name": "Game C++ (pseudo-C)", "path": "source/native" },
     { "name": "Java (reference)", "path": "source/java-reference" },
+    { "name": "Crashlytics NDK (pseudo-C)", "path": "source/native-crashlytics" },
+    { "name": "Embedded web code", "path": "source/embedded" },
     { "name": "APK project (edit + build)", "path": "source/apk-project" }
   ],
   "settings": {

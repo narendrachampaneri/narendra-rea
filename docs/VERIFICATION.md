@@ -65,6 +65,29 @@ Not verified: running the rebuilt APK on a device or emulator (none available in
 this session). Anything signed with a new key cannot update an installed copy
 signed with the AOSP test key; uninstall first.
 
+## Deep analysis (2026-10-29)
+
+- **Assembly / file offsets**: `source/native/_asm/` covers 3,302 functions in 179 game
+  classes. For every function, the first instruction halfword printed by llvm-objdump
+  equals the little-endian halfword in `libcocos2dcpp.so` at the stated address used as a
+  file offset (3,302 / 3,302), confirming file offset = ELF address for the code.
+- **Symbol table**: REA `inspect_native_exports` lists 31,407 exported functions; every
+  row of `source/native-index/dynfuncs-addr-demangled.txt` matches one of them by
+  address and size (2 addresses carry two aliases with different sizes; both match).
+- **Remaining native code**: REA `decompile_all` on `libcrashlytics.so` (677 functions:
+  602 written, 74 external, 1 failed) and `libcrashlytics-envelope.so` (271: 237 written,
+  33 external, 1 failed); both loaded at Ghidra base `0x10000` like the game library.
+- **Embedded web code**: REA `extract_artifact` on `res/raw/amazon_gc_prototype.zip`:
+  165 files, containment verified; all 165 SHA-256 values re-checked in
+  `source/embedded/amazon_gc_prototype/`.
+- **Field names**: `recover-fields.mjs` accepts only accessors whose whole body is a load
+  or store of one `this + offset`; 82 fields in 20 classes.
+- **Organizer regression**: re-running `organize-pseudocode.mjs` reproduces
+  `source/native/` exactly, except that the PLT import stubs file, previously named
+  `_libraries/.cpp` (hidden on most systems), is now `_libraries/_plt-imports.cpp`.
+- REA `inspect_binary_layout` was not run: it needs a pwntools Python provider
+  (`REA_PWNTOOLS_PYTHON`) that is not installed.
+
 ## Native library (`libcocos2dcpp.so`, SHA-256 `95a46dfd…7946`)
 
 - REA `analyze` (Ghidra 12.1.4, 8 GB heap, 90-min startup deadline): 36,355
