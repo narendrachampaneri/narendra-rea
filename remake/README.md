@@ -19,13 +19,42 @@ continues from the next unfinished milestone. Private project: never publish to 
 |---|---|---|
 | M0 | Report | done, approved |
 | M1 | Skeleton + release workflow | done: `Remake build` green on `remake/m1-skeleton`; awaiting owner merge |
-| M2 | Assets | **done on `remake/m2-assets` (branched from M1): `Remake build` green (tests, type-check, debug APK, 16 KB check); awaiting phone check and owner merge** |
-| M3 | Single-device slice | not started |
+| M2 | Assets | done on `remake/m2-assets` (branched from M1): `Remake build` green; awaiting phone check and owner merge |
+| M3 | Single-device slice | **done on `remake/m3-slice` (branched from M2): playable from QUICK PLAY; awaiting green `Remake build`, phone check and owner merge** |
 | M4 | Full single-device game | not started |
 | M5 | Wi-Fi multiplayer | not started |
 | M6 | Menus and meta | not started |
 | M7 | Performance and polish | not started |
 | M8 | Release v1 | not started |
+
+## What works (M3: single-device slice)
+- **QUICK PLAY** opens Outpost with one soldier and the AK47: the original dual joysticks (left
+  pad moves / jumps / flies, right pad aims and fires past its edge), jetpack with fuel, health
+  regeneration, reload button, bullets with streaks that spark on walls, camera that leads
+  towards the aim, HUD (health and jetpack bars, ammo, reload ring), pause (II on the health
+  frame, or back) with RESUME / QUIT. A dead soldier (leaving the world) explodes and respawns
+  after 3 s at the next spawn (the match rules come in M4).
+- `Source/game` is engine-free and host-tested; `Source/game/Rules.h` holds every value with the
+  original function it comes from:
+  - Physics: Axmol's Chipmunk 7; 2 iterations, two half steps per frame, no space gravity (each
+    body brings its own). Chipmunk 5 layers become categories + mask with the same bits.
+  - Map collision: MapManager's GID -> tile type -> polygon tables (40 shapes), e 0.8, u 0.5;
+    tiles on the outer ring and tiles buried between four solid tiles get no shape.
+  - Soldier (SoldierHostController): mass 0.1, box + head circle at player scale 0.4, velocity
+    function with 0.5^dt damping, ground braking and a 14 rad/s spin limit; gravity -300
+    (walking / idle) or -50 (jetpack) times the map's factor; walk 190, jetpack 325 points/s;
+    jump 220; the jetpack starts after 0.5 s in the air with the stick well up; fuel 0.35 per
+    step, regenerates from 1 s after release (7/s, up to 21/s after 3 s); health +1/s; leaving
+    the world box costs 1 health per step; crouch with the stick down.
+  - Joypad: pads at (75, 75) and (width - 75, 75), 40-point knobs, 90-point touch zone, knob
+    springs back 20 % per frame, fire past the edge.
+  - AK47: damage 10, range 800, 0.1 s between shots, clip 35 + 200 (max 250), reload 2 s, spread
+    ±4° from the original fixed pseudo-random sequence, bullets 1300 points/s plus 0.8 of the
+    shooter's speed.
+  - Bullets are not physics bodies: a pool of 30 tracers ray-casts each step (map layer 0x100;
+    host bullets 0x288, which never includes yourself); they fade over the last 100 points.
+- `Source/app`: `GameScene` (fixed 60 Hz steps, camera, effects, HUD), `SoldierView` (head,
+  body, arms, legs and jetpack flames at the original node positions; the animation is new).
 
 ## What works (M2: assets)
 - `Content/`: all original art in sd/hd/hdr (15 maps, 4 tilesets, `menuTexture`/`partsTexture`
@@ -60,6 +89,12 @@ continues from the next unfinished milestone. Private project: never publish to 
   seconds (also run in CI), so API mistakes do not wait for the 20-minute Gradle build.
 
 ### Findings from the original code (correct the spec where they differ)
+- The analysed APK is a **modded build** with two gameplay patches the remake does not copy:
+  every weapon's `triggerPull` subtracts 0 rounds per shot (`subs r3, #0`: unlimited ammo), and
+  `SoldierHostController::hasPower` computes `power > 0` and then returns 1 anyway (unlimited
+  jetpack). The remake spends one round per shot and needs fuel to fly; "unlimited ammo" can
+  come back as a host extra (M7), off by default.
+- Bullets are ray-cast tracers (`Tracer::checkCollision`), not Chipmunk bodies.
 - Physics is **Chipmunk** (`cpSpaceNew`, `cpSpaceStep` in `PhysicsManager`), not Box2D. Axmol ships
   Chipmunk (`axmol/3rdparty/chipmunk`); M3 uses it to keep the original physics.
 - Map objects are authored in points (identical in sd/hd/hdr), so they are parsed by
@@ -111,8 +146,9 @@ adb shell am start -n com.narendra.minimilitia/dev.axmol.app.AppActivity
 adb logcat | grep -i -E "minimilitia|axmol"
 ```
 Or open `remake/proj.android` in Android Studio and press Run. On the computer, no Android
-needed: `tools/run-host-tests.sh` (unit + asset tests) and `tools/check-app-syntax.sh`
-(type-checks the Axmol code).
+needed: `tools/run-host-tests.sh` (unit, asset and gameplay tests; needs a C/C++ compiler and
+the zlib headers, e.g. `sudo apt install zlib1g-dev` on Linux, built into macOS) and
+`tools/check-app-syntax.sh` (type-checks the Axmol code).
 
 GitHub Actions `Remake build` runs both and builds a debug APK (artifact) on every push touching
 `remake/`.
@@ -121,6 +157,21 @@ Asset tools (only needed when assets change): `tools/import-original-assets.sh` 
 original art; `python3 tools/sounds/build_sounds.py` re-renders the sounds (needs ffmpeg with
 libvorbis and the Python packages numpy and py7zr; downloads the CC0 packs once into
 `tools/sounds/.cache`, git-ignored).
+
+### On-device check for M3 (debug APK)
+1. Home -> QUICK PLAY: Outpost appears zoomed in on the soldier, who drops from the top spawn
+   and lands with a thud. Pads bottom-left and bottom-right; health/jetpack frame and ammo frame
+   at the top centre; reload button top right.
+2. Left pad: sideways walks (footsteps); push up: jump, then after a moment the jetpack flames
+   and he flies; the blue bar drains, and refills a second after letting go; at empty he drops.
+3. Right pad: drag inside the ring to aim (arm and gun follow), past the ring to fire: streaks,
+   sparks on walls, the clip counts down from 35, at 0 it reloads by itself (ring fills, 2 s).
+   The reload button reloads early.
+4. The camera leads a little towards where you aim; wider phones see the same width of map.
+5. Fly off the side or bottom of the map: health drains fast, he explodes and respawns.
+6. II on the health frame or the back gesture pauses (RESUME / QUIT back to the menu).
+7. Report: does movement feel like the original (speed, jump height, jetpack lift, fall)?
+   Anything that looks wrong (soldier sprite, gun position, flames, HUD placement), fps.
 
 ### On-device check for M2 (debug APK)
 0. Launch: app icon splash, then the original title screen with "LOADING" within ~1 s; the music
@@ -157,8 +208,10 @@ Keep the file out of git (it is git-ignored); losing it means future updates can
   destroyed" (CC0 Kenney voiceover). Sarge's ~40 training lines and the other taunts are silent
   (their ids exist with an empty file). Owner's decision: leave them silent; the owner will say
   when voice is wanted. Do not ask again.
-- Predictive back (targetSdk 36) needs an `OnBackInvokedCallback` forwarded to the game (M6);
-  until then the system back gesture closes the app.
+- The soldier's animation, the gun/muzzle position, the explosion used for a death and the
+  HUD placement are new approximations; the original values for those are only in the
+  SoldierView / HUD drawing code and will be refined with phone feedback. Shell casings, blood,
+  the zoom button and the AK47's zoom levels come in M4.
 - Axmol's profile asks for cmake 4.2+; `.axproj` pins CMake 3.31.6 exactly instead.
 - Do not run Axmol's own `setup.ps1`: `tools/fetch-axmol.sh` replaces it and changes nothing system-wide.
 - Axmol's CMake needs PowerShell at configure time: built into Windows and on GitHub runners;
@@ -166,7 +219,7 @@ Keep the file out of git (it is git-ignored); losing it means future updates can
 - Android 16+ local-network permission rules to be checked in M5.
 
 ## Next step
-Run the on-device check above with the debug APK from the `Remake build` run, merge M1 then M2.
-Then M3 on branch `remake/m3-slice`: one soldier with the dual joysticks (Joypad,
-SoldierController, SoldierView), Chipmunk physics from the map tiles (PhysicsManager,
-MapManager::addStaticBodyShape), one weapon (Weapon + AK47), Projectile, Explosion, HUD.
+Run the M3 on-device check with the debug APK from the `Remake build` run of `remake/m3-slice`
+and merge M1, M2 then M3. Then M4 on `remake/m4-game`: all weapons and items (pick-ups, dual
+wield, grenades, melee, zoom), damage and death, all 15 maps, Training, Survival, Practice vs
+bots, Quick Play rules, AI soldiers and drones.

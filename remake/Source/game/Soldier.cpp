@@ -17,7 +17,7 @@ constexpr float kScale = rules::kPlayerScale;
 // Where the AK47's muzzle sits relative to the body centre (NEW: the original takes it from
 // the arm and weapon sprites, Weapon::getDesignFiringPoint; these match those sprites).
 constexpr Vec2 kShoulder{2.0f, 6.0f};
-constexpr float kMuzzleDistance = 22.0f;
+constexpr float kMuzzleDistance = 36.0f;  // barrel tip of ak47.png at playerScale
 }  // namespace
 
 // Chipmunk callbacks with access to the soldier's private state.

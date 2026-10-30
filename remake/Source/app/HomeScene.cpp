@@ -2,6 +2,7 @@
 
 #include "app/AssetViewerScene.h"
 #include "app/AudioSystem.h"
+#include "app/GameScene.h"
 #include "app/Platform.h"
 #include "app/Ui.h"
 #include "config/GameConfig.h"
@@ -30,7 +31,13 @@ bool HomeScene::init()
 
     // Button panel on the right, like the original menu (b03_top / mid / bot pieces).
     auto* menu = Menu::create(
-        ui::panelButton("b03_top.png", "QUICK PLAY", comingIn("Quick Play arrives with the first playable build (M3/M4)")),
+        // M3 slice: Outpost with the AK47 (the full Quick Play rules arrive in M4).
+        ui::panelButton("b03_top.png", "QUICK PLAY",
+                        [this, click](Object*) {
+                            click();
+                            if (auto* scene = GameScene::create(*assets::findMap("outpost")))
+                                _director->replaceScene(TransitionFade::create(0.4f, scene));
+                        }),
         ui::panelButton("b03_mid.png", "MULTIPLAYER", comingIn("Wi-Fi multiplayer arrives in M5")),
         ui::panelButton("b03_mid.png", "SOLO PLAY", comingIn("Training, Survival and Practice arrive in M4")),
         ui::panelButton("b03_mid.png", "SETTINGS", comingIn("Settings arrive in M6")),

@@ -98,6 +98,7 @@ constexpr float kKnobReturn     = 0.8f;   // released move knob: knob = 0.8 knob
 constexpr float kViewScaleSmoothing = 0.7f;     // scale = 0.7 scale + 0.3 weapon zoom
 constexpr float kReferenceAspect    = 16.0f / 9.0f;  // aspectCorrection = (w / h) / 1.7777778
 constexpr float kViewLeadSmoothing  = 0.025f;   // Stage::updateView
+constexpr int kMinViewLead          = 40;       // Stage::updateView uses the offset only above 40
 
 // ---- Weapons (Weapon::init, AK47::init, .data 0x943014 / 0x943018) -------------------------------
 struct WeaponDef
@@ -117,9 +118,10 @@ struct WeaponDef
     int meleeDamage;       // +0x19c
     float meleeLength;     // +0x1a0
     int ammoType;          // +0x188, picks the tracer trail
+    int viewOffset;        // +0x18c, how far the camera leads towards the aim (getViewOffset)
 };
 
-constexpr WeaponDef kAK47{"ak47.png", 10, 800.0f, 0.1f, 2.0f, 4.0f, 35, 200, 250, 1300.0f, 1, 1.0f, 30, 40.0f, 7};
+constexpr WeaponDef kAK47{"ak47.png", 10, 800.0f, 0.1f, 2.0f, 4.0f, 35, 200, 250, 1300.0f, 1, 1.0f, 30, 40.0f, 7, 90};
 
 constexpr int kTracerPool             = 30;    // ProjectileManager::addBodyShapeSprite
 constexpr float kTracerInheritVelocity = 0.8f;  // Tracer::reset: v = dir * speed + shooter v * 0.8
