@@ -42,9 +42,17 @@ continues from the next unfinished milestone. Private project: never publish to 
   the ARM assembly). `MapData` reads spawn points, weapon spawns and decorations in points.
 - `Source/audio/SoundBank.h`: the original 98 sound ids, names and groups (sound id = the number
   the original code passes to `Sound::playSound`), each mapped to its new file.
-- `Source/app/`: `AssetManager` (content scale, search paths, shared atlases, per-map texture
-  release, texture-memory readout), `MapView` (tiles + decorations in the original z order; also
-  the world layer for M3), `AudioSystem`, and the M2 test scene `AssetViewerScene`.
+- `Source/app/`: `AssetManager` (content scale, search paths, shared atlases loaded in the
+  background, per-map texture release, texture-memory readout), `MapView` (tiles + decorations
+  in the original z order; also the world layer for M3), `AudioSystem`, and the screens:
+  - `SplashScene`: the original title screen at once ("LOADING", then menu music and a blinking
+    "TOUCH TO START", like SplashLayer). Android's own splash (app icon) covers the native start.
+  - `HomeScene`: preview home screen from the original menu art (title art + blue button panel).
+    Quick Play / Multiplayer / Solo Play / Settings say which milestone brings them; ASSET CHECK
+    opens the viewer. Replaced by the modern menus in M6.
+  - `AssetViewerScene`: M2 asset check (opens on the whole map; the button row always fits).
+- Back gesture: predictive back is forwarded to the game only on game screens
+  (`AppActivity.setGameHandlesBack`); on the home screen the system back leaves the app.
 - Host tests: 13 cases / ~2200 checks, including the real `Content/`: every map in every
   resolution with its tileset and background, atlas textures, decoration frames, particle
   textures, every sound file present and listed with its licence.
@@ -115,9 +123,11 @@ libvorbis and the Python packages numpy and py7zr; downloads the CC0 packs once 
 `tools/sounds/.cache`, git-ignored).
 
 ### On-device check for M2 (debug APK)
-The app opens the asset viewer:
-1. Outpost appears at the original scale with its background, trees and bushes; drag pans,
-   pinch zooms (zoomed out you see the whole map). The top-left title is in the original font.
+0. Launch: app icon splash, then the original title screen with "LOADING" within ~1 s; the music
+   starts and "TOUCH TO START" blinks; a tap fades to the home screen. The four game buttons
+   show a "coming in Mx" message; ASSET CHECK opens the viewer; back gesture returns home.
+1. Outpost appears whole, with its background, trees and bushes; pinch in to the in-game scale,
+   drag to pan. The top-left title is in the original font; all 7 buttons fit on screen.
 2. NEXT/PREV go through all 15 maps; each has the right background (moon for Lunarcy, snow for
    Icebox/Snow Blind, desert for Pyramid/Catacombs/Overseer). "textures" stays roughly constant
    while switching (old maps are released).
@@ -150,6 +160,8 @@ Keep the file out of git (it is git-ignored); losing it means future updates can
   until then the system back gesture closes the app.
 - Axmol's profile asks for cmake 4.2+; `.axproj` pins CMake 3.31.6 exactly instead.
 - Do not run Axmol's own `setup.ps1`: `tools/fetch-axmol.sh` replaces it and changes nothing system-wide.
+- Axmol's CMake needs PowerShell at configure time: built into Windows and on GitHub runners;
+  on macOS/Linux install it first (`brew install powershell`).
 - Android 16+ local-network permission rules to be checked in M5.
 
 ## Next step

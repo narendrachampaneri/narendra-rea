@@ -23,3 +23,7 @@
 #-dontwarn android.webkit.WebView
 #-dontwarn android.net.http.SslError
 #-dontwarn android.webkit.WebViewClient
+# Called from native code through JNI (mm::app::platform::setGameHandlesBack)
+-keep class dev.axmol.app.AppActivity {
+    public static void setGameHandlesBack(boolean);
+}

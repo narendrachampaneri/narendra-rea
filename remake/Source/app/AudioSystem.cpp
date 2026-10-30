@@ -1,5 +1,8 @@
 #include "app/AudioSystem.h"
 
+#include <memory>
+
+#include "axmol.h"
 #include "audio/AudioEngine.h"
 
 using ax::AudioEngine;
@@ -13,11 +16,29 @@ AudioSystem& AudioSystem::get()
     return instance;
 }
 
-void AudioSystem::preloadEffects()
+void AudioSystem::preloadEffectsAsync(std::function<void()> done)
 {
+    auto remaining = std::make_shared<int>(0);
     for (const auto& s : audio::kSounds)
         if (!s.file.empty())
-            AudioEngine::preload(s.file);
+            ++*remaining;
+    if (*remaining == 0)
+    {
+        done();
+        return;
+    }
+    for (const auto& s : audio::kSounds)
+    {
+        if (s.file.empty())
+            continue;
+        AudioEngine::preload(s.file, [remaining, done](bool) {
+            // The engine may call back from its loader thread: count on the game thread.
+            ax::Director::getInstance()->getScheduler()->runOnAxmolThread([remaining, done] {
+                if (--*remaining == 0)
+                    done();
+            });
+        });
+    }
 }
 
 int AudioSystem::play(audio::SoundId id, float volume, bool loop)

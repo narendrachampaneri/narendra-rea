@@ -15,8 +15,10 @@ class AssetViewerScene : public ax::Scene
 {
 public:
     bool init() override;
+    void onEnter() override;
 
 private:
+    void goHome();
     void showMap(int index);
     void spawnEffect(const ax::Vec2& screenPos);
     void playNextSound();
@@ -41,6 +43,7 @@ private:
     int _soundIndex          = 0;
     bool _markers            = false;
     float _zoom              = 1.0f;
+    bool _leaving            = false;
 
     std::unordered_map<int, ax::Vec2> _touchStart;
     float _travel     = 0.0f;  // finger travel since touch began, to tell taps from drags

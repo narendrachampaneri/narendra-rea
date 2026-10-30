@@ -1,5 +1,7 @@
 #include "app/AssetManager.h"
 
+#include <memory>
+
 using namespace ax;
 
 namespace mm::app
@@ -20,11 +22,31 @@ void AssetManager::configure(assets::Resolution res)
     FileUtils::getInstance()->setSearchPaths({std::string(assets::folder(res)), "files", ""});
 }
 
-void AssetManager::loadSharedAtlases()
+void AssetManager::loadSharedAtlasesAsync(std::function<void()> done)
 {
-    auto* frames = SpriteFrameCache::getInstance();
-    frames->addSpriteFramesWithFile("menuTexture.plist");
-    frames->addSpriteFramesWithFile("partsTexture.plist");
+    if (_atlasesLoaded)
+    {
+        done();
+        return;
+    }
+    static constexpr const char* kAtlases[] = {"menuTexture", "partsTexture"};
+    auto remaining = std::make_shared<int>(static_cast<int>(std::size(kAtlases)));
+    for (const char* name : kAtlases)
+    {
+        const std::string base = name;
+        // addImageAsync calls back on the game thread once the texture is uploaded.
+        Director::getInstance()->getTextureCache()->addImageAsync(base + ".png", [this, base, remaining, done](Texture2D* tex) {
+            if (tex)
+                SpriteFrameCache::getInstance()->addSpriteFramesWithFile(base + ".plist", tex);
+            else
+                AXLOGE("cannot load {}.png", base);
+            if (--*remaining == 0)
+            {
+                _atlasesLoaded = true;
+                done();
+            }
+        });
+    }
 }
 
 const assets::MapData& AssetManager::mapData(const assets::MapDef& def)

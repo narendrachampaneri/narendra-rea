@@ -6,7 +6,10 @@
 
 #include "app/AssetManager.h"
 #include "app/AudioSystem.h"
+#include "app/HomeScene.h"
 #include "app/MapView.h"
+#include "app/Platform.h"
+#include "app/Ui.h"
 #include "assets/MapCatalog.h"
 #include "assets/Resolution.h"
 
@@ -24,17 +27,9 @@ constexpr std::array<const char*, 10> kEffects = {"Blood",  "Grass", "HeavySmoke
 
 constexpr float kMaxZoom = 2.5f;
 
-// The original's bitmap font: font02_new.png, 32x32 point cells from ' ' (CCLabelAtlas).
-LabelAtlas* atlasLabel(std::string_view text, float scale)
-{
-    auto* label = LabelAtlas::create(text, "font02_new.png", 32, 32, ' ');
-    label->setScale(scale);
-    return label;
-}
-
 MenuItemLabel* button(std::string_view text, const ccMenuCallback& onTap)
 {
-    auto* item = MenuItemLabel::create(atlasLabel(text, 0.5f), onTap);
+    auto* item = MenuItemLabel::create(ui::atlasLabel(text), onTap);
     item->setColor(Color3B(255, 236, 160));
     return item;
 }
@@ -45,55 +40,76 @@ bool AssetViewerScene::init()
     if (!Scene::init())
         return false;
 
-    const auto safe = _director->getSafeAreaRect();
+    const auto visible = _director->getVisibleSize();
+    const auto origin  = _director->getVisibleOrigin();
+    const auto safe    = _director->getSafeAreaRect();
 
     _camera = Node::create();
     addChild(_camera, 0);
 
     // HUD: kept inside the safe area so camera cutouts never hide it.
-    _title = atlasLabel("", 0.6f);
+    _title = ui::atlasLabel("");
+    _title->setScale(0.45f);
     _title->setAnchorPoint(Vec2::ANCHOR_TOP_LEFT);
     _title->setPosition(safe.getMinX() + 8, safe.getMaxY() - 6);
     addChild(_title, 10);
 
-    _info = Label::createWithTTF("", "fonts/arial.ttf", 11);
+    _info = Label::createWithTTF("", "fonts/arial.ttf", 10);
     _info->setAnchorPoint(Vec2::ANCHOR_TOP_LEFT);
-    _info->setPosition(safe.getMinX() + 8, safe.getMaxY() - 30);
+    _info->setPosition(safe.getMinX() + 8, safe.getMaxY() - 24);
     _info->enableOutline(Color4B::BLACK, 1);
     addChild(_info, 10);
 
-    _selection = Label::createWithTTF("", "fonts/digitalix.ttf", 12);
+    _selection = Label::createWithTTF("", "fonts/digitalix.ttf", 11);
     _selection->setAnchorPoint(Vec2::ANCHOR_TOP_LEFT);
-    _selection->setPosition(safe.getMinX() + 8, safe.getMaxY() - 46);
+    _selection->setPosition(safe.getMinX() + 8, safe.getMaxY() - 38);
     _selection->setTextColor(Color4B(140, 255, 140, 255));
+    _selection->enableOutline(Color4B::BLACK, 1);
     addChild(_selection, 10);
 
-    auto* brand = Label::createWithTTF("Mini Militia by Kadiyafali", "fonts/GROBOLD.ttf", 14);
+    auto* brand = Label::createWithTTF("Mini Militia by Kadiyafali", "fonts/GROBOLD.ttf", 12);
     brand->setAnchorPoint(Vec2::ANCHOR_TOP_RIGHT);
     brand->setPosition(safe.getMaxX() - 8, safe.getMaxY() - 6);
     brand->enableOutline(Color4B::BLACK, 1);
     addChild(brand, 10);
 
-    auto* menu = Menu::create(
-        button("PREV", [this](Object*) { showMap((_mapIndex + static_cast<int>(kMaps.size()) - 1) % kMaps.size()); }),
-        button("NEXT", [this](Object*) { showMap((_mapIndex + 1) % kMaps.size()); }),
-        button("FX", [this](Object*) {
-            _effectIndex = (_effectIndex + 1) % static_cast<int>(kEffects.size());
-            refreshInfo(0);
-        }),
-        button("SOUND", [this](Object*) { playNextSound(); }),
-        button("MUSIC", [](Object*) {
-            auto& audio = AudioSystem::get();
-            audio.isMusicPlaying() ? audio.stopMusic() : audio.playMusic();
-        }),
-        button("SPAWNS", [this](Object*) {
-            _markers = !_markers;
-            if (_map)
-                _map->setMarkersVisible(_markers);
-        }),
-        nullptr);
-    menu->alignItemsHorizontallyWithPadding(18);
-    menu->setPosition(safe.getMidX(), safe.getMinY() + 14);
+    // Bottom bar: the buttons are scaled so the whole row always fits the screen width.
+    constexpr float kBarHeight = 30.0f;
+    auto* bar = LayerColor::create(Color4B(0, 0, 0, 120), visible.width, safe.getMinY() - origin.y + kBarHeight);
+    bar->setPosition(origin);
+    addChild(bar, 9);
+
+    Vector<MenuItem*> items;
+    items.pushBack(button("BACK", [this](Object*) { goHome(); }));
+    items.pushBack(button("PREV", [this](Object*) {
+        showMap((_mapIndex + static_cast<int>(kMaps.size()) - 1) % static_cast<int>(kMaps.size()));
+    }));
+    items.pushBack(button("NEXT", [this](Object*) { showMap((_mapIndex + 1) % static_cast<int>(kMaps.size())); }));
+    items.pushBack(button("FX", [this](Object*) {
+        _effectIndex = (_effectIndex + 1) % static_cast<int>(kEffects.size());
+        refreshInfo(0);
+    }));
+    items.pushBack(button("SOUND", [this](Object*) { playNextSound(); }));
+    items.pushBack(button("MUSIC", [](Object*) {
+        auto& audio = AudioSystem::get();
+        audio.isMusicPlaying() ? audio.stopMusic() : audio.playMusic();
+    }));
+    items.pushBack(button("SPAWNS", [this](Object*) {
+        _markers = !_markers;
+        if (_map)
+            _map->setMarkersVisible(_markers);
+    }));
+    constexpr float kPadding = 14.0f;
+    float textWidth          = 0.0f;
+    for (auto* item : items)
+        textWidth += item->getContentSize().width;
+    const float available = safe.size.width - 16.0f - kPadding * (items.size() - 1);
+    const float scale     = std::min(0.42f, available / textWidth);
+    for (auto* item : items)
+        item->setScale(scale);
+    auto* menu = Menu::createWithArray(items);
+    menu->alignItemsHorizontallyWithPadding(kPadding);
+    menu->setPosition(safe.getMidX(), safe.getMinY() + kBarHeight / 2);
     addChild(menu, 10);
 
     auto* touch           = EventListenerTouchAllAtOnce::create();
@@ -110,10 +126,32 @@ bool AssetViewerScene::init()
     };
     _eventDispatcher->addEventListenerWithSceneGraphPriority(mouse, this);
 
+    // Android back gesture (forwarded by AppActivity) and Esc on desktop return to the home screen.
+    auto* keys          = EventListenerKeyboard::create();
+    keys->onKeyReleased = [this](EventKeyboard::KeyCode code, Event*) {
+        if (code == EventKeyboard::KeyCode::KEY_BACK || code == EventKeyboard::KeyCode::KEY_ESCAPE)
+            goHome();
+    };
+    _eventDispatcher->addEventListenerWithSceneGraphPriority(keys, this);
+
     showMap(0);
-    AudioSystem::get().playMusic();
     schedule(AX_CALLBACK_1(AssetViewerScene::refreshInfo, this), 0.5f, "info");
     return true;
+}
+
+void AssetViewerScene::onEnter()
+{
+    Scene::onEnter();
+    platform::setGameHandlesBack(true);
+}
+
+void AssetViewerScene::goHome()
+{
+    if (_leaving)
+        return;
+    _leaving = true;
+    AudioSystem::get().play(audio::SoundId::Grenade2);
+    _director->replaceScene(TransitionFade::create(0.4f, utils::createInstance<HomeScene>()));
 }
 
 void AssetViewerScene::showMap(int index)
@@ -145,12 +183,10 @@ void AssetViewerScene::showMap(int index)
     _map->setMarkersVisible(_markers);
     _camera->addChild(_map);
 
-    // Start at the original 1:1 scale, looking at the first spawn point.
-    _zoom = 1.0f;
+    // Open on the whole map; pinch in to see it at the in-game scale (zoom 1 or more).
+    _zoom = minZoom();
     _camera->setScale(_zoom);
-    const auto spawns = _map->data().objectsWithPrefix("sp_");
-    const Vec2 look   = spawns.empty() ? Vec2(_map->getContentSize() / 2) : Vec2(spawns.front()->x, spawns.front()->y);
-    _camera->setPosition(origin + visible / 2 - look);
+    _camera->setPosition(origin + visible / 2 - Vec2(_map->getContentSize() / 2) * _zoom);
     clampCamera();
 
     // The original only ever wrote upper case with this bitmap font.

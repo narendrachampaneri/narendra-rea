@@ -26,8 +26,8 @@
 #include "AppDelegate.h"
 
 #include "app/AssetManager.h"
-#include "app/AssetViewerScene.h"
 #include "app/AudioSystem.h"
+#include "app/SplashScene.h"
 #include "assets/Resolution.h"
 
 #if _AX_TESTS
@@ -87,11 +87,10 @@ bool AppDelegate::applicationDidFinishLaunching()
     // Art resolution: the original rule for now; Settings > Graphics quality overrides it in M7.
     const auto frame = renderView->getFrameSize();
     mm::app::AssetManager::get().configure(mm::assets::chooseOriginal(frame.width, frame.height));
-    mm::app::AssetManager::get().loadSharedAtlases();
-    mm::app::AudioSystem::get().preloadEffects();
 
 #if !_AX_TESTS
-    director->runWithScene(utils::createInstance<mm::app::AssetViewerScene>());
+    // The title screen shows at once; atlases and sounds load behind it.
+    director->runWithScene(utils::createInstance<mm::app::SplashScene>());
 #endif
 
     return true;

@@ -27,10 +27,14 @@ package dev.axmol.app;
 
 import android.os.Bundle;
 import dev.axmol.lib.AxmolActivity;
+import dev.axmol.lib.AxmolGLSurfaceView;
 import dev.axmol.lib.SharedLoader;
 import android.os.Build;
+import android.view.KeyEvent;
 import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
+import android.window.OnBackInvokedCallback;
+import android.window.OnBackInvokedDispatcher;
 
 public class AppActivity extends AxmolActivity {
     static {
@@ -58,7 +62,49 @@ public class AppActivity extends AxmolActivity {
             getWindow().setAttributes(lp);
         }
         // DO OTHER INITIALIZATION BELOW
-        
+        sInstance = this;
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (sInstance == this) {
+            sInstance = null;
+        }
+        super.onDestroy();
+    }
+
+    // Predictive back (targetSdk 36): the system only sends back to the game while a game screen
+    // asks for it; on the home screen the system's own back (to the launcher) runs.
+    private static AppActivity sInstance;
+    private boolean mBackRegistered = false;
+    private final OnBackInvokedCallback mBackCallback = this::sendBackToGame;
+
+    /** Called from native code (mm::app::platform::setGameHandlesBack) on the GL thread. */
+    public static void setGameHandlesBack(final boolean handles) {
+        final AppActivity activity = sInstance;
+        if (activity != null) {
+            activity.runOnUiThread(() -> activity.updateBackCallback(handles));
+        }
+    }
+
+    private void updateBackCallback(boolean handles) {
+        OnBackInvokedDispatcher dispatcher = getOnBackInvokedDispatcher();
+        if (handles && !mBackRegistered) {
+            dispatcher.registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT, mBackCallback);
+            mBackRegistered = true;
+        } else if (!handles && mBackRegistered) {
+            dispatcher.unregisterOnBackInvokedCallback(mBackCallback);
+            mBackRegistered = false;
+        }
+    }
+
+    private void sendBackToGame() {
+        // The engine's view forwards KEYCODE_BACK to the game as EventKeyboard::KeyCode::KEY_BACK.
+        AxmolGLSurfaceView view = getGLSurfaceView();
+        if (view != null) {
+            view.onKeyDown(KeyEvent.KEYCODE_BACK, new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
+            view.onKeyUp(KeyEvent.KEYCODE_BACK, new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
+        }
     }
 
 }

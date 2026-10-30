@@ -1,6 +1,7 @@
 // Plays the sound set by original sound id (audio/SoundBank.h) and the menu music.
 #pragma once
 
+#include <functional>
 #include <string_view>
 
 #include "audio/SoundBank.h"
@@ -16,8 +17,9 @@ public:
     static AudioSystem& get();
 
     // Decodes every effect up front so the first shot never stutters (the original preloaded
-    // its whole bank in Sound::loadSoundBuffers).
-    void preloadEffects();
+    // its whole bank in Sound::loadSoundBuffers). Decoding runs off the game thread; `done`
+    // runs on the game thread when every file is ready.
+    void preloadEffectsAsync(std::function<void()> done);
 
     // Returns a handle for stop(), or kNone when the id has no sound or effects are muted.
     int play(audio::SoundId id, float volume = 1.0f, bool loop = false);

@@ -8,6 +8,9 @@
 namespace mm::config
 {
 
+// ---- Build ------------------------------------------------------------------------------
+constexpr const char* kVersionLabel = "v0.2.1 preview (M2)";  // shown on the title screen
+
 // ---- Simulation -------------------------------------------------------------------------
 constexpr float kPhysicsStep = 1.0f / 60.0f;  // NEW: fixed step; the original steps Box2D per frame
 constexpr int kMaxStepsPerFrame = 5;          // NEW: spiral-of-death guard

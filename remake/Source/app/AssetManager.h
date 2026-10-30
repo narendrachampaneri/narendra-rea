@@ -4,6 +4,7 @@
 //  - map textures (tileset, background) only while a map is shown.
 #pragma once
 
+#include <functional>
 #include <string>
 #include <unordered_map>
 
@@ -26,7 +27,9 @@ public:
     assets::Resolution resolution() const { return _resolution; }
 
     // menuTexture.plist / partsTexture.plist (AppDelegate::loadTextures in the original).
-    void loadSharedAtlases();
+    // The big textures decode on a worker thread; `done` runs on the game thread.
+    void loadSharedAtlasesAsync(std::function<void()> done);
+    bool sharedAtlasesLoaded() const { return _atlasesLoaded; }
 
     // Map objects (spawns, weapon spawns, decorations) in points. Always read from the sd file
     // so every device in a Wi-Fi match sees the same spawns, whatever art resolution it draws.
@@ -41,6 +44,7 @@ public:
 
 private:
     assets::Resolution _resolution = assets::Resolution::HDR;
+    bool _atlasesLoaded            = false;
     std::unordered_map<std::string, assets::MapData> _mapData;
 };
 
