@@ -120,6 +120,13 @@ if(_AX_TESTS)
 endif()
 
 # Add any libraries you need to link to the project after this point
+# Source/game drives Chipmunk directly (the original's physics engine) and Source/assets
+# inflates the maps' collision layer with zlib; both ship with Axmol's 3rdparty.
+foreach(_lib chipmunk zlib)
+  if(TARGET ${_lib})
+    target_link_libraries(${APP_NAME} ${_lib})
+  endif()
+endforeach()
 
 # Default Platform-specific setup
 include(AXGamePlatformSetup)

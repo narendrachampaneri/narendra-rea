@@ -2,6 +2,7 @@
 // "objects" layer (spawn points sp_*, weapon spawns wp_*, decorations sprite*).
 #pragma once
 
+#include <cstdint>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -31,6 +32,9 @@ struct MapData
     std::string tileset;  // external .tsx file name
     std::vector<std::string> layers;
     std::vector<MapObject> objects;
+    // GIDs of the "tile" layer (the one MapManager builds collision from), row 0 at the top,
+    // flip flags removed. Empty if the layer is missing or cannot be decoded.
+    std::vector<std::uint32_t> collisionGids;
 
     float widthPoints() const { return widthTiles * kTilePoints; }
     float heightPoints() const { return heightTiles * kTilePoints; }
