@@ -155,7 +155,8 @@ Keep the file out of git (it is git-ignored); losing it means future updates can
 - The authoring sandbox cannot run Gradle (no Android SDK); builds are verified by GitHub Actions. Not yet run on a phone.
 - Spoken lines have no new recordings except "cover me", "ready", "go go go" and "target
   destroyed" (CC0 Kenney voiceover). Sarge's ~40 training lines and the other taunts are silent
-  for now (their ids exist with an empty file); decision pending with the owner.
+  (their ids exist with an empty file). Owner's decision: leave them silent; the owner will say
+  when voice is wanted. Do not ask again.
 - Predictive back (targetSdk 36) needs an `OnBackInvokedCallback` forwarded to the game (M6);
   until then the system back gesture closes the app.
 - Axmol's profile asks for cmake 4.2+; `.axproj` pins CMake 3.31.6 exactly instead.
