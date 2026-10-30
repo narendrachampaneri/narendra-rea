@@ -313,3 +313,36 @@ TEST_CASE("Joypad: pads, knobs and the fire edge")
     pad.touchEnded(3);
     CHECK_FALSE(pad.fire());
 }
+
+#include "game/Weapons.h"
+
+TEST_CASE("Weapon table: original values and sprites")
+{
+    const auto& ak = weaponInfo(WeaponId::AK47).def;
+    CHECK(ak.damage == rules::kAK47.damage);
+    CHECK(ak.clip == rules::kAK47.clip);
+    CHECK(ak.fireInterval == rules::kAK47.fireInterval);
+    CHECK(ak.viewOffset == rules::kAK47.viewOffset);
+    CHECK(weaponInfo(WeaponId::Shotgun).def.roundsPerFire == 6);
+    CHECK(weaponInfo(WeaponId::Sniper).zoomCount == 4);
+    CHECK(weaponInfo(WeaponId::Sniper).def.damage == 75);
+    CHECK(weaponInfo(WeaponId::M16).burstInterval == doctest::Approx(0.06f));
+    CHECK(weaponInfo(WeaponId::RiotShield).dualOnly);
+    CHECK(weaponInfo(WeaponId::Machete).melee);
+
+    std::ifstream in(std::string(MM_CONTENT_DIR) + "/sd/menuTexture.plist");
+    std::stringstream ss;
+    ss << in.rdbuf();
+    const std::string atlas = ss.str();
+    for (const auto& w : kWeapons)
+    {
+        CAPTURE(w.name);
+        CHECK(static_cast<int>(w.id) == static_cast<int>(&w - kWeapons.data()));
+        CHECK(atlas.find("<key>" + std::string(w.def.sprite) + "</key>") != std::string::npos);
+        CHECK(w.def.weight <= 1.0f);
+        CHECK(w.zoomCount >= 1);
+        CHECK(w.zooms[0] == 1.0f);
+        if (!w.melee)
+            CHECK(w.def.clip > 0);
+    }
+}
