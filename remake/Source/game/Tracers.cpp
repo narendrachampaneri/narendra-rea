@@ -7,7 +7,8 @@
 namespace mm::game
 {
 
-void TracerPool::fire(Vec2 from, float cocosAngle, Vec2 shooterVelocity, const rules::WeaponDef& weapon)
+void TracerPool::fire(Vec2 from, float cocosAngle, Vec2 shooterVelocity, const rules::WeaponDef& weapon,
+                      int owner, std::uint32_t layers)
 {
     if (_next >= static_cast<int>(_pool.size()))
         _next = 0;
@@ -20,6 +21,8 @@ void TracerPool::fire(Vec2 from, float cocosAngle, Vec2 shooterVelocity, const r
     t.range     = weapon.range;
     t.damage    = weapon.damage;
     t.ammoType  = weapon.ammoType;
+    t.owner     = owner;
+    t.layers    = layers;
     t.velocity  = fromCocosAngle(cocosAngle) * weapon.bulletSpeed + shooterVelocity * rules::kTracerInheritVelocity;
 }
 
@@ -28,7 +31,7 @@ int TracerPool::activeCount() const
     return static_cast<int>(std::count_if(_pool.begin(), _pool.end(), [](const Tracer& t) { return t.active; }));
 }
 
-void TracerPool::updateStep(float dt, const Physics& physics, EventQueue& events)
+void TracerPool::updateStep(float dt, const Physics& physics, EventQueue& events, const TracerHit& onHit)
 {
     for (Tracer& t : _pool)
     {
@@ -56,10 +59,19 @@ void TracerPool::updateStep(float dt, const Physics& physics, EventQueue& events
         }
         t.fresh = false;
 
-        // Tracer::checkCollision: the map, and what host bullets may hit (nothing yet in M3).
+        // Tracer::checkCollision: the map, and what this bullet may hit.
         const auto wall   = physics.segmentQuery(t.prev, t.pos, rules::kTracerMapLayers);
-        const auto target = physics.segmentQuery(t.prev, t.pos, rules::kHostBulletLayers);
+        const auto target = physics.segmentQuery(t.prev, t.pos, t.layers);
         const bool targetIsItem = target && cpShapeGetCollisionType(target.shape) == rules::kItemCollision;
+        if (target && !targetIsItem && (!wall || target.alpha < wall.alpha) && onHit)
+        {
+            if (onHit(t, target.shape, target.point))
+            {
+                t.pos    = target.point;
+                t.active = false;
+                continue;
+            }
+        }
         if (wall && (!target || targetIsItem || wall.alpha <= target.alpha))
         {
             // Tracer::onSpark: the bullet stops on the wall and throws sparks.

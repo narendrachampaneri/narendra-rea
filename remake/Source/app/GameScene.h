@@ -37,6 +37,10 @@ private:
     void updateHud();
     void spawnSpark(const game::Vec2& pos, const game::Vec2& normal);
     void spawnExplosion(const game::Vec2& pos);
+    void spawnBlood(const game::Vec2& pos, int amount);
+    void syncFighters(float dt);
+    void syncRagdolls();
+    float soundVolumeAt(const game::Vec2& pos) const;
     void setPaused(bool paused);
     void quit();
 
@@ -52,7 +56,9 @@ private:
 
     ax::Node* _scaleLayer   = nullptr;  // the original's scaleLayer: centred, zoomed
     MapView* _map           = nullptr;  // the world layer
-    SoldierView* _soldier   = nullptr;
+    SoldierView* _soldier   = nullptr;  // the local player's view
+    std::unordered_map<int, SoldierView*> _bots;  // fighter id -> view
+    std::unordered_map<const game::Ragdoll*, ax::Node*> _ragdollViews;
     std::vector<ax::Sprite*> _tracers;
     std::vector<ax::Sprite*> _sparks;
     std::size_t _nextSpark  = 0;
@@ -79,8 +85,6 @@ private:
 
     bool _paused        = false;
     bool _leaving       = false;
-    float _respawnTimer = -1.0f;
-    int _nextSpawn      = 1;
 };
 
 }  // namespace mm::app

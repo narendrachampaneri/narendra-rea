@@ -16,6 +16,7 @@ enum class EventType
     Spark,      // bullet hit the map at `pos`, surface normal `dir`
     Explosion,  // explosion effect at `pos`
     Death,      // soldier died at `pos`
+    Blood,      // a bullet hit a soldier at `pos`, flying along `dir`
 };
 
 struct GameEvent
@@ -24,6 +25,7 @@ struct GameEvent
     audio::SoundId sound = audio::SoundId::Dryfire;
     float volume = 1.0f;
     Vec2 pos, dir;
+    int fighter = -1;  // who caused it, when it matters (shots)
 };
 
 using EventQueue = std::vector<GameEvent>;

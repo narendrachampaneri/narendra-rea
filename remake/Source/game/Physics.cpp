@@ -7,8 +7,13 @@ namespace mm::game
 
 void setLegacyCollision(cpShape* shape, std::uint32_t v)
 {
-    cpShapeSetCollisionType(shape, v);
-    cpShapeSetFilter(shape, cpShapeFilterNew(static_cast<cpGroup>(v), v, v));
+    setLegacyCollision(shape, v, v);
+}
+
+void setLegacyCollision(cpShape* shape, std::uint32_t typeAndGroup, std::uint32_t layers)
+{
+    cpShapeSetCollisionType(shape, typeAndGroup);
+    cpShapeSetFilter(shape, cpShapeFilterNew(static_cast<cpGroup>(typeAndGroup), layers, layers));
 }
 
 Physics::Physics() : _space(cpSpaceNew())

@@ -20,6 +20,10 @@ constexpr float kMaxFrameDt     = 0.25f;  // the original clamps its frame time
 constexpr std::uint32_t kMapCollision     = 0x143;  // MapManager::addStaticBodyShape (type, group, layers)
 constexpr std::uint32_t kSoldierCollision = 0x15;   // SoldierHostController::setCollision(0x15)
 constexpr std::uint32_t kRemoteCollision  = 0x84;   // remote players (M5)
+// NEW: the remake's bots are 0x84 soldiers that also stand on the map. Remote players never
+// needed map collision (their positions came over the network), so 0x84 shares no layer
+// with the map (0x143); bots add the map's bit 0, which the local player (0x15) has too.
+constexpr std::uint32_t kBotLayers        = kRemoteCollision | 0x01;
 constexpr std::uint32_t kEnemyCollision   = 0x241;  // drones / enemies (M4)
 constexpr std::uint32_t kItemCollision    = 0x0d;   // weapons lying on the map (M4)
 
@@ -129,6 +133,7 @@ constexpr float kTracerFade           = 100.0f;
 // Segment-query layers (Tracer::checkCollision): the map, then what host bullets can hit.
 constexpr std::uint32_t kTracerMapLayers  = 0x100;
 constexpr std::uint32_t kHostBulletLayers = 0x288;  // remote players, enemies, items; never yourself
+constexpr std::uint32_t kRemoteBulletLayers = 0x198; // bullets of type 0x104: the host and remote players
 
 // ---- Explosion (Explosion::reset / updateStep) ------------------------------------------------
 constexpr float kExplosionFlashTime = 0.15f;

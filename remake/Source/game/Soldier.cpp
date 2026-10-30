@@ -104,15 +104,20 @@ struct SoldierCallbacks
 
 void Soldier::installCollisionHandlers(cpSpace* space)
 {
-    cpCollisionHandler* h = cpSpaceAddCollisionHandler(space, rules::kMapCollision, rules::kSoldierCollision);
-    h->beginFunc     = SoldierCallbacks::begin;
-    h->preSolveFunc  = SoldierCallbacks::preSolve;
-    h->postSolveFunc = SoldierCallbacks::postSolve;
+    // The local player (0x15) and everyone else (0x84) follow the same map rules.
+    for (std::uint32_t type : {rules::kSoldierCollision, rules::kRemoteCollision})
+    {
+        cpCollisionHandler* h = cpSpaceAddCollisionHandler(space, rules::kMapCollision, type);
+        h->beginFunc     = SoldierCallbacks::begin;
+        h->preSolveFunc  = SoldierCallbacks::preSolve;
+        h->postSolveFunc = SoldierCallbacks::postSolve;
+    }
 }
 
-Soldier::Soldier(Physics& physics, Vec2 spawn, float gravityFactor, EventQueue& events)
-    : _physics(physics), _events(events), _gravityFactor(gravityFactor),
-      _weapon(std::make_unique<Weapon>(rules::kAK47))
+Soldier::Soldier(Physics& physics, Vec2 spawn, float gravityFactor, EventQueue& events, int id,
+                 std::uint32_t collision, WeaponId weapon)
+    : _physics(physics), _events(events), _gravityFactor(gravityFactor), _id(id), _collision(collision),
+      _weapon(std::make_unique<Weapon>(weaponInfo(weapon).def))
 {
     cpSpace* space = physics.space();
     _body = cpSpaceAddBody(space, cpBodyNew(rules::kSoldierMass, rules::kSoldierMoment));
@@ -127,13 +132,14 @@ Soldier::Soldier(Physics& physics, Vec2 spawn, float gravityFactor, EventQueue& 
     cpShapeSetElasticity(_box, rules::kBodyElasticity);
     cpShapeSetFriction(_box, rules::kBodyFriction);
     cpShapeSetUserData(_box, this);
-    setLegacyCollision(_box, rules::kSoldierCollision);
+    const std::uint32_t layers = _collision == rules::kRemoteCollision ? rules::kBotLayers : _collision;
+    setLegacyCollision(_box, _collision, layers);
 
     _head = cpSpaceAddShape(space, cpCircleShapeNew(_body, rules::kHeadRadius * kScale, ::cpv(0, rules::kHeadY * kScale)));
     cpShapeSetElasticity(_head, rules::kHeadElasticity);
     cpShapeSetFriction(_head, rules::kHeadFriction);
     cpShapeSetUserData(_head, this);
-    setLegacyCollision(_head, rules::kSoldierCollision);
+    setLegacyCollision(_head, _collision, layers);
 
     _gravity = Vec2{0.0f, rules::kGravityIdle} * _gravityFactor;
 }
@@ -164,6 +170,53 @@ Vec2 Soldier::muzzlePosition() const
 {
     const Vec2 shoulder{facingRight() ? kShoulder.x : -kShoulder.x, kShoulder.y};
     return position() + shoulder + fromCocosAngle(_fireAngle) * kMuzzleDistance;
+}
+
+void Soldier::addDamage(float amount, int attacker, int ammoType)
+{
+    if (_invincible || _dead)
+        return;
+    if (_health > 0.0f)
+    {
+        _lastAttacker = attacker;
+        _lastAmmoType = ammoType;
+        // Hit sound louder for bigger hits: 0.75 + damage / 120, between 1.25 and 2 (x the
+        // effects volume, so it is capped at full volume here).
+        const float loud = amount * 0.25f / 30.0f;
+        const float volume = loud >= 0.5f ? std::min(loud + 0.75f, 2.0f) : 1.25f;
+        emitSound(SoundId::Impale, std::min(volume / 2.0f, 1.0f));
+    }
+    _health = std::max(0.0f, _health - amount);
+}
+
+void Soldier::checkDeath()
+{
+    if (_health > 0.0f)
+        return;
+    if (!_dead)
+    {
+        _dead = true;
+        GameEvent e{EventType::Death};
+        e.pos     = position();
+        e.dir     = velocity();
+        e.fighter = _id;
+        _events.push_back(e);
+        emitSound(static_cast<SoundId>(static_cast<int>(SoundId::Death1) + (_id % 5)));
+    }
+    _touching = _jetting = false;
+    _thrustFactor = 0.0f;
+}
+
+void Soldier::deactivate()
+{
+    if (_deactivated)
+        return;
+    _deactivated = true;
+    for (cpShape* shape : {_box, _head})
+        cpShapeSetFilter(shape, CP_SHAPE_FILTER_NONE);
+    cpBodySetVelocity(_body, cpvzero);
+    cpBodySetAngularVelocity(_body, 0.0);
+    cpBodySetType(_body, CP_BODY_TYPE_KINEMATIC);
 }
 
 void Soldier::emitSound(SoundId id, float volume)
@@ -247,19 +300,7 @@ void Soldier::updateStep(float dt, const PadState& pad)
     const Vec2 p = position();
     if (p.y < rules::kWorldMinY || p.y >= rules::kWorldMaxY || p.x >= rules::kWorldMaxX || p.x < rules::kWorldMinX)
         _health -= 1.0f;
-    if (_health <= 0.0f)
-    {
-        if (!_dead)
-        {
-            _dead = true;
-            GameEvent e{EventType::Death};
-            e.pos = p;
-            _events.push_back(e);
-            emitSound(SoundId::Death1);
-        }
-        _touching = _jetting = false;
-        _thrustFactor = 0.0f;
-    }
+    checkDeath();
 
     if (_regenTimer >= rules::kRegenRate && !_dead)
     {

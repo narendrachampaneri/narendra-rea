@@ -18,6 +18,7 @@ inline Vec2 toVec(cpVect v) { return {static_cast<float>(v.x), static_cast<float
 
 // Chipmunk 5 (type, group, layers) for a shape, the way the original set all three.
 void setLegacyCollision(cpShape* shape, std::uint32_t typeGroupLayers);
+void setLegacyCollision(cpShape* shape, std::uint32_t typeAndGroup, std::uint32_t layers);
 
 class Physics
 {

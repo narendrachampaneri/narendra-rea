@@ -346,3 +346,144 @@ TEST_CASE("Weapon table: original values and sprites")
             CHECK(w.def.clip > 0);
     }
 }
+
+namespace
+{
+// Lands the player on Outpost, then puts a bot on the same level with a clear line between
+// them, `distance` points away. Returns the bot id and sets `aim` to the angle towards it.
+int duelSetup(Match& m, float distance, float& aim)
+{
+    const int bot = m.addBot("Bot");
+    for (int spawn = 0; spawn < m.spawnCount(); ++spawn)
+    {
+        m.respawn(spawn);
+        run(m, idle(), 4.0f);
+        for (float dx : {distance, -distance})
+        {
+            Soldier& b      = *m.fighter(bot)->soldier;
+            const Vec2 from = m.player().position() + Vec2{0, 6};
+            if (m.physics().segmentQuery(from, from + Vec2{dx, 0}, rules::kTracerMapLayers))
+                continue;
+            cpBodySetPosition(b.body(), cpv(m.player().position() + Vec2{dx, 0}));
+            cpBodySetVelocity(b.body(), cpvzero);
+            run(m, idle(), 1.0f);
+            if (std::fabs(b.position().y - m.player().position().y) < 3.0f &&
+                std::fabs(b.position().x - m.player().position().x - dx) < 3.0f)
+            {
+                aim = dx > 0 ? 0.0f : 180.0f;
+                return bot;
+            }
+        }
+    }
+    FAIL("no level spot next to the player");
+    return bot;
+}
+
+PadState shootAt(float angle)
+{
+    PadState p   = idle();
+    p.aimAngle   = angle;
+    p.firing     = true;
+    return p;
+}
+}  // namespace
+
+TEST_CASE("Player bullets kill a bot: kill credit, ragdoll, respawn after 9 s")
+{
+    const auto data = loadMap("1outpost_new.tmx");
+    Match m(*assets::findMap("outpost"), data);
+    float aim     = 0.0f;
+    const int bot = duelSetup(m, 90.0f, aim);
+    REQUIRE(m.fighter(bot)->alive());
+    bool blood = false;
+    for (int i = 0; i < 180 && m.fighter(bot)->alive(); ++i)
+    {
+        m.step(kDt, shootAt(aim));
+        for (const auto& e : m.takeEvents())
+            blood |= e.type == EventType::Blood;
+    }
+    CHECK(blood);
+    CHECK_FALSE(m.fighter(bot)->alive());
+    CHECK(m.fighter(bot)->deaths == 1);
+    CHECK(m.playerFighter().kills == 1);
+    CHECK(m.playerFighter().deaths == 0);
+    CHECK(m.player().health() == doctest::Approx(100.0f));  // own bullets never hit the shooter
+    CHECK(m.ragdolls().size() == 1);
+
+    run(m, idle(), 5.5f);
+    CHECK(m.ragdolls().empty());  // gone after 5 s
+    CHECK_FALSE(m.fighter(bot)->alive());
+    run(m, idle(), 4.0f);
+    CHECK(m.fighter(bot)->alive());  // back after 9 s
+    CHECK(m.fighter(bot)->soldier->health() == doctest::Approx(100.0f));
+}
+
+TEST_CASE("Headshots on bots do 50 % more; a crouching head lets bullets pass")
+{
+    const auto data = loadMap("1outpost_new.tmx");
+    Match m(*assets::findMap("outpost"), data);
+    float aim     = 0.0f;
+    const int bot = duelSetup(m, 90.0f, aim);
+    Soldier& b    = *m.fighter(bot)->soldier;
+    const float up = aim == 0.0f ? 354.0f : 186.0f;  // 6 degrees up, at the head circle
+    int hits = 0;
+    for (int i = 0; i < 20; ++i)  // two shots
+    {
+        const float before = b.health();
+        m.step(kDt, shootAt(up));
+        bool blood = false;
+        for (const auto& e : m.takeEvents())
+            blood |= e.type == EventType::Blood;
+        if (blood)
+        {
+            ++hits;
+            const float lost = before - b.health();  // 10 x 1.5, maybe less one regenerated point
+            CHECK(lost >= 14.0f);
+            CHECK(lost <= 15.0f);
+        }
+    }
+    CHECK(hits >= 1);
+
+    // Crouched, the same rounds pass over the head.
+    PadState crouchPad = stick({0, -1});
+    m.fighter(bot)->brain = [&](const Match&, const Fighter&) { return crouchPad; };
+    run(m, idle(), 0.5f);
+    REQUIRE(b.isCrouching());
+    const float before = b.health();
+    for (int i = 0; i < 20; ++i)
+        m.step(kDt, shootAt(up));
+    CHECK(b.health() >= before);
+}
+
+TEST_CASE("Bot bullets hurt the player with range falloff")
+{
+    const auto data = loadMap("1outpost_new.tmx");
+    Match m(*assets::findMap("outpost"), data);
+    float aim     = 0.0f;
+    const int bot = duelSetup(m, 90.0f, aim);
+    PadState botPad = shootAt(aim == 0.0f ? 180.0f : 0.0f);  // back at the player
+    m.fighter(bot)->brain = [&](const Match&, const Fighter&) { return botPad; };
+    for (int i = 0; i < 60; ++i)
+        m.step(kDt, idle());
+    CHECK(m.player().health() < 100.0f);
+    // About 50 of 800 points travelled: roughly 10 * (0.5 + 0.5 * 0.94) = 9.7 a hit.
+    const float lost = 100.0f - m.player().health();
+    CHECK(lost > 9.0f);
+    CHECK(lost < 100.0f);
+}
+
+TEST_CASE("Safe spawns keep away from the others")
+{
+    const auto data = loadMap("1outpost_new.tmx");
+    Match m(*assets::findMap("outpost"), data);
+    run(m, idle(), 3.0f);
+    const Vec2 p = m.player().position();
+    float nearest = 1e9f;
+    for (int i = 0; i < m.spawnCount(); ++i)
+        nearest = std::min(nearest, (m.spawnPoint(i) - p).length());
+    for (int i = 0; i < 20; ++i)
+    {
+        const Vec2 s = m.safeSpawnFor(1);
+        CHECK((s - p).length() > nearest);  // never the spawn closest to the player
+    }
+}

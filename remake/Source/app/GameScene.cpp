@@ -24,7 +24,6 @@ constexpr int kZWorld      = 0;
 constexpr int kZHud        = 10;
 constexpr int kZPause      = 20;
 constexpr int kTracerZ     = MapView::kZEntities + 1;
-constexpr float kRespawnDelay = 3.0f;  // NEW: the slice respawns by itself
 
 Vec2 toAx(game::Vec2 v) { return {v.x, v.y}; }
 
@@ -355,21 +354,10 @@ void GameScene::update(float dt)
     }
     handleEvents();
 
-    auto& player = _match->player();
-    if (player.isDead())
-    {
-        if (_respawnTimer < 0.0f)
-            _respawnTimer = kRespawnDelay;
-        _respawnTimer -= dt;
-        if (_respawnTimer <= 0.0f)
-        {
-            _respawnTimer = -1.0f;
-            _match->respawn(_nextSpawn++);
-            _pad.cancel();
-        }
-    }
-
-    _soldier->sync(_match->player(), dt);
+    if (!_match->playerAlive())
+        _pad.cancel();
+    syncFighters(dt);
+    syncRagdolls();
 
     const auto& tracers = _match->tracers().tracers();
     for (std::size_t i = 0; i < tracers.size(); ++i)
@@ -399,17 +387,26 @@ void GameScene::handleEvents()
         switch (e.type)
         {
         case game::EventType::Sound:
-            AudioSystem::get().play(e.sound, e.volume);
+            if (const float v = e.volume * soundVolumeAt(e.pos); v > 0.02f)
+                AudioSystem::get().play(e.sound, v);
             break;
         case game::EventType::Shot:
-            _soldier->showShot();
+            if (e.fighter <= 0)
+                _soldier->showShot();
+            else if (auto it = _bots.find(e.fighter); it != _bots.end())
+                it->second->showShot();
             break;
         case game::EventType::Spark:
             spawnSpark(e.pos, e.dir);
             break;
         case game::EventType::Explosion:
-        case game::EventType::Death:
             spawnExplosion(e.pos);
+            break;
+        case game::EventType::Death:
+            spawnBlood(e.pos, 3);
+            break;
+        case game::EventType::Blood:
+            spawnBlood(e.pos, 1);
             break;
         }
     }
@@ -426,6 +423,93 @@ void GameScene::spawnSpark(const game::Vec2& pos, const game::Vec2& normal)
     s->setVisible(true);
     s->runAction(Sequence::create(Spawn::create(ScaleTo::create(0.12f, 0.9f), FadeOut::create(0.12f), nullptr),
                                   Hide::create(), nullptr));
+}
+
+float GameScene::soundVolumeAt(const game::Vec2& pos) const
+{
+    // NEW approximation of Sound::playSoundPosition: fades out with distance from the player.
+    const float d = (pos - _match->player().position()).length();
+    return std::clamp(1.0f - (d - 150.0f) / 650.0f, 0.0f, 1.0f);
+}
+
+void GameScene::spawnBlood(const game::Vec2& pos, int amount)
+{
+    // Blood.plist, the original's blood burst (blood on by default; the switch arrives in M6).
+    for (int i = 0; i < amount; ++i)
+    {
+        auto* blood = ParticleSystemQuad::create("Blood.plist");
+        if (!blood)
+            return;
+        blood->setPosition(toAx(pos));
+        blood->setAutoRemoveOnFinish(true);
+        _map->addChild(blood, MapView::kZEntities + 1);
+    }
+}
+
+void GameScene::syncFighters(float dt)
+{
+    for (const auto& f : _match->fighters())
+    {
+        if (f.human)
+        {
+            _soldier->sync(*f.soldier, dt);
+            continue;
+        }
+        auto it = _bots.find(f.id);
+        if (it == _bots.end())
+        {
+            auto* view = SoldierView::create(1 + (f.id * 5) % 16);  // a different skin per bot
+            _map->addChild(view, MapView::kZEntities);
+            it = _bots.emplace(f.id, view).first;
+        }
+        if (f.soldier)
+            it->second->sync(*f.soldier, dt);
+        else
+            it->second->setVisible(false);
+    }
+}
+
+void GameScene::syncRagdolls()
+{
+    static constexpr const char* kParts[game::Ragdoll::kParts] = {"head1.png", "body1.png", "arm1.png",
+                                                                  "arm1.png",  "leg1.png",  "leg1.png"};
+    std::unordered_map<const game::Ragdoll*, Node*> alive;
+    for (const auto& r : _match->ragdolls())
+    {
+        Node* node = nullptr;
+        if (auto it = _ragdollViews.find(r.get()); it != _ragdollViews.end())
+        {
+            node = it->second;
+            _ragdollViews.erase(it);
+        }
+        else
+        {
+            node = Node::create();
+            for (const char* frame : kParts)
+            {
+                auto* part = Sprite::createWithSpriteFrameName(frame);
+                if (!part)
+                    part = Sprite::create();
+                part->setScale(rules::kPlayerScale);
+                node->addChild(part);
+            }
+            _map->addChild(node, MapView::kZEntities);
+        }
+        const auto& parts = node->getChildren();
+        for (int i = 0; i < game::Ragdoll::kParts && i < static_cast<int>(parts.size()); ++i)
+        {
+            parts.at(i)->setPosition(toAx(r->partPosition(i)));
+            parts.at(i)->setRotation(-r->partAngle(i) * game::kRadToDeg);
+        }
+        // Fade over the last second of the five.
+        const float fade = std::clamp(game::Ragdoll::kLifetime - r->age(), 0.0f, 1.0f);
+        for (auto* part : parts)
+            part->setOpacity(static_cast<uint8_t>(255 * fade));
+        alive.emplace(r.get(), node);
+    }
+    for (auto& [ragdoll, node] : _ragdollViews)
+        node->removeFromParent();
+    _ragdollViews.swap(alive);
 }
 
 void GameScene::spawnExplosion(const game::Vec2& pos)

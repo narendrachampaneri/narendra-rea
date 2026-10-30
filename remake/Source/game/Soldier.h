@@ -9,6 +9,7 @@
 #include "game/Events.h"
 #include "game/Joypad.h"
 #include "game/Weapon.h"
+#include "game/Weapons.h"
 
 namespace mm::game
 {
@@ -18,7 +19,10 @@ class Physics;
 class Soldier
 {
 public:
-    Soldier(Physics& physics, Vec2 spawn, float gravityFactor, EventQueue& events);
+    // `collision` is the original's type/group/layers value: 0x15 for the local player,
+    // 0x84 for everyone else (remote players, and the remake's bots).
+    Soldier(Physics& physics, Vec2 spawn, float gravityFactor, EventQueue& events, int id = 0,
+            std::uint32_t collision = rules::kSoldierCollision, WeaponId weapon = WeaponId::AK47);
     ~Soldier();
     Soldier(const Soldier&) = delete;
     Soldier& operator=(const Soldier&) = delete;
@@ -34,6 +38,23 @@ public:
 
     // SoldierHostController::fire: pulls the trigger; true when a shot left the barrel.
     bool fire();
+
+    // SoldierController::addDamage: health never goes below 0; the last attacker gets the kill.
+    void addDamage(float amount, int attacker, int ammoType);
+    void setInvincible(bool on) { _invincible = on; }  // +0x15b (Sarge in Training)
+    int lastAttacker() const { return _lastAttacker; }
+    int lastAmmoType() const { return _lastAmmoType; }
+
+    // Notices a fatal hit at once (updateStep does it too) and emits the Death event.
+    void checkDeath();
+    // After death: the body stops colliding and stays where it is (the ragdoll takes over).
+    void deactivate();
+    bool isDeactivated() const { return _deactivated; }
+
+    int id() const { return _id; }
+    std::uint32_t collision() const { return _collision; }
+    bool owns(const cpShape* shape) const { return shape == _box || shape == _head; }
+    bool isHead(const cpShape* shape) const { return shape == _head; }
 
     // ---- state for the view and the HUD ----
     Vec2 position() const;
@@ -68,6 +89,12 @@ private:
     Physics& _physics;
     EventQueue& _events;
     float _gravityFactor;
+    int _id;
+    std::uint32_t _collision;
+    bool _invincible  = false;
+    bool _deactivated = false;
+    int _lastAttacker = -1;
+    int _lastAmmoType = 0;
 
     cpBody* _body   = nullptr;
     cpShape* _box   = nullptr;  // +0x13c
