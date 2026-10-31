@@ -294,7 +294,7 @@ Keep the file out of git (it is git-ignored); losing it means future updates can
 - Android 16+ local-network permission rules: the app declares INTERNET, ACCESS_NETWORK_STATE, ACCESS_WIFI_STATE and CHANGE_WIFI_MULTICAST_STATE and holds a multicast lock while looking for games; if Android 16 asks for or blocks local-network access, report it (the permission to add would be NEARBY_WIFI_DEVICES / ACCESS_LOCAL_NETWORK).
 
 ## Next step
-Build and run `remake/m5-wifi` (it contains M1-M5), try the checks above, merge the milestone branches
-in order. Then M6 on `remake/m6-menus`: modern menus, first-launch name + Training offer, profile,
-Coins (10 per kill in Wi-Fi Deathmatch / Team Deathmatch) and the store, avatar, leaderboards,
-settings, What's new, About, saves with backup and export/import, QR joining.
+1. Wait for CI on each branch (or check the Actions tab); `remake/m10-final` contains everything (M1-M10).
+2. Build and run it, follow `TEST-CHECKLIST.md` on 2+ phones, and tell me what fails.
+3. Merge the branches in order, add the signing secrets, tag `v1.0.0` (see "Merging and releasing").
+4. Open work (see Known problems): allowed-weapons and map vote in the lobby, Pro Pack dual-wield visuals and masks, gas/proximity grenades, laser sight drawing, Survival drones, button-placement editor, Bluetooth controller, QR joining. M7-M10 were done without a phone, so on-device feedback comes first.
