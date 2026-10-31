@@ -67,6 +67,16 @@ void Match::removeFighter(int id)
         }
 }
 
+void Match::setUpgrades(int id, std::uint16_t mask)
+{
+    Fighter* f = fighter(id);
+    if (!f)
+        return;
+    f->boosts = _options.allowBoosts ? economy::boostsFor(mask) : economy::Boosts{};
+    if (f->soldier && !f->soldier->isMirror())
+        f->soldier->setBoosts(f->boosts);
+}
+
 void Match::giveWeapon(int id, WeaponId w)
 {
     if (Fighter* f = fighter(id); f && f->soldier)
@@ -155,6 +165,7 @@ void Match::spawn(Fighter& f, Vec2 at)
     f.soldier = std::make_unique<Soldier>(_physics, at, _def.gravityFactor, _events, f.id,
                                           f.human ? rules::kSoldierCollision : rules::kRemoteCollision);
     f.respawnTimer = 0.0f;
+    f.soldier->setBoosts(f.boosts);
 }
 
 void Match::respawn(int spawnIndex)
@@ -350,7 +361,7 @@ void Match::updateMelee(Fighter& f)
         if (v.id == f.id || !v.alive() || !v.soldier->owns(hit.shape))
             continue;
         // endMeleeAttack: the weapon's melee damage, sent like a bullet hit.
-        hitSoldier(v, hit.shape, static_cast<float>(w.meleeDamage), true, f.id, w.ammoType, hit.point, dir);
+        hitSoldier(v, hit.shape, static_cast<float>(w.meleeDamage) * f.boosts.melee, true, f.id, w.ammoType, hit.point, dir);
         s.endMelee();
         return;
     }
@@ -542,7 +553,7 @@ void Match::step(float dt, const PadState& pad)
         s.updateStep(dt, in);
         s.setJoyOffset(in.moveOffset);
 
-        if (in.reload && !s.weapon().isReloading() && s.weapon().clip() < s.weapon().def().clip &&
+        if (in.reload && !s.weapon().isReloading() && s.weapon().clip() < s.weapon().clipCapacity() &&
             s.weapon().ammo() > 0)
             s.weapon().reload();
         if (in.switchWeapon)

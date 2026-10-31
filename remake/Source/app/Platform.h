@@ -11,4 +11,7 @@ void setGameHandlesBack(bool handles);
 // Android: hold the Wi-Fi multicast lock while the game looks for / announces games.
 void setMulticastLock(bool on);
 
+// A short buzz (hits taken), if vibration is on in the settings.
+void vibrate(int milliseconds);
+
 }  // namespace mm::app::platform

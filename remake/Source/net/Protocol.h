@@ -42,7 +42,7 @@ struct Announce
     HostState state = HostState::Lobby;
     std::uint16_t port = 0;
 };
-struct Join { std::string name; std::uint8_t version = kProtocolVersion; std::uint32_t token = 0; };
+struct Join { std::string name; std::uint8_t version = kProtocolVersion; std::uint32_t token = 0; std::uint16_t upgrades = 0; };
 struct JoinReply { JoinResult result = JoinResult::Ok; std::uint8_t playerId = 0; std::uint32_t token = 0; };
 
 struct PlayerInfo
@@ -51,6 +51,7 @@ struct PlayerInfo
     std::string name;
     std::uint8_t team = 0;
     bool ready = false, host = false;
+    std::uint16_t upgrades = 0;  // purchased upgrades (bit n = config::kUpgrades[n]); ignored in Fair mode
 };
 struct HostOptions
 {

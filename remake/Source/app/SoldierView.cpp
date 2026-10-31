@@ -24,8 +24,19 @@ Sprite* part(std::string_view frame, Vec2 anchor)
 
 SoldierView* SoldierView::create(int skin)
 {
+    // One number for every part, wrapped into each part's range (bots use this).
+    save::Avatar a;
+    a.head = 1 + (skin - 1) % save::kHeads;
+    a.body = 1 + (skin - 1) % save::kBodies;
+    a.arm  = 1 + (skin - 1) % save::kArms;
+    a.leg  = 1 + (skin - 1) % save::kLegs;
+    return create(a);
+}
+
+SoldierView* SoldierView::create(const save::Avatar& avatar)
+{
     auto* view = new SoldierView();
-    if (view->init(skin))
+    if (view->init(avatar))
     {
         view->autorelease();
         return view;
@@ -34,11 +45,10 @@ SoldierView* SoldierView::create(int skin)
     return nullptr;
 }
 
-bool SoldierView::init(int skin)
+bool SoldierView::init(const save::Avatar& avatar)
 {
     if (!Node::init())
         return false;
-    const auto n = std::to_string(skin);
 
     _root = Node::create();
     _root->setScale(rules::kPlayerScale);
@@ -47,12 +57,12 @@ bool SoldierView::init(int skin)
     // SoldierView::init: node positions in unscaled soldier units.
     _backArm = Node::create();
     _backArm->setPosition(5, 15);
-    _backArm->addChild(part("arm" + n + ".png", {0.1f, 0.6f}), 1);
+    _backArm->addChild(part("arm" + std::to_string(avatar.arm) + ".png", {0.1f, 0.6f}), 1);
     _root->addChild(_backArm, 0);
 
     _torso = Node::create();
     _root->addChild(_torso, 3);
-    _torso->addChild(part("body" + n + ".png", {0.5f, 0.5f}), 2);
+    _torso->addChild(part("body" + std::to_string(avatar.body) + ".png", {0.5f, 0.5f}), 2);
     const Vec2 legPos[2] = {{-4, -12}, {14, -10}};
     for (int i = 0; i < 2; ++i)
     {
@@ -63,13 +73,13 @@ bool SoldierView::init(int skin)
         _flames[i]->setBlendFunc(BlendFunc::ADDITIVE);
         _flames[i]->setVisible(false);
         _legs[i]->addChild(_flames[i], 0);
-        _legs[i]->addChild(part("leg" + n + ".png", {0.5f, 0.9f}), 1);
+        _legs[i]->addChild(part("leg" + std::to_string(avatar.leg) + ".png", {0.5f, 0.9f}), 1);
         _torso->addChild(_legs[i], 1);
     }
 
     _head = Node::create();
     _head->setPosition(0, 27);
-    _head->addChild(part("head" + n + ".png", {0.5f, 0.2f}));
+    _head->addChild(part("head" + std::to_string(avatar.head) + ".png", {0.5f, 0.2f}));
     _root->addChild(_head, 4);
 
     _weaponArm = Node::create();
@@ -87,7 +97,7 @@ bool SoldierView::init(int skin)
 
     _frontArm = Node::create();
     _frontArm->setPosition(-17, 15);
-    _frontArm->addChild(part("arm" + n + ".png", {0.1f, 0.6f}), 1);
+    _frontArm->addChild(part("arm" + std::to_string(avatar.arm) + ".png", {0.1f, 0.6f}), 1);
     _root->addChild(_frontArm, 5);
     return true;
 }

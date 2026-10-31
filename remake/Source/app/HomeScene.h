@@ -1,5 +1,4 @@
-// Home screen for the preview builds, made from the original menu graphics (MenuLayer: title
-// art and the blue button panel). The modern animated menus replace it in M6.
+// The home screen: player card, the main buttons, What's new badge.
 #pragma once
 
 #include "axmol.h"

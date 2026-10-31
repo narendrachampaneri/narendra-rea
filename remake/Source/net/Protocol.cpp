@@ -59,6 +59,7 @@ void putPlayers(Writer& w, const std::vector<PlayerInfo>& ps)
         w.str(p.name);
         w.u8(p.team);
         w.u8((p.ready ? 1 : 0) | (p.host ? 2 : 0));
+        w.u16(p.upgrades);
     }
 }
 std::vector<PlayerInfo> getPlayers(Reader& r)
@@ -74,6 +75,7 @@ std::vector<PlayerInfo> getPlayers(Reader& r)
         const auto f = r.u8();
         p.ready     = f & 1;
         p.host      = f & 2;
+        p.upgrades  = r.u16();
         out.push_back(std::move(p));
     }
     return out;
@@ -92,7 +94,7 @@ void put(Writer& w, const Announce& m)
     w.u8(static_cast<std::uint8_t>(m.state));
     w.u16(m.port);
 }
-void put(Writer& w, const Join& m) { w.str(m.name); w.u8(m.version); w.u32(m.token); }
+void put(Writer& w, const Join& m) { w.str(m.name); w.u8(m.version); w.u32(m.token); w.u16(m.upgrades); }
 void put(Writer& w, const JoinReply& m) { w.u8(static_cast<std::uint8_t>(m.result)); w.u8(m.playerId); w.u32(m.token); }
 void put(Writer& w, const LobbyState& m) { putOptions(w, m.options); putPlayers(w, m.players); }
 void put(Writer& w, const SetReady& m) { w.u8(m.ready ? 1 : 0); w.u8(m.team); }
@@ -233,6 +235,7 @@ Message get(Reader& r, MsgType t, bool& ok)
         m.name    = r.str();
         m.version = r.u8();
         m.token   = r.u32();
+        m.upgrades = r.u16();
         return m;
     }
     case MsgType::JoinReply:

@@ -79,11 +79,11 @@ void Weapon::updateStep(float dt)
         if (_clip <= 0)
             _burstLeft = 0;
     }
-    if (_reloading && _def->reloadTime < _reloadTimer)
+    if (_reloading && reloadTime() < _reloadTimer)
     {
         _reloading     = false;
         _shotTimer     = 0.0f;
-        const int need = _def->clip - _clip;
+        const int need = clipCapacity() - _clip;
         _ammo -= need;
         _clip += need + std::min(_ammo, 0);
         _ammo = std::max(_ammo, 0);
@@ -100,12 +100,12 @@ float Weapon::randomFiringAngle()
 {
     _random = static_cast<float>(static_cast<int>(_random * 41.0f + 37.0f) % 100);
     const float r = _random / 100.0f - 0.5f;
-    return _def->spread * (r + r) * 1.0f;  // * accuracy modifier (+0x168, 1 without upgrades)
+    return _def->spread * (r + r) * _spreadFactor;  // accuracy modifier +0x168
 }
 
 float Weapon::reloadProgress() const
 {
-    return _reloading ? std::clamp(_reloadTimer / _def->reloadTime, 0.0f, 1.0f) : 0.0f;
+    return _reloading ? std::clamp(_reloadTimer / std::max(reloadTime(), 0.001f), 0.0f, 1.0f) : 0.0f;
 }
 
 }  // namespace mm::game

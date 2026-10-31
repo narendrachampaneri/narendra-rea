@@ -27,4 +27,9 @@
 -keep class dev.axmol.app.AppActivity {
     public static void setGameHandlesBack(boolean);
     public static void setMulticastLock(boolean);
+    public static void exportSave(java.lang.String);
+    public static void importSave();
+    public static void vibrate(int);
+    private static native void nativeOnSaveImported(java.lang.String);
+    private static native void nativeOnSaveExported(boolean);
 }

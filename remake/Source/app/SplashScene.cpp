@@ -3,6 +3,8 @@
 #include "app/AssetManager.h"
 #include "app/AudioSystem.h"
 #include "app/HomeScene.h"
+#include "app/Menus.h"
+#include "app/SaveStore.h"
 #include "app/Platform.h"
 #include "app/Ui.h"
 #include "config/GameConfig.h"
@@ -84,7 +86,10 @@ void SplashScene::proceed()
         return;
     _leaving = true;
     AudioSystem::get().play(audio::SoundId::Grenade1);  // the original's button sound (id 13)
-    _director->replaceScene(TransitionFade::create(0.5f, utils::createInstance<HomeScene>()));
+    if (SaveStore::get().data().firstLaunchDone)
+        _director->replaceScene(TransitionFade::create(0.5f, utils::createInstance<HomeScene>()));
+    else
+        _director->replaceScene(TransitionFade::create(0.5f, utils::createInstance<FirstLaunchScene>()));
 }
 
 }  // namespace mm::app

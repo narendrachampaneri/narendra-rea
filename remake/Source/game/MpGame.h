@@ -35,7 +35,7 @@ public:
     void setPlayerInput(int id, const PadState& in) { _match->setRemoteInput(id, in); }
     void playerLeft(int id);
     float timeLeft() const { return _timeLeft; }
-    int wave() const { return _wave; }
+    int wave() const override { return _wave; }
     const net::HostOptions& options() const { return _options; }
     const std::vector<net::PlayerInfo>& players() const { return _players; }
     int winnerTeam() const { return _winnerTeam; }

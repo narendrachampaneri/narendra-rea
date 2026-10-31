@@ -58,9 +58,9 @@ public:
     std::vector<Row> results() const override;
     std::string resultTitle() const override;
     float timeLeft() const { return _timeLeft; }       // Quick Play / Practice
-    int wave() const { return _wave; }                 // Survival
+    int wave() const override { return _wave; }       // Survival
     int lives() const { return _lives; }               // Survival
-    int score() const { return _score; }               // Survival points
+    int score() const override { return _score; }     // Survival points
     int lesson() const { return _lesson; }             // Training: index into lessons()
     const Lesson* currentLesson() const;
     static const std::vector<Lesson>& lessons();

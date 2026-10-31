@@ -352,6 +352,7 @@ void HostSession::handle(const Packet& p)
                 PlayerInfo info;
                 info.id   = static_cast<std::uint8_t>(id);
                 info.name = cleanName(m.name);
+                info.upgrades = static_cast<std::uint16_t>(m.upgrades & ((1u << 14) - 1));
                 for (int dup = 2;; ++dup)  // names are unique in the lobby
                 {
                     bool clash = false;
@@ -461,8 +462,8 @@ void HostSession::update(float dt)
 
 // ============================== client ================================================================
 
-ClientSession::ClientSession(Transport& transport, std::string playerName, MapResolver maps)
-    : _t(transport), _name(cleanName(std::move(playerName))), _maps(std::move(maps))
+ClientSession::ClientSession(Transport& transport, std::string playerName, MapResolver maps, std::uint16_t upgrades)
+    : _t(transport), _name(cleanName(std::move(playerName))), _upgrades(upgrades), _maps(std::move(maps))
 {
     _token = 0x1234567u ^ (_t.local().port * 2654435761u) ^ (_t.local().ip * 40503u);
 }
@@ -491,7 +492,7 @@ void ClientSession::join(const Endpoint& host)
     _silent    = 0.0f;
     _searching = false;
     _joinResult = JoinResult::Ok;
-    _t.send(_host, encode(Join{_name, kProtocolVersion, _token}));
+    _t.send(_host, encode(Join{_name, kProtocolVersion, _token, _upgrades}));
 }
 
 void ClientSession::leave()
@@ -694,7 +695,7 @@ void ClientSession::update(float dt)
         if (_joinTimer >= 0.5f)
         {
             _joinTimer = 0.0f;
-            _t.send(_host, encode(Join{_name, kProtocolVersion, _token}));
+            _t.send(_host, encode(Join{_name, kProtocolVersion, _token, _upgrades}));
         }
         if (_silent > 5.0f)
             _cs = ClientState::Disconnected;

@@ -9,6 +9,7 @@
 #include "game/Events.h"
 #include "game/Joypad.h"
 #include "game/Weapon.h"
+#include "economy/Economy.h"
 #include "game/Weapons.h"
 #include "net/Protocol.h"
 
@@ -71,7 +72,7 @@ public:
     bool isDead() const { return _dead; }
     bool onGround() const { return _mirror ? _onGroundNet : _footContactPrev; }
     bool facingRight() const;
-    void setWeapon(std::unique_ptr<Weapon> w) { _weapon = std::move(w); }
+    void setWeapon(std::unique_ptr<Weapon> w) { _weapon = std::move(w); applyWeaponBoosts(); }
     Weapon& weapon() { return *_weapon; }
     const Weapon& weapon() const { return *_weapon; }
     const Weapon* secondary() const { return _secondary.get(); }
@@ -108,6 +109,11 @@ public:
     void applyNet(const net::FighterState& s);
     net::FighterState netState() const;
     void drainPower() { _power = 0.0f; }
+
+    // Purchased upgrades (ItemLibrary::applyItems): regen rates, fuel burn, melee, grenades,
+    // weapon clip / reload / accuracy, the Golden Eagle as a second weapon.
+    void setBoosts(const economy::Boosts& b);
+    const economy::Boosts& boosts() const { return _boosts; }
     Vec2 joyOffset() const { return _joy; }
 
     // Test hooks.
@@ -139,6 +145,8 @@ private:
 
     std::unique_ptr<Weapon> _weapon;     // in hand (+0x148)
     std::unique_ptr<Weapon> _secondary;  // the other one (+0x14c)
+    economy::Boosts _boosts;
+    void applyWeaponBoosts();
     bool _mirror        = false;
     bool _onGroundNet   = false;
     bool _melee         = false;         // +0x166

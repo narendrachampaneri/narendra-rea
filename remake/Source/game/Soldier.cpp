@@ -307,14 +307,14 @@ void Soldier::updateStep(float dt, const PadState& pad)
     if (_regenTimer >= rules::kRegenRate && !_dead)
     {
         _regenTimer = 0.0f;
-        _health     = std::min(_health + 1.0f, static_cast<float>(rules::kMaxHealth));
+        _health     = std::min(_health + 1.0f * _boosts.healthRegen, static_cast<float>(rules::kMaxHealth));
     }
 
     // Jetpack fuel comes back once the jetpack has been off for a second, faster after three.
     if ((!_jetting || !_touching) && _jetDelay > 0.0f)
     {
         const float boost = std::clamp((_jetDelay * _jetDelay - 9.0f) / 2.0f, 0.0f, rules::kFuelRegenBoostMax);
-        _power = std::min(static_cast<float>(rules::kMaxPower), _power + (1.0f * rules::kFuelRegenBase + boost) * dt);
+        _power = std::min(static_cast<float>(rules::kMaxPower), _power + (_boosts.fuelRegen * rules::kFuelRegenBase + boost) * dt);
     }
     if (_jetting && hasPower())
     {
@@ -349,7 +349,7 @@ void Soldier::updateStep(float dt, const PadState& pad)
         if (pad.moveVector.length() != 0.0f)
             dir = pad.moveVector.normalized();
         const float target = rules::kJetSpeed * weight;
-        _power    = std::max(0.0f, _power - _thrustFactor * rules::kJetFuelPerStep * 1.0f);
+        _power    = std::max(0.0f, _power - _thrustFactor * rules::kJetFuelPerStep * _boosts.fuelBurn);
         _jumpUsed = true;
         if ((dir * target).length() != 0.0f)
             applyImpulseAlong(dir, weight * rules::kJetResponse * pad.moveOffset.length(), target, dt);
@@ -451,6 +451,9 @@ void Soldier::switchWeapons()
 std::unique_ptr<Weapon> Soldier::takeWeapon(std::unique_ptr<Weapon> weapon)
 {
     emitSound(SoundId::Reload);
+    struct Reapply { Soldier* s; ~Reapply() { s->applyWeaponBoosts(); } } reapply{this};
+    if (weapon)
+        weapon->setMods(0, 0, 1);  // a weapon off the floor takes the new owner's upgrades below
     if (!_secondary)
     {
         _secondary = std::move(_weapon);
@@ -539,6 +542,35 @@ void Soldier::applyNet(const net::FighterState& s)
     else if (const auto sid = static_cast<WeaponId>(std::min<int>(s.secondary, static_cast<int>(WeaponId::Count) - 1));
              !_secondary || _secondary->id() != sid)
         _secondary = std::make_unique<Weapon>(sid);
+}
+
+}  // namespace mm::game
+
+namespace mm::game
+{
+
+void Soldier::applyWeaponBoosts()
+{
+    for (Weapon* w : {_weapon.get(), _secondary.get()})
+    {
+        if (!w)
+            continue;
+        const WeaponId id = w->id();
+        const bool hand   = economy::isHandgun(id);
+        const bool rifle  = economy::isRifle(id);
+        w->setMods(hand ? _boosts.handgunClip : (rifle ? _boosts.rifleClip : 0.0f),
+                   hand ? _boosts.handgunReload : (rifle ? _boosts.rifleReload : 0.0f), _boosts.spread);
+    }
+}
+
+void Soldier::setBoosts(const economy::Boosts& b)
+{
+    _boosts = b;
+    _grenades = rules::kStartGrenades + (b.maxGrenades > 4 ? 1 : 0);
+    // The Golden Eagle upgrade: a second weapon from the start (SoldierHostController backup starter).
+    if (b.goldenEagle && !_secondary)
+        _secondary = std::make_unique<Weapon>(WeaponId::GoldDeagle);
+    applyWeaponBoosts();
 }
 
 }  // namespace mm::game

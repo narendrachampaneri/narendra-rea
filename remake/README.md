@@ -22,10 +22,21 @@ continues from the next unfinished milestone. Private project: never publish to 
 | M2 | Assets | done on `remake/m2-assets` (branched from M1): `Remake build` green; awaiting phone check and owner merge |
 | M3 | Single-device slice | **done on `remake/m3-slice` (branched from M2): playable from QUICK PLAY; awaiting green `Remake build`, phone check and owner merge** |
 | M4 | Full single-device game | **built on `remake/m4-game` (branched from M3); awaiting green `Remake build`, phone check and owner merge. dual wield, gas/proximity grenades and drones are left for M7 (see "What works (M4)")** |
+| M6 | Menus, Coins, store, avatar, leaderboards, settings, saves | **built on `remake/m6-menus` (branched from M5); awaiting CI and an on-device check** |
 | M5 | Wi-Fi multiplayer | **built on `remake/m5-wifi` (branched from M4); protocol in `LAN-PROTOCOL.md`; awaiting CI, a two-phone test and owner merge** |
 | M6 | Menus and meta | not started |
 | M7 | Performance and polish | not started |
 | M8 | Release v1 | not started |
+
+## What works (M6: menus and meta)
+- First launch asks for a player name and offers Training; Home screen with player card and pill buttons (Quick Play, Multiplayer, Solo Play, Store, Avatar, Leaderboards, Settings, About, What's New).
+- Coins: start 100; 10 per kill only in Wi-Fi Deathmatch / Team Deathmatch (Training, Survival, Practice, Quick Play and Co-op earn none). Store sells the original upgrades at the original prices (1 BP = 1 Coin) and the Pro Pack (3,000 Coins). Upgrade effects apply to the soldier (not in Fair mode) and travel in the Wi-Fi Join message.
+- Avatar customiser, personal-record and friends leaderboards, settings (volumes, blood, camera, left-handed, auto-fire, sensitivity, vibration, quality, frame rate, quick messages), About/Credits.
+- Save file `save.mmsave` (text, CRC32, atomic write + `.bak`), Android Auto Backup, manual export/import via the system file picker (no storage permission).
+- Tests: `Tests/SaveTest.cpp` (save round-trip/corruption, store rules, coin rules, upgrade effects).
+
+### On-device check for M6
+1. Fresh install: name prompt appears, then Home. 2. Buy an upgrade in the Store; Coins drop by its price; restart the app, it is still owned. 3. Change settings, restart, they persist. 4. Settings > Export save, then Import it back. 5. Play a Wi-Fi Deathmatch kill: +10 Coins at the end; Co-op gives none.
 
 ## What works (M5: Wi-Fi multiplayer)
 - Home -> MULTIPLAYER: host a game, or see the games on this network and tap one, or type the host's

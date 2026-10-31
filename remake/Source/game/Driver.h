@@ -24,6 +24,8 @@ public:
     virtual std::string hint() const { return {}; }          // bottom line (Sarge)
     virtual std::string scoreboard() const { return {}; }    // a few lines of ranking
     virtual bool isNetworked() const { return false; }
+    virtual int wave() const { return 0; }   // Survival / Co-op wave reached
+    virtual int score() const { return 0; }  // Survival points
     // The end-of-match table, once the match is over (names, kills, deaths, team).
     struct Row { std::string name; int team = 0, kills = 0, deaths = 0; bool me = false; };
     virtual std::vector<Row> results() const { return {}; }

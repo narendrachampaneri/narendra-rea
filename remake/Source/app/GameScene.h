@@ -66,6 +66,10 @@ private:
     ax::Label* _sarge  = nullptr;   // the training lesson
     ax::Label* _score  = nullptr;   // kills / deaths
     bool _ended = false;
+    bool _recorded = false;
+    float _playTime = 0.0f;
+    int _coinsEarned = 0;
+    void record();
     game::Joypad _pad;
     FixedStepper _stepper{1.0f / 60.0f, 5};
 

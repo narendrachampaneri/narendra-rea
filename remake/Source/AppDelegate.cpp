@@ -26,6 +26,7 @@
 #include "AppDelegate.h"
 
 #include "app/AssetManager.h"
+#include "app/SaveStore.h"
 #include "app/AudioSystem.h"
 #include "app/SplashScene.h"
 #include "assets/Resolution.h"
@@ -84,9 +85,24 @@ bool AppDelegate::applicationDidFinishLaunching()
     renderView->setDesignResolutionSize(mm::assets::kDesignWidth, mm::assets::kDesignHeight,
                                         ResolutionPolicy::FIXED_HEIGHT);
 
-    // Art resolution: the original rule for now; Settings > Graphics quality overrides it in M7.
+    // The save (name, settings, Coins, upgrades) is read before anything is drawn.
+    auto& saveStore = mm::app::SaveStore::get();
+    saveStore.load();
+
+    // Art resolution: the original rule from the screen, or the player's quality choice.
     const auto frame = renderView->getFrameSize();
-    mm::app::AssetManager::get().configure(mm::assets::chooseOriginal(frame.width, frame.height));
+    mm::assets::Resolution res = mm::assets::chooseOriginal(frame.width, frame.height);
+    const auto& cfg = saveStore.data().settings;
+    if (!cfg.qualityAuto)
+    {
+        switch (cfg.quality)
+        {
+        case mm::save::Quality::Smooth: res = mm::assets::Resolution::SD; break;
+        case mm::save::Quality::Medium: res = mm::assets::Resolution::HD; break;
+        default: res = mm::assets::Resolution::HDR; break;
+        }
+    }
+    mm::app::AssetManager::get().configure(res);
 
 #if !_AX_TESTS
     // The title screen shows at once; atlases and sounds load behind it.

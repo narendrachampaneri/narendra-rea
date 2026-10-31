@@ -40,6 +40,7 @@ struct Fighter
     float respawnTimer = 0.0f;
     int kills = 0, deaths = 0;
     Brain brain;
+    economy::Boosts boosts;  // purchased upgrades of this fighter (none in Fair mode)
     int lives = -1;        // -1 = unlimited; a death uses one, at 0 the fighter stays dead
     int nearItem = -1;     // uid of a weapon within reach that would be a swap (pick-up button)
 
@@ -52,6 +53,7 @@ struct MatchOptions
     bool createLocal  = true;  // false: a client mirror; fighters are added with addFighter()
     int localId       = 0;     // the fighter this phone controls
     bool mirror       = false; // client mirror: no soldier logic, driven by applySnapshot()
+    bool allowBoosts   = true;  // purchased upgrades count (off in Fair mode)
     bool weaponPickups = true; // weapons spawn on the map (off in Fair mode)
     bool friendlyFire  = false; // team mates hurt each other (never, in the original rules)
     bool respawn      = true;  // bots come back (unlimited lives, SoldierManager +0x35)
@@ -84,6 +86,7 @@ public:
     void addMirrorSoldier(int id, Vec2 at);          // client: before the first snapshot arrives                       // at the safest spawn point
     void removeFighter(int id);                      // someone left
     void giveWeapon(int id, WeaponId w);
+    void setUpgrades(int id, std::uint16_t ownedMask);  // applied at the next spawn, and now if alive
     // What the host sends / what a client mirror applies (see net/Protocol.h).
     void makeSnapshot(net::Snapshot& out) const;
     void applySnapshot(const net::Snapshot& s);

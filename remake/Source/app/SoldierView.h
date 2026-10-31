@@ -7,6 +7,7 @@
 #include "axmol.h"
 
 #include "game/Soldier.h"
+#include "save/SaveData.h"
 
 namespace mm::app
 {
@@ -15,13 +16,14 @@ class SoldierView : public ax::Node
 {
 public:
     static SoldierView* create(int skin = 1);
+    static SoldierView* create(const save::Avatar& avatar);
 
     // Copies the soldier's state; call once per rendered frame.
     void sync(const game::Soldier& soldier, float dt);
     void showShot();  // muzzle flare + recoil kick
 
 private:
-    bool init(int skin);
+    bool init(const save::Avatar& avatar);
 
     ax::Node* _root      = nullptr;  // +0x124, scaled by playerScale
     ax::Node* _torso     = nullptr;  // +0x11c

@@ -40,6 +40,7 @@ MultiplayerGame::MultiplayerGame(const assets::MapDef& def, const assets::MapDat
     mo.respawn       = false;  // Co-op enemies never come back
     mo.playerRespawn = true;
     mo.weaponPickups = !_options.fair;
+    mo.allowBoosts   = !_options.fair;  // Fair mode: everybody plays with base stats
     _match = std::make_unique<Match>(def, data, 0, mo);
     for (const auto& p : _players)
     {
@@ -57,6 +58,7 @@ MultiplayerGame::MultiplayerGame(const assets::MapDef& def, const assets::MapDat
             _match->spawnFighter(p.id);
         if (_options.mode == GameMode::CoopSurvival)
             _match->fighter(p.id)->lives = 3;
+        _match->setUpgrades(p.id, p.upgrades);
         if (_options.fair)
             _match->giveWeapon(p.id, WeaponId::AK47);
     }

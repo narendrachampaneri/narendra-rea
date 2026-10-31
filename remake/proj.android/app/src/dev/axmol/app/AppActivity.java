@@ -29,7 +29,15 @@ import android.os.Bundle;
 import dev.axmol.lib.AxmolActivity;
 import dev.axmol.lib.AxmolGLSurfaceView;
 import dev.axmol.lib.SharedLoader;
+import android.content.Intent;
+import android.net.Uri;
 import android.net.wifi.WifiManager;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import android.os.Build;
 import android.view.KeyEvent;
 import android.view.WindowManager;
@@ -77,6 +85,85 @@ public class AppActivity extends AxmolActivity {
     // Predictive back (targetSdk 36): the system only sends back to the game while a game screen
     // asks for it; on the home screen the system's own back (to the launcher) runs.
     private static AppActivity sInstance;
+    private static final int REQUEST_EXPORT = 7001, REQUEST_IMPORT = 7002;
+    private String pendingExport;
+
+    private static native void nativeOnSaveImported(String text);
+    private static native void nativeOnSaveExported(boolean ok);
+
+    /** Native: let the player pick where to store the save file (Storage Access Framework, no permission). */
+    public static void exportSave(final String text) {
+        final AppActivity a = sInstance;
+        if (a == null) return;
+        a.runOnUiThread(new Runnable() {
+            @Override public void run() {
+                a.pendingExport = text;
+                Intent i = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+                i.addCategory(Intent.CATEGORY_OPENABLE);
+                i.setType("text/plain");
+                i.putExtra(Intent.EXTRA_TITLE, "minimilitia-save.mmsave");
+                a.startActivityForResult(i, REQUEST_EXPORT);
+            }
+        });
+    }
+
+    /** Native: let the player pick a save file to restore. The text comes back through nativeOnSaveImported. */
+    public static void importSave() {
+        final AppActivity a = sInstance;
+        if (a == null) return;
+        a.runOnUiThread(new Runnable() {
+            @Override public void run() {
+                Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                i.addCategory(Intent.CATEGORY_OPENABLE);
+                i.setType("*/*");
+                a.startActivityForResult(i, REQUEST_IMPORT);
+            }
+        });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_EXPORT) {
+            boolean ok = false;
+            if (resultCode == RESULT_OK && data != null && data.getData() != null && pendingExport != null) {
+                try (OutputStream out = getContentResolver().openOutputStream(data.getData(), "wt")) {
+                    out.write(pendingExport.getBytes(StandardCharsets.UTF_8));
+                    ok = true;
+                } catch (Exception ignored) {
+                }
+            }
+            pendingExport = null;
+            final boolean result = ok;
+            runOnGLThread(new Runnable() { @Override public void run() { nativeOnSaveExported(result); } });
+        } else if (requestCode == REQUEST_IMPORT) {
+            String text = "";
+            if (resultCode == RESULT_OK && data != null && data.getData() != null) {
+                try (InputStream in = getContentResolver().openInputStream(data.getData())) {
+                    ByteArrayOutputStream buf = new ByteArrayOutputStream();
+                    byte[] chunk = new byte[4096];
+                    int n;
+                    while ((n = in.read(chunk)) > 0 && buf.size() < 64 * 1024) buf.write(chunk, 0, n);
+                    text = new String(buf.toByteArray(), StandardCharsets.UTF_8);
+                } catch (Exception ignored) {
+                }
+            }
+            final String result = text;
+            runOnGLThread(new Runnable() { @Override public void run() { nativeOnSaveImported(result); } });
+        }
+    }
+
+    /** Native: a short buzz when the player is hit. */
+    public static void vibrate(final int milliseconds) {
+        final AppActivity a = sInstance;
+        if (a == null) return;
+        try {
+            Vibrator v = (Vibrator) a.getSystemService(VIBRATOR_SERVICE);
+            if (v != null && v.hasVibrator())
+                v.vibrate(VibrationEffect.createOneShot(milliseconds, VibrationEffect.DEFAULT_AMPLITUDE));
+        } catch (Exception ignored) {
+        }
+    }
     private WifiManager.MulticastLock multicastLock;
 
     /** Called from native code (mm::app::platform::setMulticastLock): some phones drop UDP

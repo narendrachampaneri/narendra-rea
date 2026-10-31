@@ -9,7 +9,7 @@ namespace mm::config
 {
 
 // ---- Build ------------------------------------------------------------------------------
-constexpr const char* kVersionLabel = "v0.3.0 preview (M3)";  // shown on the title screen
+constexpr const char* kVersionLabel = "v0.6.0 preview (M6)";  // shown on the title screen
 
 // ---- Simulation -------------------------------------------------------------------------
 constexpr float kPhysicsStep = 1.0f / 60.0f;  // NEW: fixed step; the original steps Box2D per frame

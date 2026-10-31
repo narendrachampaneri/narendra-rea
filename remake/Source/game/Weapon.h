@@ -44,11 +44,19 @@ public:
     // Returns how many burst shots are due this step.
     int takeBurstShots();
 
+    // Upgrades (Weapon::setClipCapacityMod / setClipReloadMod / setAccuracyMod).
+    void setMods(float clipExtra, float reloadFaster, float spreadFactor)
+    {
+        _clipExtra = clipExtra; _reloadFaster = reloadFaster; _spreadFactor = spreadFactor;
+    }
+    int clipCapacity() const { return static_cast<int>(_def->clip * (1.0f + _clipExtra) + 0.5f); }
+    float reloadTime() const { return _def->reloadTime * (1.0f - _reloadFaster); }
+
     // Client mirror: take over what the host reports.
     void setNetState(int clip, int ammo, bool reloading, float reloadFraction)
     {
         _clip = clip; _ammo = ammo; _reloading = reloading;
-        _reloadTimer = reloadFraction * _def->reloadTime;
+        _reloadTimer = reloadFraction * reloadTime();
     }
 
     // Zoom (Weapon::changeZoomLevel): cycles the weapon's zoom levels.
@@ -67,6 +75,7 @@ public:
 private:
     const rules::WeaponDef* _def;
     const WeaponInfo* _info = nullptr;
+    float _clipExtra = 0.0f, _reloadFaster = 0.0f, _spreadFactor = 1.0f;
     int _zoom          = 0;
     int _burstLeft     = 0;
     float _burstTimer  = 0.0f;

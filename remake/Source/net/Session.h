@@ -45,6 +45,7 @@ public:
     // Host-chosen options; the cap is limited to 2..12 and never below the people present.
     void setOptions(HostOptions o);
     const std::vector<PlayerInfo>& players() const { return _players; }
+    void setHostUpgrades(std::uint16_t mask) { _players[0].upgrades = mask; }
     void setHostReady(bool ready);
     void setHostTeam(int team);
     void kick(int playerId);
@@ -117,7 +118,7 @@ enum class ClientState { Idle, Searching, Joining, InLobby, Playing, Ended, Disc
 class ClientSession : public game::GameDriver
 {
 public:
-    ClientSession(Transport& transport, std::string playerName, MapResolver maps);
+    ClientSession(Transport& transport, std::string playerName, MapResolver maps, std::uint16_t upgrades = 0);
 
     ClientState clientState() const { return _cs; }
     JoinResult lastJoinResult() const { return _joinResult; }
@@ -150,6 +151,8 @@ public:
     std::string banner() const override { return _wave > 0 ? "" : ""; }
     std::string scoreboard() const override;
     bool isNetworked() const override { return true; }
+    int wave() const override { return _wave; }
+    const HostOptions& options() const { return _options; }
     std::vector<Row> results() const override;
     std::string resultTitle() const override;
     game::Match* releaseMatch() { return _match.get(); }
@@ -161,6 +164,7 @@ private:
 
     Transport& _t;
     std::string _name;
+    std::uint16_t _upgrades = 0;
     MapResolver _maps;
     ClientState _cs = ClientState::Idle;
     JoinResult _joinResult = JoinResult::Ok;

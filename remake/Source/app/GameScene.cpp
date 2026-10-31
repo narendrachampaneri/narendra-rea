@@ -9,6 +9,7 @@
 #include "app/HomeScene.h"
 #include "app/LobbyScene.h"
 #include "app/NetContext.h"
+#include "app/SaveStore.h"
 #include "app/MapView.h"
 #include "app/Platform.h"
 #include "app/SoldierView.h"
@@ -154,8 +155,10 @@ bool GameScene::init(const assets::MapDef& def, std::unique_ptr<game::GameDriver
     _ownedDriver = std::move(owned);
     _driver      = driver;
     _match       = &_driver->match();
+    if (!_networked)
+        _match->setUpgrades(0, SaveStore::get().data().upgrades);
 
-    _soldier = SoldierView::create();
+    _soldier = SoldierView::create(SaveStore::get().data().avatar);
     _map->addChild(_soldier, MapView::kZEntities);
 
     // ProjectileManager: 30 tracers drawn from bullet_new.png, stretched into streaks.
@@ -272,7 +275,7 @@ void GameScene::buildHud()
     _grenadeCount->setPosition(_grenadeBtn->getContentSize().width - 8, 8);
     _grenadeCount->enableOutline(Color4B::BLACK, 1);
     _grenadeBtn->addChild(_grenadeCount);
-    if (_networked)
+    if (_networked && SaveStore::get().data().settings.quickMessages)
     {
         _chatBtn = Sprite::createWithSpriteFrameName("msg.png");
         _chatBtn->setPosition(34, visible.height - 80);
@@ -333,8 +336,11 @@ void GameScene::buildHud()
 void GameScene::layoutPads()
 {
     const auto visible = _director->getVisibleSize();
-    _pad.setLayout({rules::kPadInset, rules::kPadInset},
-                   {visible.width - rules::kPadInset, rules::kPadInset});
+    const auto& cfg    = SaveStore::get().data().settings;
+    _pad.setSwapped(cfg.leftHanded);
+    // Sensitivity: a bigger stick travel needs more finger movement for the same push.
+    _pad.setLayout({rules::kPadInset, rules::kPadInset}, {visible.width - rules::kPadInset, rules::kPadInset},
+                   rules::kPadRadius * 100.0f / static_cast<float>(cfg.sensitivity));
     _movePad->setPosition(toAx(_pad.moveCentre()));
     _firePad->setPosition(toAx(_pad.aimCentre()));
 }
@@ -456,11 +462,14 @@ void GameScene::update(float dt)
     else if (_paused)
         return;
 
+    _playTime += dt;
     const int steps = _stepper.advance(dt);
     for (int i = 0; i < steps; ++i)
     {
         _pad.updateStep();
         game::PadState in = _pad.state();
+        if (SaveStore::get().data().settings.autoFire && _pad.aimTouched())
+            in.firing = true;
         in.melee        = std::exchange(_pressed.melee, false);
         in.zoom         = std::exchange(_pressed.zoom, false);
         in.reload       = std::exchange(_pressed.reload, false);
@@ -479,7 +488,10 @@ void GameScene::update(float dt)
             --_viewOffset;
         const float radius     = static_cast<float>(std::max(_viewOffset, rules::kMinViewLead));
         const game::Vec2 aimAt = game::fromCocosAngle(_match->player().fireAngle()) * radius;
-        _lead += (aimAt - _lead) * rules::kViewLeadSmoothing;
+        if (SaveStore::get().data().settings.centredCamera)
+            _lead = {};
+        else
+            _lead += (aimAt - _lead) * rules::kViewLeadSmoothing;
     }
     handleEvents();
 
@@ -516,6 +528,8 @@ void GameScene::updateModeHud()
     if (_networked)
         for (const auto& [from, message] : NetContext::get().takeChat())
         {
+            if (!SaveStore::get().data().settings.quickMessages)
+                continue;
             const auto* f = _match->fighter(from);
             _chatLine->setString((f ? f->name : std::string("Host")) + ": " + net::kQuickMessages[message]);
             _chatLine->stopAllActions();
@@ -534,9 +548,31 @@ void GameScene::updateModeHud()
         showEnd();
 }
 
+void GameScene::record()
+{
+    if (_recorded)
+        return;
+    _recorded = true;
+    using economy::MatchKind;
+    MatchKind kind = MatchKind::Solo;
+    if (_networked)
+    {
+        auto mode = net::GameMode::Deathmatch;
+        if (auto* h = NetContext::get().host())
+            mode = h->options().mode;
+        else if (auto* c = NetContext::get().client())
+            mode = c->options().mode;
+        kind = mode == net::GameMode::CoopSurvival ? MatchKind::WifiCoop
+               : mode == net::GameMode::TeamDeathmatch ? MatchKind::WifiTeamDeathmatch : MatchKind::WifiDeathmatch;
+    }
+    const auto summary = SaveStore::get().recordMatch(kind, *_driver, _playTime, _driver->wave(), _driver->score());
+    _coinsEarned       = summary.coins;
+}
+
 void GameScene::showEnd()
 {
     _ended = true;
+    record();
     if (!_networked)
         setPaused(true);
     const auto visible = _director->getVisibleSize();
@@ -574,6 +610,13 @@ void GameScene::showEnd()
     head->setPosition(origin.x + visible.width * 0.8f, visible.height - 50);
     _endPanel->addChild(head);
 
+    if (_coinsEarned > 0)
+    {
+        auto* coins = Label::createWithTTF(fmt::format("+{} COINS", _coinsEarned), "fonts/arial.ttf", 14);
+        coins->setColor(Color3B(255, 220, 80));
+        coins->setPosition(origin + Vec2(visible.width * 0.5f, 52));
+        _endPanel->addChild(coins);
+    }
     auto* menu = Menu::create();
     menu->setPosition(Vec2::ZERO);
     _endPanel->addChild(menu);
@@ -633,6 +676,8 @@ void GameScene::handleEvents()
             break;
         case game::EventType::Blood:
             spawnBlood(e.pos, 1);
+            if (e.fighter == _match->playerFighter().id && SaveStore::get().data().settings.vibration)
+                platform::vibrate(25);
             break;
         }
     }
@@ -661,11 +706,20 @@ float GameScene::soundVolumeAt(const game::Vec2& pos) const
 void GameScene::spawnBlood(const game::Vec2& pos, int amount)
 {
     // Blood.plist, the original's blood burst (blood on by default; the switch arrives in M6).
+    const auto& cfg = SaveStore::get().data().settings;
+    if (!cfg.blood)
+        return;
+    const auto& c = save::kBloodColours[cfg.bloodColour];
     for (int i = 0; i < amount; ++i)
     {
         auto* blood = ParticleSystemQuad::create("Blood.plist");
         if (!blood)
             return;
+        if (cfg.bloodColour != 0)
+        {
+            blood->setStartColor(Color4F(c[0] / 255.0f, c[1] / 255.0f, c[2] / 255.0f, 1.0f));
+            blood->setEndColor(Color4F(c[0] / 255.0f, c[1] / 255.0f, c[2] / 255.0f, 0.0f));
+        }
         blood->setPosition(toAx(pos));
         blood->setAutoRemoveOnFinish(true);
         _map->addChild(blood, MapView::kZEntities + 1);
@@ -873,6 +927,8 @@ void GameScene::quit()
     if (_leaving)
         return;
     _leaving = true;
+    if (_playTime > 5.0f)
+        record();  // leaving early still counts the kills and the time
     AudioSystem::get().resumeAll();
     if (_networked)
         NetContext::get().close();

@@ -27,4 +27,13 @@ void setMulticastLock(bool on)
 #endif
 }
 
+void vibrate(int milliseconds)
+{
+#if AX_TARGET_PLATFORM == AX_PLATFORM_ANDROID
+    ax::JniHelper::callStaticVoidMethod("dev/axmol/app/AppActivity", "vibrate", milliseconds);
+#else
+    (void)milliseconds;
+#endif
+}
+
 }  // namespace mm::app::platform
