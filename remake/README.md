@@ -249,6 +249,12 @@ libvorbis and the Python packages numpy and py7zr; downloads the CC0 packs once 
 5. SOUND plays each new sound in turn (name shown in green); MUSIC toggles the menu music.
 6. Report: fps, the "textures" value on Outpost, and anything misplaced or missing.
 
+## Merging and releasing (owner steps)
+1. Merge the branches in order into `main` (each contains the earlier ones): `remake/m1-skeleton` ... `m5-wifi`, `m6-menus`, `m7-polish`, `m8-release`, `m9-hardening`, `m10-final`. Merging the last one brings everything.
+2. Run the checks in `TEST-CHECKLIST.md` on real phones.
+3. Add the four signing secrets (below), then push a tag, e.g. `git tag v1.0.0 && git push origin v1.0.0`.
+4. Nothing is ever uploaded to an app store; the APK stays a GitHub Release asset.
+
 ## Releases
 Push a tag such as `v1.0.0`: workflow `Remake release` builds a signed APK and attaches it to
 the GitHub Release with its SHA-256. Add these **repository secrets** (Settings > Secrets and
