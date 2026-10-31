@@ -14,6 +14,7 @@ namespace mm::rules
 constexpr int kSpaceIterations  = 2;      // cpSpaceSetIterations
 constexpr int kSubsteps         = 2;      // two cpSpaceStep(dt / 2) per frame
 constexpr float kMaxFrameDt     = 0.25f;  // the original clamps its frame time
+constexpr float kPartyLowGravity = 0.35f; // NEW (M7 party option): gravity multiplier
 
 // Chipmunk 5 collision types / groups / layers. The remake maps "layers" to Chipmunk 7
 // categories and mask (collide when the layers share a bit), "group" stays a group.

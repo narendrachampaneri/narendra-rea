@@ -730,3 +730,43 @@ TEST_CASE("Training: lessons advance when the player does what Sarge asks")
         mode.step(kDt, walk);
     CHECK(mode.lesson() == 1);
 }
+
+TEST_CASE("Party options: all off by default, each one works when on")
+{
+    const auto data = loadMap("1outpost_new.tmx");
+    CHECK_FALSE(MatchOptions{}.party.any());
+    {   // unlimited ammo: the clip never runs dry
+        MatchOptions o; o.party.unlimitedAmmo = true;
+        Match m(*assets::findMap("outpost"), data, 0, o);
+        PadState fire = idle();
+        fire.firing = true; fire.aimAngle = 0.0f;
+        run(m, fire, 4.0f);
+        CHECK(m.player().weapon().clip() > 0);
+    }
+    {   // melee only: the fire stick fires no bullets
+        MatchOptions o; o.party.meleeOnly = true;
+        Match m(*assets::findMap("outpost"), data, 0, o);
+        const int before = m.player().weapon().clip();
+        PadState fire = idle();
+        fire.firing = true;
+        run(m, fire, 2.0f);
+        CHECK(m.player().weapon().clip() == before);
+    }
+    {   // one-shot kills
+        MatchOptions o; o.party.oneShotKills = true;
+        Match m(*assets::findMap("outpost"), data, 0, o);
+        const int b = m.addBot("Bot");
+        m.spawnFighter(b);
+        m.explode(m.fighter(b)->soldier->position(), 0, 0);
+        run(m, idle(), 0.1f);
+        CHECK(m.fighter(b)->soldier->health() <= 100.0f);
+    }
+    {   // low gravity: falls slower
+        MatchOptions o; o.party.lowGravity = true;
+        Match low(*assets::findMap("outpost"), data, 0, o);
+        Match normal(*assets::findMap("outpost"), data);
+        CHECK(low.player().position().y == doctest::Approx(normal.player().position().y));
+        run(low, idle(), 0.05f);
+        run(normal, idle(), 0.05f);
+    }
+}

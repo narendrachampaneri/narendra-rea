@@ -51,7 +51,7 @@ void Match::addMirrorSoldier(int id, Vec2 at)
     Fighter* f = fighter(id);
     if (!f || f->soldier)
         return;
-    f->soldier = std::make_unique<Soldier>(_physics, at, _def.gravityFactor, _events, id,
+    f->soldier = std::make_unique<Soldier>(_physics, at, gravityFactor(), _events, id,
                                            f->human ? rules::kSoldierCollision : rules::kRemoteCollision);
     f->soldier->setMirror();
 }
@@ -162,7 +162,7 @@ Vec2 Match::safeSpawnFor(int fighterId)
 void Match::spawn(Fighter& f, Vec2 at)
 {
     f.soldier.reset();
-    f.soldier = std::make_unique<Soldier>(_physics, at, _def.gravityFactor, _events, f.id,
+    f.soldier = std::make_unique<Soldier>(_physics, at, gravityFactor(), _events, f.id,
                                           f.human ? rules::kSoldierCollision : rules::kRemoteCollision);
     f.respawnTimer = 0.0f;
     f.soldier->setBoosts(f.boosts);
@@ -188,7 +188,7 @@ void Match::killFighter(Fighter& f)
     if (killer >= 0 && killer != f.id)
         if (Fighter* k = fighter(killer))
             ++k->kills;
-    _ragdolls.push_back(std::make_unique<Ragdoll>(_physics, s.position(), s.velocity(), _def.gravityFactor,
+    _ragdolls.push_back(std::make_unique<Ragdoll>(_physics, s.position(), s.velocity(), gravityFactor(),
                                                   s.facingRight(), [this] { return random11(); }));
     s.deactivate();
     f.respawnTimer = _options.respawnTime;
@@ -198,6 +198,8 @@ void Match::hitSoldier(Fighter& f, cpShape*, float damage, bool network, int att
                        Vec2 dir)
 {
     (void)network;
+    if (_options.party.oneShotKills)
+        damage = 1000.0f;
     f.soldier->addDamage(damage, attacker, ammoType);
     GameEvent e{EventType::Blood};
     e.pos     = point;
@@ -255,7 +257,7 @@ const MapItem* Match::item(int uid) const
 int Match::dropItem(std::unique_ptr<Weapon> weapon, Vec2 at, Vec2 velocity, int spawn)
 {
     const int uid = _nextItemUid++;
-    _items.push_back(std::make_unique<MapItem>(_physics, uid, std::move(weapon), at, velocity, _def.gravityFactor));
+    _items.push_back(std::make_unique<MapItem>(_physics, uid, std::move(weapon), at, velocity, gravityFactor()));
     _items.back()->spawn = spawn;
     return uid;
 }
@@ -374,7 +376,7 @@ void Match::throwGrenade(Fighter& f)
         return;
     auto g   = std::make_unique<Grenade>();
     g->owner = f.id;
-    g->gravity = Vec2{0.0f, rules::kGrenadeGravity} * _def.gravityFactor;
+    g->gravity = Vec2{0.0f, rules::kGrenadeGravity} * gravityFactor();
     g->body  = cpSpaceAddBody(_physics.space(), cpBodyNew(1.0, cpMomentForCircle(1.0, 0, 4, cpvzero)));
     cpBodySetPosition(g->body, cpv(s.muzzlePosition()));
     cpBodySetVelocity(g->body, cpv(fromCocosAngle(s.fireAngle()) * rules::kGrenadeSpeed + s.velocity()));
@@ -525,6 +527,11 @@ void Match::fireShots(Fighter& f, int shots)
     }
 }
 
+float Match::gravityFactor() const
+{
+    return _def.gravityFactor * (_options.party.lowGravity ? rules::kPartyLowGravity : 1.0f);
+}
+
 void Match::step(float dt, const PadState& pad)
 {
     dt = std::min(dt, rules::kMaxFrameDt);
@@ -549,6 +556,12 @@ void Match::step(float dt, const PadState& pad)
             f.netInput.pickUp = f.netInput.zoom = false;
         }
         Soldier& s        = *f.soldier;
+        if (_options.party.meleeOnly && !(s.weapon().info() && s.weapon().info()->melee))
+        {
+            if (in.firing)
+                in.melee = true;  // the fire stick punches instead
+            in.firing = false;
+        }
         s.setFireAngle(in.aimAngle);
         s.updateStep(dt, in);
         s.setJoyOffset(in.moveOffset);
@@ -570,6 +583,8 @@ void Match::step(float dt, const PadState& pad)
             ++shots;
         if (shots > 0)
             fireShots(f, shots);
+        if (_options.party.unlimitedAmmo && !_options.mirror)
+            s.weapon().refill();
         updateMelee(f);
         updatePickUps(f, in.pickUp);
     }
@@ -658,7 +673,7 @@ void Match::applySnapshot(const net::Snapshot& s)
         const bool alive = fs.flags & 1;
         if (!f->soldier)
         {
-            f->soldier = std::make_unique<Soldier>(_physics, Vec2{fs.x, fs.y}, _def.gravityFactor, _events, f->id,
+            f->soldier = std::make_unique<Soldier>(_physics, Vec2{fs.x, fs.y}, gravityFactor(), _events, f->id,
                                                    f->human ? rules::kSoldierCollision : rules::kRemoteCollision);
             f->soldier->setMirror();
         }
@@ -668,14 +683,14 @@ void Match::applySnapshot(const net::Snapshot& s)
         if (wasAlive && !alive)
         {
             // Dies here: the same ragdoll and death effect as on the host.
-            _ragdolls.push_back(std::make_unique<Ragdoll>(_physics, sol.position(), sol.velocity(), _def.gravityFactor,
+            _ragdolls.push_back(std::make_unique<Ragdoll>(_physics, sol.position(), sol.velocity(), gravityFactor(),
                                                           sol.facingRight(), [this] { return random11(); }));
             sol.deactivate();
         }
         else if (!wasAlive && alive)
         {
             // Respawn: a fresh mirror soldier.
-            f->soldier = std::make_unique<Soldier>(_physics, Vec2{fs.x, fs.y}, _def.gravityFactor, _events, f->id,
+            f->soldier = std::make_unique<Soldier>(_physics, Vec2{fs.x, fs.y}, gravityFactor(), _events, f->id,
                                                    f->human ? rules::kSoldierCollision : rules::kRemoteCollision);
             f->soldier->setMirror();
             f->soldier->applyNet(fs);
@@ -727,7 +742,7 @@ void Match::applyItemList(const net::ItemList& l)
             item = std::make_unique<MapItem>(
                 _physics, st.uid,
                 std::make_unique<Weapon>(static_cast<WeaponId>(std::min<int>(st.weapon, static_cast<int>(WeaponId::Count) - 1))),
-                Vec2{st.x, st.y}, Vec2{}, _def.gravityFactor);
+                Vec2{st.x, st.y}, Vec2{}, gravityFactor());
         item->setMirrorPose({st.x, st.y}, st.angle);
         kept.push_back(std::move(item));
     }

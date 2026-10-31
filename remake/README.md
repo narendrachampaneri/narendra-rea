@@ -22,11 +22,21 @@ continues from the next unfinished milestone. Private project: never publish to 
 | M2 | Assets | done on `remake/m2-assets` (branched from M1): `Remake build` green; awaiting phone check and owner merge |
 | M3 | Single-device slice | **done on `remake/m3-slice` (branched from M2): playable from QUICK PLAY; awaiting green `Remake build`, phone check and owner merge** |
 | M4 | Full single-device game | **built on `remake/m4-game` (branched from M3); awaiting green `Remake build`, phone check and owner merge. dual wield, gas/proximity grenades and drones are left for M7 (see "What works (M4)")** |
+| M7 | Polish and extras | **built on `remake/m7-polish` (from M6): host options, party extras, crosshair; awaiting CI and on-device check** |
 | M6 | Menus, Coins, store, avatar, leaderboards, settings, saves | **built on `remake/m6-menus` (branched from M5); awaiting CI and an on-device check** |
 | M5 | Wi-Fi multiplayer | **built on `remake/m5-wifi` (branched from M4); protocol in `LAN-PROTOCOL.md`; awaiting CI, a two-phone test and owner merge** |
 | M6 | Menus and meta | not started |
 | M7 | Performance and polish | not started |
 | M8 | Release v1 | not started |
+
+## What works (M7: host options and extras)
+- Lobby (host taps a line): respawn time 3-15 s, friendly fire, and four **party options**, all OFF by default: low gravity, unlimited ammo, one-shot kills, melee only. With all off the match plays by the original rules. They travel in the lobby/start messages (`LAN-PROTOCOL.md` HostOptions: respawn, friendlyFire, party bits) and are applied by the host's simulation.
+- Settings: crosshair style (off / dot / cross / ring), off by default.
+- Records and totals are on the Leaderboards screen.
+- Not done yet (listed in "Known problems"): allowed-weapons list, map vote, dual wield / Pro Pack items drawing, button-placement editor, Bluetooth controller, QR joining.
+
+### On-device check for M7
+1. Host a game, switch each party option on, start: gravity is lower / ammo never ends / one hit kills / fire stick punches. 2. Settings > Crosshair shows a sight in the aim direction. 3. With all options off nothing differs from M6.
 
 ## What works (M6: menus and meta)
 - First launch asks for a player name and offers Training; Home screen with player card and pill buttons (Quick Play, Multiplayer, Solo Play, Store, Avatar, Leaderboards, Settings, About, What's New).
@@ -255,6 +265,7 @@ Create the key once: `keytool -genkeypair -v -keystore release.jks -alias kadiya
 Keep the file out of git (it is git-ignored); losing it means future updates cannot install over old ones.
 
 ## Known problems / not reproduced yet
+- Still missing from the spec (as of M7): allowed-weapons list and map vote in the lobby, Pro Pack dual-wield drawing and masks, gas/proximity grenades, laser-sight drawing, flame/saw visuals, Survival drones, button-placement editor, Bluetooth controller, QR joining. Each has a place in M9.
 - The authoring sandbox cannot run Gradle (no Android SDK); builds are verified by GitHub Actions. Not yet run on a phone.
 - Spoken lines have no new recordings except "cover me", "ready", "go go go" and "target
   destroyed" (CC0 Kenney voiceover). Sarge's ~40 training lines and the other taunts are silent

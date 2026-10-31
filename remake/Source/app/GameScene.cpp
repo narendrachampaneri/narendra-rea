@@ -518,8 +518,37 @@ void GameScene::update(float dt)
     _fireStick->setPosition(toAx(_pad.aimKnob()));
     _firePad->setColor(_pad.fire() ? Color3B(255, 150, 150) : Color3B::WHITE);
     updateCamera(dt);
+    updateCrosshair();
     updateHud();
     updateModeHud();
+}
+
+// NEW (M7 extra, off by default): a sight in the aim direction, styles from the settings.
+void GameScene::updateCrosshair()
+{
+    const int style = SaveStore::get().data().settings.crosshair;
+    if (!_cross)
+    {
+        _cross = DrawNode::create();
+        _map->addChild(_cross, MapView::kZEntities + 2);
+    }
+    _cross->clear();
+    if (style == 0 || !_match || !_match->playerAlive())
+        return;
+    const auto& s   = _match->player();
+    const float a   = s.fireAngle() * 3.14159265f / 180.0f;
+    const auto p    = s.position();
+    const Vec2 c(p.x + std::cos(a) * 90.0f, p.y - std::sin(a) * 90.0f);
+    const Color4F col(1.0f, 0.95f, 0.4f, 0.85f);
+    if (style == 1)
+        _cross->drawSolidCircle(c, 2.5f, 0, 12, col);
+    else if (style == 2)
+    {
+        _cross->drawLine(c + Vec2(-7, 0), c + Vec2(7, 0), col);
+        _cross->drawLine(c + Vec2(0, -7), c + Vec2(0, 7), col);
+    }
+    else
+        _cross->drawCircle(c, 6.0f, 0, 16, false, col);
 }
 
 void GameScene::updateModeHud()

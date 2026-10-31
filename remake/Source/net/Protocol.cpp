@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "net/Protocol.h"
 
 #include <cmath>
@@ -38,6 +39,9 @@ void putOptions(Writer& w, const HostOptions& o)
     w.u8(o.maxPlayers);
     w.u8(o.killLimit);
     w.u8(o.fair ? 1 : 0);
+    w.u8(o.respawn);
+    w.u8(o.friendlyFire ? 1 : 0);
+    w.u8(o.party);
 }
 HostOptions getOptions(Reader& r)
 {
@@ -48,6 +52,9 @@ HostOptions getOptions(Reader& r)
     o.maxPlayers = r.u8();
     o.killLimit  = r.u8();
     o.fair       = r.u8() != 0;
+    o.respawn    = std::clamp<std::uint8_t>(r.u8(), 3, 15);
+    o.friendlyFire = r.u8() != 0;
+    o.party      = r.u8() & 0x0f;
     return o;
 }
 void putPlayers(Writer& w, const std::vector<PlayerInfo>& ps)

@@ -49,7 +49,7 @@ std::string toText(const SaveData& d)
     const Settings& s = d.settings;
     o << "settings " << s.soundVolume << ' ' << s.musicVolume << ' ' << s.blood << ' ' << s.bloodColour << ' '
       << s.centredCamera << ' ' << s.leftHanded << ' ' << s.autoFire << ' ' << s.vibration << ' ' << s.sensitivity
-      << ' ' << s.quickMessages << ' ' << static_cast<int>(s.quality) << ' ' << s.frameRate << ' ' << s.qualityAuto << "\n";
+      << ' ' << s.quickMessages << ' ' << static_cast<int>(s.quality) << ' ' << s.frameRate << ' ' << s.qualityAuto << ' ' << s.crosshair << "\n";
     const Stats& t = d.stats;
     o << "stats " << t.kills << ' ' << t.deaths << ' ' << t.matches << ' ' << t.bestSurvivalWave << ' '
       << t.bestSurvivalScore << ' ' << t.bestCoopWave << ' ' << t.bestDeathmatchKills << ' ' << t.playSeconds << "\n";
@@ -112,6 +112,9 @@ std::optional<SaveData> fromText(std::string_view text)
             if (!(v >> qa))
                 qa = 1;
             s.qualityAuto = qa != 0;
+            if (!(v >> s.crosshair))
+                s.crosshair = 0;
+            s.crosshair = std::clamp(s.crosshair, 0, 3);
             s.blood = blood; s.centredCamera = centred; s.leftHanded = left; s.autoFire = auto_;
             s.vibration = vib; s.quickMessages = qm;
             s.soundVolume = std::clamp(s.soundVolume, 0, 100);

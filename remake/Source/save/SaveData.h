@@ -40,6 +40,7 @@ struct Settings
     bool quickMessages = true;
     bool qualityAuto = true;     // true: pick the art resolution from the screen (the original rule)
     Quality quality = Quality::Medium;  // used when qualityAuto is off: Smooth sd, Medium hd, High / Extreme hdr
+    int crosshair = 0;           // NEW (M7 extra): 0 none (original look), 1 dot, 2 cross, 3 ring
     int frameRate = 60;          // 30, 60, 90, 120
     bool operator==(const Settings&) const = default;
 };

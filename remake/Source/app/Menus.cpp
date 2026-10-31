@@ -468,6 +468,8 @@ bool SettingsScene::init()
                  else
                      cfg.quality = static_cast<save::Quality>(static_cast<int>(cfg.quality) + 1);
              });
+    addCycle(right, yr, [&cfg] { return "CROSSHAIR: " + std::vector<std::string>{"OFF", "DOT", "CROSS", "RING"}[cfg.crosshair]; },
+             [&cfg] { cfg.crosshair = (cfg.crosshair + 1) % 4; });
     addCycle(right, yr, [&cfg] { return "FRAME RATE: " + std::to_string(cfg.frameRate) + " FPS"; },
              [&cfg] { cfg.frameRate = cfg.frameRate == 30 ? 60 : cfg.frameRate == 60 ? 90 : cfg.frameRate == 90 ? 120 : 30; });
 

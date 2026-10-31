@@ -52,9 +52,9 @@ bool LobbyScene::init()
     addChild(menu, 5);
 
     // Left: the options. The host taps a line to change it; guests just read them.
-    for (int i = 0; i < 5; ++i)
+    for (int i = 0; i < kOptionRows; ++i)
     {
-        auto* label = Label::createWithTTF("", "fonts/arial.ttf", 12);
+        auto* label = Label::createWithTTF("", "fonts/arial.ttf", 11);
         label->setAnchorPoint({0, 0.5f});
         _options[i] = label;
         auto* item  = MenuItemLabel::create(label, [this, i](Object*) {
@@ -79,12 +79,15 @@ bool LobbyScene::init()
             case 2: o.minutes = o.minutes % 8 + 1; break;
             case 3: o.maxPlayers = o.maxPlayers >= 12 ? 2 : o.maxPlayers + 1; break;
             case 4: o.fair = !o.fair; break;
+            case 5: o.respawn = o.respawn >= 15 ? 3 : o.respawn + 2; break;
+            case 6: o.friendlyFire = !o.friendlyFire; break;
+            case 7: case 8: case 9: case 10: o.party ^= static_cast<std::uint8_t>(1u << (i - 7)); break;
             }
             host->setOptions(o);
             refresh();
         });
         item->setAnchorPoint({0, 0.5f});
-        item->setPosition(origin.x + 14, origin.y + visible.height - 48 - i * 24);
+        item->setPosition(origin.x + 14, origin.y + visible.height - 44 - i * 21);
         menu->addChild(item);
     }
 
@@ -95,7 +98,7 @@ bool LobbyScene::init()
 
     _address = Label::createWithTTF("", "fonts/arial.ttf", 9);
     _address->setAnchorPoint({0, 0.5f});
-    _address->setPosition(origin.x + 14, origin.y + visible.height - 48 - 5 * 24);
+    _address->setPosition(origin.x + 14, origin.y + visible.height - 44 - kOptionRows * 21);
     addChild(_address, 5);
 
     _chat = Label::createWithTTF("", "fonts/arial.ttf", 10);
@@ -184,6 +187,13 @@ void LobbyScene::refresh()
     _options[2]->setString(o.mode == GameMode::CoopSurvival ? "LENGTH: until everyone is out" : fmt::format("LENGTH: {} MIN", o.minutes));
     _options[3]->setString(fmt::format("MAX PLAYERS: {}", o.maxPlayers));
     _options[4]->setString(std::string("FAIR MODE: ") + (o.fair ? "ON (same gun, no pick-ups)" : "OFF"));
+    auto onoff = [](bool b) { return b ? "ON" : "OFF"; };
+    _options[5]->setString(fmt::format("RESPAWN TIME: {} S", o.respawn));
+    _options[6]->setString(std::string("FRIENDLY FIRE: ") + onoff(o.friendlyFire));
+    _options[7]->setString(std::string("PARTY: LOW GRAVITY ") + onoff(o.party & 1));
+    _options[8]->setString(std::string("PARTY: UNLIMITED AMMO ") + onoff(o.party & 2));
+    _options[9]->setString(std::string("PARTY: ONE-SHOT KILLS ") + onoff(o.party & 4));
+    _options[10]->setString(std::string("PARTY: MELEE ONLY ") + onoff(o.party & 8));
 
     std::string list = "PLAYERS\n";
     for (const auto& p : players)

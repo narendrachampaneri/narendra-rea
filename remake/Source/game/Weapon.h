@@ -38,6 +38,7 @@ public:
     // WeaponManager::transferAmmo: takes rounds from a dropped weapon of the same kind, up to
     // the maximum; returns how many were taken.
     int addAmmo(int rounds);
+    void refill() { _clip = clipCapacity(); _reloading = false; _ammo = _def->maxAmmo; }
     bool ammoFull() const { return _ammo >= _def->maxAmmo; }
 
     // M16: the two shots that follow a burst's first one, 0.06 s apart (M16::updateItemStep).

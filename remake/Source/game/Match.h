@@ -47,8 +47,20 @@ struct Fighter
     bool alive() const { return soldier && !soldier->isDead(); }
 };
 
+// Host "party" options (M7 extras). Everything is off by default: with all of them off the
+// match plays exactly like the original rules.
+struct PartyOptions
+{
+    bool lowGravity     = false;
+    bool unlimitedAmmo  = false;
+    bool oneShotKills   = false;
+    bool meleeOnly      = false;
+    bool any() const { return lowGravity || unlimitedAmmo || oneShotKills || meleeOnly; }
+};
+
 struct MatchOptions
 {
+    PartyOptions party;
     float respawnTime = 9.0f;  // SoldierManager::respawnPlayer: 9 s
     bool createLocal  = true;  // false: a client mirror; fighters are added with addFighter()
     int localId       = 0;     // the fighter this phone controls
@@ -173,6 +185,7 @@ private:
     void updateExplosives(float dt);
     int _nextItemUid    = 1;
     std::size_t _spawnCursor = 0;
+    float gravityFactor() const;
     float random11();  // uniform in [-1, 1]
 
     const assets::MapDef& _def;

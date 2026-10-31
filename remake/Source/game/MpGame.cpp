@@ -40,6 +40,12 @@ MultiplayerGame::MultiplayerGame(const assets::MapDef& def, const assets::MapDat
     mo.respawn       = false;  // Co-op enemies never come back
     mo.playerRespawn = true;
     mo.weaponPickups = !_options.fair;
+    mo.respawnTime   = static_cast<float>(_options.respawn);
+    mo.friendlyFire  = _options.friendlyFire;
+    mo.party.lowGravity    = _options.party & 1;
+    mo.party.unlimitedAmmo = _options.party & 2;
+    mo.party.oneShotKills  = _options.party & 4;
+    mo.party.meleeOnly     = _options.party & 8;
     mo.allowBoosts   = !_options.fair;  // Fair mode: everybody plays with base stats
     _match = std::make_unique<Match>(def, data, 0, mo);
     for (const auto& p : _players)
