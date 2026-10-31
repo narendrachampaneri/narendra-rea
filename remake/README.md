@@ -22,6 +22,9 @@ continues from the next unfinished milestone. Private project: never publish to 
 | M2 | Assets | done on `remake/m2-assets` (branched from M1): `Remake build` green; awaiting phone check and owner merge |
 | M3 | Single-device slice | **done on `remake/m3-slice` (branched from M2): playable from QUICK PLAY; awaiting green `Remake build`, phone check and owner merge** |
 | M4 | Full single-device game | **built on `remake/m4-game` (branched from M3); awaiting green `Remake build`, phone check and owner merge. dual wield, gas/proximity grenades and drones are left for M7 (see "What works (M4)")** |
+| M10 | Final docs and handoff (assumed scope) | **on `remake/m10-final`** |
+| M9 | Hardening (assumed scope) | **on `remake/m9-hardening`: fuzz tests for the network decoder and the save parser** |
+| M8 | Release docs | **on `remake/m8-release`: TEST-CHECKLIST.md, owner merge/release steps** |
 | M7 | Polish and extras | **built on `remake/m7-polish` (from M6): host options, party extras, crosshair; awaiting CI and on-device check** |
 | M6 | Menus, Coins, store, avatar, leaderboards, settings, saves | **built on `remake/m6-menus` (branched from M5); awaiting CI and an on-device check** |
 | M5 | Wi-Fi multiplayer | **built on `remake/m5-wifi` (branched from M4); protocol in `LAN-PROTOCOL.md`; awaiting CI, a two-phone test and owner merge** |
@@ -248,6 +251,9 @@ libvorbis and the Python packages numpy and py7zr; downloads the CC0 packs once 
 4. Tap the map: a particle effect appears; FX cycles all 10 (blood, grass, smoke, shells...).
 5. SOUND plays each new sound in turn (name shown in green); MUSIC toggles the menu music.
 6. Report: fps, the "textures" value on Outpost, and anything misplaced or missing.
+
+## Assumption about M9 and M10
+The original prompt defines M0-M8 only. Because the owner asked for "m9, m10" too, I took M9 = hardening / quality tests and M10 = final documentation and hand-off. Tell me if you meant something else (for example the still-missing features listed under Known problems).
 
 ## Merging and releasing (owner steps)
 1. Merge the branches in order into `main` (each contains the earlier ones): `remake/m1-skeleton` ... `m5-wifi`, `m6-menus`, `m7-polish`, `m8-release`, `m9-hardening`, `m10-final`. Merging the last one brings everything.

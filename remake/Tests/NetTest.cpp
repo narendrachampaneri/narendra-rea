@@ -623,3 +623,58 @@ TEST_CASE("Real UDP on this computer: packets go there and back")
     CHECK(std::get<Ping>(*m).stamp == 42);
     CHECK(p.from.port == a->local().port);
 }
+
+#include <random>
+#include "save/SaveData.h"
+
+TEST_CASE("Fuzz: random and mutated packets never crash the decoder")
+{
+    std::mt19937 rng(12345);
+    for (int i = 0; i < 20000; ++i)
+    {
+        std::vector<std::uint8_t> b(rng() % 300);
+        for (auto& x : b)
+            x = static_cast<std::uint8_t>(rng());
+        if (b.size() > 3 && (i & 1))
+        {
+            b[0] = 'M'; b[1] = 'M'; b[2] = kProtocolVersion; b[3] = static_cast<std::uint8_t>(rng() % 24);
+        }
+        (void)decode(b);
+    }
+    // Every valid packet, cut at every length and with one flipped byte.
+    LobbyState l;
+    l.players = {{0, "Host", 0, true, true}, {1, "Ann", 1, false, false}};
+    const auto good = encode(l);
+    for (std::size_t n = 0; n < good.size(); ++n)
+        (void)decode(good.data(), n);
+    for (std::size_t i = 0; i < good.size(); ++i)
+    {
+        auto c = good;
+        c[i] ^= 0xff;
+        (void)decode(c);
+    }
+    CHECK(true);
+}
+
+TEST_CASE("Fuzz: damaged save text never crashes and stays within limits")
+{
+    mm::save::SaveData d;
+    d.name = "Test";
+    auto text = mm::save::toText(d);
+    std::mt19937 rng(777);
+    for (int i = 0; i < 3000; ++i)
+    {
+        auto t = text;
+        for (int k = 0; k < 1 + static_cast<int>(rng() % 6); ++k)
+            t[rng() % t.size()] = static_cast<char>(rng());
+        if (rng() % 5 == 0)
+            t.resize(rng() % t.size());
+        auto r = mm::save::fromText(t);
+        if (r)
+        {
+            CHECK(r->coins >= 0);
+            CHECK(r->settings.soundVolume >= 0);
+            CHECK(r->settings.soundVolume <= 100);
+        }
+    }
+}
