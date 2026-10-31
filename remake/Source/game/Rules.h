@@ -139,4 +139,18 @@ constexpr std::uint32_t kRemoteBulletLayers = 0x198; // bullets of type 0x104: t
 constexpr float kExplosionFlashTime = 0.15f;
 constexpr float kExplosionLifetime  = 5.0f;
 
+// ---- Explosives (FRAGNADE, Explosion::applyDamage, ProjectileManager) -------------------
+constexpr float kGrenadeFuse      = 1.75f;    // FRAGNADE::updateItemStep
+constexpr float kGrenadeGravity   = -250.0f;  // FRAGNADE::initBody
+constexpr int kStartGrenades      = 2;        // FRAGNADE +0x1e8 starting count
+constexpr float kExplosionRadius  = 125.0f;   // Explosion::applyDamage: soldiers closer than this
+constexpr float kExplosionDamage  = 100.0f;   // damage = max(10, 100 - 0.8 * distance)
+constexpr float kExplosionFalloff = 0.8f;
+constexpr float kExplosionMinDamage = 10.0f;
+constexpr float kExplosionKnockCap = 40.0f;   // impulse = min(damage, 40) * 10 * mass
+// NEW: launch speeds (ProjectileManager::addGrenade / addRocket are only partly recovered).
+constexpr float kGrenadeSpeed     = 420.0f;
+constexpr float kRocketSpeed      = 650.0f;
+constexpr float kRocketLife       = 4.0f;
+
 }  // namespace mm::rules

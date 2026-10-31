@@ -70,6 +70,27 @@ public:
     const std::vector<std::unique_ptr<Ragdoll>>& ragdolls() const { return _ragdolls; }
     const std::vector<std::unique_ptr<MapItem>>& items() const { return _items; }
     const MapItem* item(int uid) const;
+
+    struct Grenade
+    {
+        cpBody* body   = nullptr;
+        cpShape* shape = nullptr;
+        float fuse     = rules::kGrenadeFuse;
+        int owner      = -1;
+        Vec2 gravity;
+    };
+    struct Rocket
+    {
+        Vec2 pos, prev, velocity;
+        float life = rules::kRocketLife;
+        int owner  = -1;
+        bool alive = true;
+    };
+    const std::vector<std::unique_ptr<Grenade>>& grenades() const { return _grenades; }
+    const std::vector<Rocket>& rockets() const { return _rockets; }
+    // Explosion::applyDamage around a point: soldiers within 125 points take
+    // max(10, 100 - 0.8 d) and a push away from the blast.
+    void explode(Vec2 at, int owner, int ammoType);
     // Drops a weapon at a point (tests, and dropped weapons).
     int dropItem(std::unique_ptr<Weapon> weapon, Vec2 at, Vec2 velocity, int spawn = -1);
 
@@ -110,6 +131,11 @@ private:
     };
     std::vector<WeaponSpawn> _weaponSpawns;
     std::vector<std::unique_ptr<MapItem>> _items;
+    std::vector<std::unique_ptr<Grenade>> _grenades;
+    std::vector<Rocket> _rockets;
+    void throwGrenade(Fighter& f);
+    void launchRocket(Fighter& f);
+    void updateExplosives(float dt);
     int _nextItemUid    = 1;
     std::size_t _spawnCursor = 0;
     float random11();  // uniform in [-1, 1]

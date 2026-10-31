@@ -241,6 +241,15 @@ void GameScene::buildHud()
     _melee->setScale(0.8f);
     _melee->setPosition(visible.width - 185, 35);
     _hud->addChild(_melee, 1);
+    // Grenade at GRENADE_POS, above the melee button.
+    _grenadeBtn = Sprite::createWithSpriteFrameName("grenadeBtn.png");
+    _grenadeBtn->setScale(0.8f);
+    _grenadeBtn->setPosition(visible.width - 120, 70);
+    _hud->addChild(_grenadeBtn, 1);
+    _grenadeCount = Label::createWithTTF("2", "fonts/arial.ttf", 11);
+    _grenadeCount->setPosition(_grenadeBtn->getContentSize().width - 8, 8);
+    _grenadeCount->enableOutline(Color4B::BLACK, 1);
+    _grenadeBtn->addChild(_grenadeCount);
     _zoom = Sprite::createWithSpriteFrameName("zoomBtn.png");
     _zoom->setScale(0.8f);
     _zoom->setPosition(34, visible.height - 34);
@@ -319,6 +328,7 @@ std::vector<std::pair<int, Vec2>> GameScene::buttonsAt() const
     std::vector<std::pair<int, Vec2>> out{{kPause, _pauseButton},
                                           {kReload, _reload->getPosition()},
                                           {kMelee, _melee->getPosition()},
+                                          {kGrenade, _grenadeBtn->getPosition()},
                                           {kZoom, _zoom->getPosition()},
                                           {kSwitch, _ammoFrame->getPosition() + Vec2(_ammoFrame->getContentSize().width / 2,
                                                                                     -_ammoFrame->getContentSize().height / 2)}};
@@ -355,6 +365,7 @@ void GameScene::onTouchesEnded(const std::vector<Touch*>& touches, Event*)
             case kZoom: _pressed.zoom = true; break;
             case kSwitch: _pressed.switchWeapon = true; break;
             case kPickUp: _pressed.pickUp = true; break;
+            case kGrenade: _pressed.grenade = true; break;
             }
             continue;
         }
@@ -377,6 +388,7 @@ void GameScene::update(float dt)
         in.reload       = std::exchange(_pressed.reload, false);
         in.switchWeapon = std::exchange(_pressed.switchWeapon, false);
         in.pickUp       = std::exchange(_pressed.pickUp, false);
+        in.grenade      = std::exchange(_pressed.grenade, false);
         _match->step(_stepper.step(), in);
         // Camera smoothing runs per step like Stage::updateView did per frame at 60 fps.
         const float zoom = _match->player().weapon().zoom();  // Weapon::getZoomScale
@@ -580,6 +592,35 @@ void GameScene::updateHud()
         if (auto* icon = static_cast<Sprite*>(_pickUp->getChildByName("icon")))
             if (auto* frame = SpriteFrameCache::getInstance()->findFrame(item->weapon().def().sprite))
                 icon->setSpriteFrame(frame);
+    _grenadeCount->setString(std::to_string(_match->player().grenades()));
+    // Grenades and rockets in flight.
+    auto sync = [this](std::vector<Sprite*>& views, const char* frame, std::size_t n, auto&& place) {
+        while (views.size() < n)
+        {
+            auto* s = Sprite::createWithSpriteFrameName(frame);
+            if (!s)
+                s = Sprite::create();
+            s->setScale(rules::kPlayerScale * 1.2f);
+            _map->addChild(s, MapView::kZEntities + 1);
+            views.push_back(s);
+        }
+        for (std::size_t i = 0; i < views.size(); ++i)
+        {
+            views[i]->setVisible(i < n);
+            if (i < n)
+                place(views[i], i);
+        }
+    };
+    const auto& grenades = _match->grenades();
+    sync(_grenadeViews, "grenade.png", grenades.size(), [&](Sprite* s, std::size_t i) {
+        s->setPosition(toAx(game::toVec(cpBodyGetPosition(grenades[i]->body))));
+        s->setRotation(-static_cast<float>(cpBodyGetAngle(grenades[i]->body)) * game::kRadToDeg);
+    });
+    const auto& rockets = _match->rockets();
+    sync(_rocketViews, "rocket.png", rockets.size(), [&](Sprite* s, std::size_t i) {
+        s->setPosition(toAx(rockets[i].pos));
+        s->setRotation(game::toCocosAngle(rockets[i].velocity));
+    });
     // Map weapons.
     std::unordered_map<int, Sprite*> seen;
     for (const auto& i : _match->items())

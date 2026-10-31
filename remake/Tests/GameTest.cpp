@@ -586,3 +586,68 @@ TEST_CASE("Melee: a dash that hits the soldier in front for the weapon's melee d
     CHECK(before - b.health() >= 29.0f);  // AK47 melee damage 30 (one regenerated point at most)
     CHECK(before - b.health() <= 30.0f);
 }
+
+TEST_CASE("Explosions: max(10, 100 - 0.8 d) inside 125 points, nothing outside")
+{
+    const auto data = loadMap("1outpost_new.tmx");
+    Match m(*assets::findMap("outpost"), data);
+    float aim     = 0.0f;
+    const int bot = duelSetup(m, 100.0f, aim);
+    Soldier& b    = *m.fighter(bot)->soldier;
+    const float before = b.health();
+    const Vec2 at      = b.position() - Vec2{50, 0};  // 50 points from the bot, left of him
+    m.explode(at, 0, 2);
+    CHECK(before - b.health() == doctest::Approx(60.0f));  // 100 - 0.8 * 50
+    m.explode(b.position() + Vec2{0, 200}, 0, 2);
+    CHECK(before - b.health() == doctest::Approx(60.0f));  // too far to matter
+    b.setHealth(100.0f);
+    m.explode(b.position() + Vec2{120, 0}, 0, 2);
+    CHECK(100.0f - b.health() == doctest::Approx(10.0f));  // never less than 10 inside the radius
+    CHECK(m.playerFighter().deaths == 0);
+}
+
+TEST_CASE("A grenade detonates after 1.75 s; a rocket on the first wall")
+{
+    const auto data = loadMap("1outpost_new.tmx");
+    Match m(*assets::findMap("outpost"), data);
+    run(m, idle(), 4.0f);
+    PadState throwPad = shootAt(270.0f);  // straight up
+    throwPad.firing  = false;
+    throwPad.grenade = true;
+    m.step(kDt, throwPad);
+    CHECK(m.grenades().size() == 1);
+    CHECK(m.player().grenades() == 1);
+    bool boom = false;
+    for (int i = 0; i < 90; ++i)  // 1.5 s: still flying
+    {
+        m.step(kDt, idle());
+        for (const auto& e : m.takeEvents())
+            boom |= e.type == EventType::Explosion;
+    }
+    CHECK_FALSE(boom);
+    for (int i = 0; i < 30; ++i)
+    {
+        m.step(kDt, idle());
+        for (const auto& e : m.takeEvents())
+            boom |= e.type == EventType::Explosion;
+    }
+    CHECK(boom);
+    CHECK(m.grenades().empty());
+
+    // Rocket launcher: one rocket per shot, gone on impact.
+    m.player().takeWeapon(std::make_unique<Weapon>(WeaponId::Rocket));
+    run(m, idle(), 1.5f);  // a new weapon is ready after its fire interval
+    m.takeEvents();
+    PadState fireUp = shootAt(0.0f);  // along the ground into the next wall
+    m.step(kDt, fireUp);
+    CHECK(m.rockets().size() == 1);
+    bool boom2 = false;
+    for (int i = 0; i < 300 && !boom2; ++i)
+    {
+        m.step(kDt, idle());
+        for (const auto& e : m.takeEvents())
+            boom2 |= e.type == EventType::Explosion;
+    }
+    CHECK(boom2);
+    CHECK(m.rockets().empty());
+}

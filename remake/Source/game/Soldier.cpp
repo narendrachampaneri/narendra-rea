@@ -473,3 +473,11 @@ bool Soldier::meleeAttack()
 }
 
 }  // namespace mm::game
+
+namespace mm::game
+{
+void Soldier::applyKnockback(Vec2 impulse)
+{
+    cpBodyApplyImpulseAtLocalPoint(_body, cpv(impulse), cpvzero);
+}
+}  // namespace mm::game

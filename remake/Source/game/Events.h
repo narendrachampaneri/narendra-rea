@@ -17,6 +17,7 @@ enum class EventType
     Explosion,  // explosion effect at `pos`
     Death,      // soldier died at `pos`
     Blood,      // a bullet hit a soldier at `pos`, flying along `dir`
+    Throw,      // a grenade left a hand
 };
 
 struct GameEvent

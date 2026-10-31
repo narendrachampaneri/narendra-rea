@@ -34,6 +34,14 @@ Match::~Match()
     // Bodies leave the space before the space goes.
     _ragdolls.clear();
     _items.clear();
+    for (auto& g : _grenades)
+    {
+        cpSpaceRemoveShape(_physics.space(), g->shape);
+        cpShapeFree(g->shape);
+        cpSpaceRemoveBody(_physics.space(), g->body);
+        cpBodyFree(g->body);
+    }
+    _grenades.clear();
     for (auto& f : _fighters)
         f.soldier.reset();
 }
@@ -283,10 +291,129 @@ void Match::updateMelee(Fighter& f)
     }
 }
 
+void Match::throwGrenade(Fighter& f)
+{
+    Soldier& s = *f.soldier;
+    if (!s.takeGrenade())
+        return;
+    auto g   = std::make_unique<Grenade>();
+    g->owner = f.id;
+    g->gravity = Vec2{0.0f, rules::kGrenadeGravity} * _def.gravityFactor;
+    g->body  = cpSpaceAddBody(_physics.space(), cpBodyNew(1.0, cpMomentForCircle(1.0, 0, 4, cpvzero)));
+    cpBodySetPosition(g->body, cpv(s.muzzlePosition()));
+    cpBodySetVelocity(g->body, cpv(fromCocosAngle(s.fireAngle()) * rules::kGrenadeSpeed + s.velocity()));
+    cpBodySetUserData(g->body, &g->gravity);
+    cpBodySetVelocityUpdateFunc(g->body, [](cpBody* b, cpVect, cpFloat damping, cpFloat dt) {
+        cpBodyUpdateVelocity(b, cpv(*static_cast<Vec2*>(cpBodyGetUserData(b))), damping, dt);
+    });
+    g->shape = cpSpaceAddShape(_physics.space(), cpCircleShapeNew(g->body, 4.0, cpvzero));
+    cpShapeSetElasticity(g->shape, 0.6);
+    cpShapeSetFriction(g->shape, 0.6);
+    // Collides with the map only (layer 0x100; soldiers never block a grenade).
+    setLegacyCollision(g->shape, 0x1, 0x100);
+    _grenades.push_back(std::move(g));
+    GameEvent e{EventType::Throw};
+    e.pos = s.position();
+    e.sound = audio::SoundId::Throw;
+    _events.push_back(e);
+    GameEvent snd{EventType::Sound};
+    snd.sound = audio::SoundId::Throw;
+    snd.pos   = s.position();
+    _events.push_back(snd);
+}
+
+void Match::launchRocket(Fighter& f)
+{
+    Soldier& s = *f.soldier;
+    Rocket r;
+    r.pos = r.prev = s.muzzlePosition();
+    r.velocity     = fromCocosAngle(s.fireAngle()) * rules::kRocketSpeed;
+    r.owner        = f.id;
+    _rockets.push_back(r);
+}
+
+void Match::explode(Vec2 at, int owner, int ammoType)
+{
+    GameEvent fx{EventType::Explosion};
+    fx.pos = at;
+    _events.push_back(fx);
+    GameEvent snd{EventType::Sound};
+    snd.sound = audio::SoundId::Explode;
+    snd.pos   = at;
+    _events.push_back(snd);
+    for (auto& f : _fighters)
+    {
+        if (!f.alive())
+            continue;
+        const Vec2 d   = f.soldier->position() - at;
+        const float dist = d.length();
+        if (dist >= rules::kExplosionRadius)
+            continue;
+        const float damage = std::max(rules::kExplosionMinDamage, rules::kExplosionDamage - rules::kExplosionFalloff * dist);
+        f.soldier->addDamage(damage, owner, ammoType);
+        const Vec2 dir = dist > 0.001f ? d * (1.0f / dist) : Vec2{0, 1};
+        f.soldier->applyKnockback(dir * (std::min(damage, rules::kExplosionKnockCap) * 10.0f * rules::kSoldierMass));
+    }
+}
+
+void Match::updateExplosives(float dt)
+{
+    for (auto& g : _grenades)
+        g->fuse -= dt;
+    for (auto& g : _grenades)
+        if (g->fuse <= 0.0f)
+        {
+            explode(toVec(cpBodyGetPosition(g->body)), g->owner, 2);
+            g->fuse = -1000.0f;  // removed below
+        }
+    _grenades.erase(std::remove_if(_grenades.begin(), _grenades.end(),
+                                   [this](auto& g) {
+                                       if (g->fuse > -999.0f)
+                                           return false;
+                                       cpSpaceRemoveShape(_physics.space(), g->shape);
+                                       cpShapeFree(g->shape);
+                                       cpSpaceRemoveBody(_physics.space(), g->body);
+                                       cpBodyFree(g->body);
+                                       return true;
+                                   }),
+                    _grenades.end());
+
+    for (auto& r : _rockets)
+    {
+        r.prev = r.pos;
+        r.pos += r.velocity * dt;
+        r.life -= dt;
+        bool boom = r.life <= 0.0f;
+        if (!boom)
+            if (_physics.segmentQuery(r.prev, r.pos, rules::kTracerMapLayers))
+                boom = true;
+        if (!boom)
+        {
+            const auto hit = _physics.segmentQuery(r.prev, r.pos, rules::kHostBulletLayers | rules::kRemoteBulletLayers);
+            for (auto& f : _fighters)
+                if (hit && f.alive() && f.id != r.owner && f.soldier->owns(hit.shape))
+                    boom = true;
+        }
+        if (boom)
+        {
+            explode(r.pos, r.owner, 11);
+            r.alive = false;
+        }
+    }
+    _rockets.erase(std::remove_if(_rockets.begin(), _rockets.end(), [](const Rocket& r) { return !r.alive; }),
+                   _rockets.end());
+}
+
 void Match::fireShots(Fighter& f, int shots)
 {
     Soldier& s        = *f.soldier;
     auto& weapon      = s.weapon();
+    if (weapon.def().ammoType == 11)  // SMAW: a rocket instead of bullets
+    {
+        for (int i = 0; i < shots; ++i)
+            launchRocket(f);
+        return;
+    }
     const Vec2 muzzle = s.muzzlePosition();
     // Host bullets hit everyone but the host (0x288); everyone else's bullets hit the host
     // and other remote soldiers (0x198, Tracer::checkCollision).
@@ -330,6 +457,8 @@ void Match::step(float dt, const PadState& pad)
             s.weapon().reload();
         if (in.switchWeapon)
             s.switchWeapons();
+        if (in.grenade)
+            throwGrenade(f);
         if (in.zoom)
             s.weapon().nextZoom();
         if (in.melee || (in.firing && s.weapon().info() && s.weapon().info()->melee))
@@ -344,6 +473,7 @@ void Match::step(float dt, const PadState& pad)
         updatePickUps(f, in.pickUp);
     }
     updateWeaponSpawns(dt);
+    updateExplosives(dt);
 
     _tracers.updateStep(dt, _physics, _events,
                         [this](Tracer& t, cpShape* shape, Vec2 point) { return onBulletHit(t, shape, point); });

@@ -87,6 +87,17 @@ public:
     float meleeTime() const { return _meleeTime; }
     float meleeCharge() const { return _meleeCharge; }
     void endMelee() { _melee = false; _meleeTime = 0.0f; }
+
+    int grenades() const { return _grenades; }
+    void addGrenades(int n) { _grenades += n; }
+    bool takeGrenade()
+    {
+        if (_grenades <= 0 || _dead)
+            return false;
+        --_grenades;
+        return true;
+    }
+    void applyKnockback(Vec2 impulse);
     Vec2 joyOffset() const { return _joy; }
 
     // Test hooks.
@@ -121,6 +132,7 @@ private:
     bool _melee         = false;         // +0x166
     float _meleeTime    = 0.0f;          // +0x178
     float _meleeCharge  = 0.0f;          // +0x1e4
+    int _grenades       = rules::kStartGrenades;
 
     Vec2 _joy;                   // +0x114: last pad offset
     float _fireAngle = 0.0f;     // +0x118 of the weapon / getFireAngle

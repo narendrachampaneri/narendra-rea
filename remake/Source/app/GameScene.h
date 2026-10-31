@@ -82,11 +82,14 @@ private:
     ax::Node* _pauseMenu      = nullptr;
     ax::Vec2 _pauseButton;  // HUD point of the pause circle on the health frame
     std::unordered_map<int, int> _buttonTouches;  // touch id -> Button
-    enum Button { kReload = 1, kPause, kMelee, kZoom, kSwitch, kPickUp };
+    enum Button { kReload = 1, kPause, kMelee, kZoom, kSwitch, kPickUp, kGrenade };
     std::vector<std::pair<int, ax::Vec2>> buttonsAt() const;  // live buttons and HUD centres
     game::PadState _pressed;  // buttons tapped since the last step
     ax::Sprite* _melee        = nullptr;
     ax::Sprite* _zoom         = nullptr;
+    ax::Sprite* _grenadeBtn   = nullptr;
+    ax::Label* _grenadeCount  = nullptr;
+    std::vector<ax::Sprite*> _grenadeViews, _rocketViews;
     ax::Sprite* _pickUp       = nullptr;  // shows the weapon within reach
     ax::Sprite* _hudWeapon    = nullptr;
     ax::Node* _ammoFrame      = nullptr;
