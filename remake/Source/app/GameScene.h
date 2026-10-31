@@ -12,6 +12,7 @@
 #include "core/FixedStepper.h"
 #include "game/Joypad.h"
 #include "game/Match.h"
+#include "game/Driver.h"
 #include "game/Modes.h"
 
 namespace mm::app
@@ -24,13 +25,15 @@ class GameScene : public ax::Scene
 {
 public:
     static GameScene* create(const assets::MapDef& def, game::ModeSettings settings = {});
+    // A Wi-Fi match: the driver comes from NetContext (host or client mirror).
+    static GameScene* createNetworked(const assets::MapDef& def);
 
     void onEnter() override;
     void onExit() override;
     void update(float dt) override;
 
 private:
-    bool init(const assets::MapDef& def, game::ModeSettings settings);
+    bool init(const assets::MapDef& def, std::unique_ptr<game::GameDriver> owned, game::GameDriver* driver);
     void updateModeHud();
     void showEnd();
     void buildHud();
@@ -53,7 +56,10 @@ private:
     ax::Vec2 hudPoint(const ax::Touch* touch) const;
 
     const assets::MapDef* _def = nullptr;
-    std::unique_ptr<game::ModeController> _mode;
+    std::unique_ptr<game::GameDriver> _ownedDriver;
+    game::GameDriver* _driver = nullptr;
+    bool _networked = false;
+    ax::Node* _endPanel = nullptr;
     game::Match* _match = nullptr;
     ax::Label* _status = nullptr;   // timer, wave, score
     ax::Label* _banner = nullptr;   // "WAVE 2", "GO!"
@@ -91,10 +97,12 @@ private:
     ax::Node* _pauseMenu      = nullptr;
     ax::Vec2 _pauseButton;  // HUD point of the pause circle on the health frame
     std::unordered_map<int, int> _buttonTouches;  // touch id -> Button
-    enum Button { kReload = 1, kPause, kMelee, kZoom, kSwitch, kPickUp, kGrenade };
+    enum Button { kReload = 1, kPause, kMelee, kZoom, kSwitch, kPickUp, kGrenade, kChat };
     std::vector<std::pair<int, ax::Vec2>> buttonsAt() const;  // live buttons and HUD centres
     game::PadState _pressed;  // buttons tapped since the last step
     ax::Sprite* _melee        = nullptr;
+    ax::Sprite* _chatBtn      = nullptr;
+    ax::Label* _chatLine      = nullptr;
     ax::Sprite* _zoom         = nullptr;
     ax::Sprite* _grenadeBtn   = nullptr;
     ax::Label* _grenadeCount  = nullptr;

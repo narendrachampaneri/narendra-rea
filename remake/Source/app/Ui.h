@@ -1,6 +1,7 @@
 // Shared look for the screens built from the original graphics (until the M6 menus).
 #pragma once
 
+#include <functional>
 #include <string_view>
 
 #include "axmol.h"
@@ -20,5 +21,9 @@ ax::MenuItemSprite* panelButton(std::string_view frame, std::string_view text, c
 
 // Short message at the bottom of the screen that fades away.
 void toast(ax::Node* scene, std::string_view text);
+
+// The twelve quick messages as a 4 x 3 grid of buttons, centred on the screen. Tapping one
+// calls onPick(index) and removes the grid; tapping outside just removes it.
+ax::Node* quickChatGrid(const std::function<void(int)>& onPick);
 
 }  // namespace mm::app::ui

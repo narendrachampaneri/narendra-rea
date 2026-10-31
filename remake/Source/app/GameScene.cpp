@@ -7,6 +7,8 @@
 #include "app/AssetManager.h"
 #include "app/AudioSystem.h"
 #include "app/HomeScene.h"
+#include "app/LobbyScene.h"
+#include "app/NetContext.h"
 #include "app/MapView.h"
 #include "app/Platform.h"
 #include "app/SoldierView.h"
@@ -92,10 +94,14 @@ private:
 
 }  // namespace
 
-GameScene* GameScene::create(const assets::MapDef& def, game::ModeSettings settings)
+GameScene* GameScene::createNetworked(const assets::MapDef& def)
 {
-    auto* scene = new GameScene();
-    if (scene->init(def, settings))
+    auto* driver = NetContext::get().driver();
+    if (!driver)
+        return nullptr;
+    auto* scene       = new GameScene();
+    scene->_networked = true;
+    if (scene->init(def, nullptr, driver))
     {
         scene->autorelease();
         return scene;
@@ -104,7 +110,21 @@ GameScene* GameScene::create(const assets::MapDef& def, game::ModeSettings setti
     return nullptr;
 }
 
-bool GameScene::init(const assets::MapDef& def, game::ModeSettings settings)
+GameScene* GameScene::create(const assets::MapDef& def, game::ModeSettings settings)
+{
+    auto* scene = new GameScene();
+    auto mode   = std::make_unique<game::ModeController>(def, AssetManager::get().mapData(def), settings);
+    auto* raw   = mode.get();
+    if (scene->init(def, std::move(mode), raw))
+    {
+        scene->autorelease();
+        return scene;
+    }
+    delete scene;
+    return nullptr;
+}
+
+bool GameScene::init(const assets::MapDef& def, std::unique_ptr<game::GameDriver> owned, game::GameDriver* driver)
 {
     if (!Scene::init())
         return false;
@@ -131,8 +151,9 @@ bool GameScene::init(const assets::MapDef& def, game::ModeSettings settings)
         return false;
     _scaleLayer->addChild(_map);
 
-    _mode  = std::make_unique<game::ModeController>(def, AssetManager::get().mapData(def), settings);
-    _match = &_mode->match();
+    _ownedDriver = std::move(owned);
+    _driver      = driver;
+    _match       = &_driver->match();
 
     _soldier = SoldierView::create();
     _map->addChild(_soldier, MapView::kZEntities);
@@ -251,6 +272,12 @@ void GameScene::buildHud()
     _grenadeCount->setPosition(_grenadeBtn->getContentSize().width - 8, 8);
     _grenadeCount->enableOutline(Color4B::BLACK, 1);
     _grenadeBtn->addChild(_grenadeCount);
+    if (_networked)
+    {
+        _chatBtn = Sprite::createWithSpriteFrameName("msg.png");
+        _chatBtn->setPosition(34, visible.height - 80);
+        _hud->addChild(_chatBtn, 1);
+    }
     _zoom = Sprite::createWithSpriteFrameName("zoomBtn.png");
     _zoom->setScale(0.8f);
     _zoom->setPosition(34, visible.height - 34);
@@ -282,6 +309,7 @@ void GameScene::buildHud()
     _banner = text(26, {visible.width / 2, visible.height * 0.68f}, TextHAlignment::CENTER);
     _sarge  = text(12, {visible.width / 2, 22}, TextHAlignment::CENTER);
     _sarge->setMaxLineWidth(visible.width - 120);
+    _chatLine = text(11, {visible.width / 2, visible.height * 0.5f}, TextHAlignment::CENTER);
     _ammo = Label::createWithTTF("", "fonts/arial.ttf", 12);
     _ammo->setPosition(ammoFrame->getContentSize().width - 24, ammoFrame->getContentSize().height / 2 + 2);
     _ammo->enableOutline(Color4B::BLACK, 1);
@@ -349,6 +377,8 @@ std::vector<std::pair<int, Vec2>> GameScene::buttonsAt() const
                                                                                     -_ammoFrame->getContentSize().height / 2)}};
     if (_pickUp->isVisible())
         out.push_back({kPickUp, _pickUp->getPosition()});
+    if (_chatBtn)
+        out.push_back({kChat, _chatBtn->getPosition()});
     return out;
 }
 
@@ -381,6 +411,9 @@ void GameScene::onTouchesEnded(const std::vector<Touch*>& touches, Event*)
             case kSwitch: _pressed.switchWeapon = true; break;
             case kPickUp: _pressed.pickUp = true; break;
             case kGrenade: _pressed.grenade = true; break;
+            case kChat:
+                addChild(ui::quickChatGrid([](int m) { NetContext::get().sendChat(m); }), kZPause);
+                break;
             }
             continue;
         }
@@ -390,7 +423,37 @@ void GameScene::onTouchesEnded(const std::vector<Touch*>& touches, Event*)
 
 void GameScene::update(float dt)
 {
-    if (_paused || _leaving)
+    if (_leaving)
+        return;
+    if (_networked)
+    {
+        // The match goes on for the others whatever this phone shows.
+        NetContext::get().update(dt);
+        if (auto* c = NetContext::get().client();
+            c && (c->clientState() == net::ClientState::Disconnected || c->clientState() == net::ClientState::Idle))
+        {
+            quit();
+            return;
+        }
+        if (auto* c = NetContext::get().client(); c && c->clientState() == net::ClientState::InLobby)
+        {
+            _leaving = true;
+            _director->replaceScene(TransitionFade::create(0.3f, utils::createInstance<LobbyScene>()));
+            return;
+        }
+        if (auto* h = NetContext::get().host(); h && h->state() == net::HostState::Lobby)
+        {
+            _leaving = true;
+            _director->replaceScene(TransitionFade::create(0.3f, utils::createInstance<LobbyScene>()));
+            return;
+        }
+        if (NetContext::get().driver() != _driver)
+        {
+            quit();
+            return;
+        }
+    }
+    else if (_paused)
         return;
 
     const int steps = _stepper.advance(dt);
@@ -404,7 +467,7 @@ void GameScene::update(float dt)
         in.switchWeapon = std::exchange(_pressed.switchWeapon, false);
         in.pickUp       = std::exchange(_pressed.pickUp, false);
         in.grenade      = std::exchange(_pressed.grenade, false);
-        _mode->step(_stepper.step(), in);
+        _driver->step(_stepper.step(), in);
         // Camera smoothing runs per step like Stage::updateView did per frame at 60 fps.
         const float zoom = _match->player().weapon().zoom();  // Weapon::getZoomScale
         _viewScale       = _viewScale * rules::kViewScaleSmoothing + (1.0f - rules::kViewScaleSmoothing) * zoom;
@@ -449,43 +512,98 @@ void GameScene::update(float dt)
 
 void GameScene::updateModeHud()
 {
-    using game::ModeKind;
     using game::ModeState;
-    const auto kind = _mode->settings().kind;
-    std::string status;
-    if (kind == ModeKind::Survival)
-        status = fmt::format("WAVE {}   LIVES {}   SCORE {}", _mode->wave(), _mode->lives(), _mode->score());
-    else if (kind == ModeKind::Training)
-        status = fmt::format("TRAINING {} / {}", std::min<int>(_mode->lesson() + 1, game::ModeController::lessons().size()),
-                             game::ModeController::lessons().size());
-    else
-        status = fmt::format("{}:{:02}", static_cast<int>(_mode->timeLeft()) / 60, static_cast<int>(_mode->timeLeft()) % 60);
-    _status->setString(status);
+    if (_networked)
+        for (const auto& [from, message] : NetContext::get().takeChat())
+        {
+            const auto* f = _match->fighter(from);
+            _chatLine->setString((f ? f->name : std::string("Host")) + ": " + net::kQuickMessages[message]);
+            _chatLine->stopAllActions();
+            _chatLine->setOpacity(255);
+            _chatLine->runAction(Sequence::create(DelayTime::create(3.0f), FadeOut::create(0.5f), nullptr));
+        }
+    _status->setString(_driver->status());
     const auto& f = _match->playerFighter();
-    _score->setString(fmt::format("KILLS {}   DEATHS {}", f.kills, f.deaths));
-    _banner->setString(_mode->banner());
-    if (const auto* lesson = _mode->currentLesson(); kind == ModeKind::Training && lesson)
-        _sarge->setString(lesson->text);
-    else
-        _sarge->setString("");
-    if (!_match->playerAlive() && _mode->state() == ModeState::Running)
+    const auto board = _driver->scoreboard();
+    _score->setString(_networked ? board : fmt::format("KILLS {}   DEATHS {}", f.kills, f.deaths));
+    _banner->setString(_driver->banner());
+    _sarge->setString(_driver->hint());
+    if (!_match->playerAlive() && _driver->state() == ModeState::Running)
         _banner->setString("RESPAWNING...");
-    if (_mode->state() != ModeState::Running && !_ended)
+    if (_driver->state() != ModeState::Running && !_ended)
         showEnd();
 }
 
 void GameScene::showEnd()
 {
-    using game::ModeState;
     _ended = true;
-    setPaused(true);
-    const char* title = _mode->state() == ModeState::Lost ? "GAME OVER" : (_mode->state() == ModeState::Won ? "COMPLETE" : "TIME UP");
-    if (auto* label = Label::createWithTTF(title, "fonts/arial.ttf", 28))
+    if (!_networked)
+        setPaused(true);
+    const auto visible = _director->getVisibleSize();
+    const auto origin  = _director->getVisibleOrigin();
+    _endPanel          = LayerColor::create(Color4B(0, 0, 0, 190));
+    addChild(_endPanel, kZPause);
+
+    auto* title = Label::createWithTTF(_driver->resultTitle(), "fonts/arial.ttf", 24);
+    title->setPosition(origin + Vec2(visible.width / 2, visible.height - 34));
+    title->enableOutline(Color4B::BLACK, 2);
+    _endPanel->addChild(title);
+
+    // The leaderboard: rank, name, kills, deaths (the original's post-match table).
+    float y = visible.height - 62;
+    int rank = 0;
+    for (const auto& r : _driver->results())
     {
-        label->setPosition(_director->getVisibleOrigin() + _director->getVisibleSize() / 2 + Vec2(0, 60));
-        label->enableOutline(Color4B::BLACK, 2);
-        addChild(label, kZPause + 1);
+        if (++rank > 12)
+            break;
+        const std::string team = r.team ? fmt::format("[{}] ", r.team) : "";
+        auto* row = Label::createWithTTF(fmt::format("{}. {}{}", rank, team, r.name), "fonts/arial.ttf", 12);
+        row->setAnchorPoint({0, 0.5f});
+        row->setPosition(origin.x + visible.width * 0.2f, y);
+        row->setColor(r.me ? Color3B(255, 220, 80) : Color3B::WHITE);
+        _endPanel->addChild(row);
+        auto* stat = Label::createWithTTF(fmt::format("{:>3}   {:>3}", r.kills, r.deaths), "fonts/arial.ttf", 12);
+        stat->setAnchorPoint({1, 0.5f});
+        stat->setPosition(origin.x + visible.width * 0.8f, y);
+        stat->setColor(r.me ? Color3B(255, 220, 80) : Color3B::WHITE);
+        _endPanel->addChild(stat);
+        y -= 15;
     }
+    auto* head = Label::createWithTTF("KILLS   DEATHS", "fonts/arial.ttf", 9);
+    head->setAnchorPoint({1, 0.5f});
+    head->setPosition(origin.x + visible.width * 0.8f, visible.height - 50);
+    _endPanel->addChild(head);
+
+    auto* menu = Menu::create();
+    menu->setPosition(Vec2::ZERO);
+    _endPanel->addChild(menu);
+    auto addButton = [&](const char* text, float x, std::function<void()> fn) {
+        auto* b = ui::panelButton("b03_mid.png", text, [fn](Object*) { fn(); });
+        b->setScale(0.8f);
+        b->setPosition(origin.x + x, origin.y + 28);
+        menu->addChild(b);
+    };
+    if (_networked && NetContext::get().host())
+    {
+        addButton("PLAY AGAIN", visible.width * 0.3f, [this] {
+            if (auto* h = NetContext::get().host())
+                h->returnToLobby(true);
+        });
+        addButton("LOBBY", visible.width * 0.55f, [this] {
+            if (auto* h = NetContext::get().host())
+                h->returnToLobby(false);
+        });
+        addButton("LEAVE", visible.width * 0.8f, [this] { quit(); });
+    }
+    else if (_networked)
+    {
+        auto* wait = Label::createWithTTF("Waiting for the host...", "fonts/arial.ttf", 11);
+        wait->setPosition(origin + Vec2(visible.width * 0.35f, 28));
+        _endPanel->addChild(wait);
+        addButton("LEAVE", visible.width * 0.8f, [this] { quit(); });
+    }
+    else
+        addButton("HOME", visible.width / 2, [this] { quit(); });
 }
 
 void GameScene::handleEvents()
@@ -737,7 +855,8 @@ void GameScene::setPaused(bool paused)
         AudioSystem::get().resumeAll();
         return;
     }
-    AudioSystem::get().pauseAll();
+    if (!_networked)
+        AudioSystem::get().pauseAll();
     const auto visible = _director->getVisibleSize();
     const auto origin  = _director->getVisibleOrigin();
     _pauseMenu         = LayerColor::create(Color4B(0, 0, 0, 150));
@@ -755,6 +874,8 @@ void GameScene::quit()
         return;
     _leaving = true;
     AudioSystem::get().resumeAll();
+    if (_networked)
+        NetContext::get().close();
     _director->replaceScene(TransitionFade::create(0.4f, utils::createInstance<HomeScene>()));
 }
 

@@ -29,6 +29,7 @@ import android.os.Bundle;
 import dev.axmol.lib.AxmolActivity;
 import dev.axmol.lib.AxmolGLSurfaceView;
 import dev.axmol.lib.SharedLoader;
+import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.view.KeyEvent;
 import android.view.WindowManager;
@@ -76,6 +77,31 @@ public class AppActivity extends AxmolActivity {
     // Predictive back (targetSdk 36): the system only sends back to the game while a game screen
     // asks for it; on the home screen the system's own back (to the launcher) runs.
     private static AppActivity sInstance;
+    private WifiManager.MulticastLock multicastLock;
+
+    /** Called from native code (mm::app::platform::setMulticastLock): some phones drop UDP
+     *  broadcasts (game discovery) unless this lock is held. */
+    public static void setMulticastLock(final boolean on) {
+        final AppActivity activity = sInstance;
+        if (activity == null) return;
+        activity.runOnUiThread(new Runnable() {
+            @Override public void run() {
+                try {
+                    if (on && activity.multicastLock == null) {
+                        WifiManager wifi = (WifiManager) activity.getApplicationContext().getSystemService(WIFI_SERVICE);
+                        if (wifi == null) return;
+                        activity.multicastLock = wifi.createMulticastLock("mm-discovery");
+                        activity.multicastLock.setReferenceCounted(false);
+                        activity.multicastLock.acquire();
+                    } else if (!on && activity.multicastLock != null) {
+                        activity.multicastLock.release();
+                        activity.multicastLock = null;
+                    }
+                } catch (Exception ignored) {
+                }
+            }
+        });
+    }
     private boolean mBackRegistered = false;
     private final OnBackInvokedCallback mBackCallback = this::sendBackToGame;
 

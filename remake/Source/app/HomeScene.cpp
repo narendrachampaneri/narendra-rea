@@ -4,6 +4,7 @@
 #include "app/AudioSystem.h"
 #include "app/GameScene.h"
 #include "app/PlayScene.h"
+#include "app/MultiplayerScene.h"
 #include <random>
 #include "app/Platform.h"
 #include "app/Ui.h"
@@ -49,7 +50,11 @@ bool HomeScene::init()
                             if (auto* scene = GameScene::create(*map, settings))
                                 _director->replaceScene(TransitionFade::create(0.4f, scene));
                         }),
-        ui::panelButton("b03_mid.png", "MULTIPLAYER", comingIn("Wi-Fi multiplayer arrives in M5")),
+        ui::panelButton("b03_mid.png", "MULTIPLAYER",
+                        [this, click](Object*) {
+                            click();
+                            _director->replaceScene(TransitionFade::create(0.4f, utils::createInstance<MultiplayerScene>()));
+                        }),
         ui::panelButton("b03_mid.png", "SOLO PLAY",
                         [this, click](Object*) {
                             click();

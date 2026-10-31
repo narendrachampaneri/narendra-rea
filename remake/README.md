@@ -22,10 +22,33 @@ continues from the next unfinished milestone. Private project: never publish to 
 | M2 | Assets | done on `remake/m2-assets` (branched from M1): `Remake build` green; awaiting phone check and owner merge |
 | M3 | Single-device slice | **done on `remake/m3-slice` (branched from M2): playable from QUICK PLAY; awaiting green `Remake build`, phone check and owner merge** |
 | M4 | Full single-device game | **built on `remake/m4-game` (branched from M3); awaiting green `Remake build`, phone check and owner merge. dual wield, gas/proximity grenades and drones are left for M7 (see "What works (M4)")** |
-| M5 | Wi-Fi multiplayer | not started |
+| M5 | Wi-Fi multiplayer | **built on `remake/m5-wifi` (branched from M4); protocol in `LAN-PROTOCOL.md`; awaiting CI, a two-phone test and owner merge** |
 | M6 | Menus and meta | not started |
 | M7 | Performance and polish | not started |
 | M8 | Release v1 | not started |
+
+## What works (M5: Wi-Fi multiplayer)
+- Home -> MULTIPLAYER: host a game, or see the games on this network and tap one, or type the host's
+  IP. Lobby with the host's options (mode, map, 1-8 minutes, 2-12 players, Fair mode), ready flags,
+  teams, twelve quick messages; Deathmatch, Team Deathmatch, Co-op Survival; leaderboard at the end
+  with Play again / Lobby (host) or waiting (guests). Quick messages also work in the match (chat button).
+- `Source/net`: protocol, UDP transport, host and client sessions; `Source/game/MpGame.*` the rules.
+  Everything except the sockets' Wi-Fi behaviour is covered by host tests (loopback network, 20 % packet
+  loss, timeouts, kicks, a full match with scores, teams, Co-op).
+- **Test on two phones** (steps below). Known limits: no client-side prediction (your own movement is
+  one round trip behind, fine on a hotspot), no QR joining yet (needs the camera; with the M6 menus).
+
+### On-device check for M5 (two or more phones)
+1. Turn on the hotspot on phone A (or put all phones on one Wi-Fi), install the same APK everywhere.
+2. Phone A: MULTIPLAYER -> HOST A GAME. The lobby shows "Others can join by IP: 192.168.x.x".
+3. Phone B: MULTIPLAYER: A's game should appear within ~2 s; tap it. If the list stays empty (some
+   routers block broadcasts), type A's IP and tap JOIN.
+4. B taps READY, A taps START. Both should spawn in the same map and see each other move; shooting
+   A from B should show blood, damage and a kill on both screens.
+5. Try Team Deathmatch (tap TEAM to pick), Co-op, a short length, quick messages, leaving mid-match,
+   PLAY AGAIN / LOBBY at the end.
+6. Report: does discovery work on the hotspot and on the home Wi-Fi? Lag, jitter, anything that
+   differs between the two screens, crashes (`adb logcat | grep -i minimilitia`).
 
 ## What works (M4: full single-device game, in progress)
 - **Modes** (`Source/game/Modes.*`): QUICK PLAY (home button: random map, 3 bots, 5 min, respawns), SOLO PLAY
@@ -234,10 +257,10 @@ Keep the file out of git (it is git-ignored); losing it means future updates can
 - Do not run Axmol's own `setup.ps1`: `tools/fetch-axmol.sh` replaces it and changes nothing system-wide.
 - Axmol's CMake needs PowerShell at configure time: built into Windows and on GitHub runners;
   on macOS/Linux install it first (`brew install powershell`).
-- Android 16+ local-network permission rules to be checked in M5.
+- Android 16+ local-network permission rules: the app declares INTERNET, ACCESS_NETWORK_STATE, ACCESS_WIFI_STATE and CHANGE_WIFI_MULTICAST_STATE and holds a multicast lock while looking for games; if Android 16 asks for or blocks local-network access, report it (the permission to add would be NEARBY_WIFI_DEVICES / ACCESS_LOCAL_NETWORK).
 
 ## Next step
-Run the M3 on-device check with the debug APK from the `Remake build` run of `remake/m3-slice`
-and merge M1, M2 then M3. Then M4 on `remake/m4-game`: all weapons and items (pick-ups, dual
-wield, grenades, melee, zoom), damage and death, all 15 maps, Training, Survival, Practice vs
-bots, Quick Play rules, AI soldiers and drones.
+Build and run `remake/m5-wifi` (it contains M1-M5), try the checks above, merge the milestone branches
+in order. Then M6 on `remake/m6-menus`: modern menus, first-launch name + Training offer, profile,
+Coins (10 per kill in Wi-Fi Deathmatch / Team Deathmatch) and the store, avatar, leaderboards,
+settings, What's new, About, saves with backup and export/import, QR joining.

@@ -12,7 +12,7 @@ sed 's/@AX_GIT_PRESENT@/0/; s/@AX_BUILD_NUM@/0/; s/@AX_GIT_BRANCH@/none/; s/@AX_
   "$AX/core/axmolver.h.in" > "$GEN/axmolver.h"
 INCLUDES=(-I"$GEN" -I"$ROOT/Source" -I"$AX" -I"$AX/core" -I"$AX/3rdparty" -I"$AX/3rdparty/robin-map/include"
   -I"$AX/3rdparty/fmt/include" -I"$AX/3rdparty/glad/include" -I"$AX/3rdparty/glfw/include"
-  -I"$AX/3rdparty/yasio" -I"$AX/3rdparty/freetype/include" -I"$AX/3rdparty/chipmunk/include")
+  -I"$AX/core/ui" -I"$AX/3rdparty/yasio" -I"$AX/3rdparty/freetype/include" -I"$AX/3rdparty/chipmunk/include")
 status=0
 for f in "$ROOT"/Source/app/*.cpp "$ROOT/Source/AppDelegate.cpp"; do
   "$CXX" -fsyntax-only -std=c++20 -Wall -Wextra -Wno-deprecated-declarations "${INCLUDES[@]}" "$f" || status=1

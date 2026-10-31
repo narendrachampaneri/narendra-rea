@@ -1,5 +1,7 @@
 #include "app/Ui.h"
 
+#include "net/Protocol.h"
+
 #include <algorithm>
 
 using namespace ax;
@@ -87,6 +89,40 @@ void toast(Node* scene, std::string_view text)
     box->runAction(Sequence::create(FadeTo::create(0.15f, 170), DelayTime::create(1.8f), FadeOut::create(0.35f),
                                     RemoveSelf::create(), nullptr));
     scene->addChild(box, 100);
+}
+
+Node* quickChatGrid(const std::function<void(int)>& onPick)
+{
+    const auto visible = Director::getInstance()->getVisibleSize();
+    const auto origin  = Director::getInstance()->getVisibleOrigin();
+    auto* layer        = LayerColor::create(Color4B(0, 0, 0, 150));
+    auto* menu         = Menu::create();
+    menu->setPosition(Vec2::ZERO);
+    layer->addChild(menu);
+    const float cellW = std::min(120.0f, visible.width / 4.4f), cellH = 34.0f;
+    for (int i = 0; i < 12; ++i)
+    {
+        const int col = i % 4, row = i / 4;
+        auto* label = Label::createWithTTF(net::kQuickMessages[i], "fonts/arial.ttf", 11);
+        label->setColor(Color3B::WHITE);
+        auto* bg  = LayerColor::create(Color4B(40, 60, 110, 230), cellW - 6, cellH - 6);
+        bg->setIgnoreAnchorPointForPosition(false);
+        bg->setAnchorPoint({0.5f, 0.5f});
+        label->setPosition(bg->getContentSize() / 2);
+        bg->addChild(label);
+        auto* item = MenuItemSprite::create(bg, bg, [layer, onPick, i](Object*) {
+            onPick(i);
+            layer->removeFromParent();
+        });
+        item->setPosition(origin.x + visible.width / 2 + (col - 1.5f) * cellW, origin.y + visible.height / 2 + (1 - row) * cellH);
+        menu->addChild(item);
+    }
+    auto* touch           = EventListenerTouchOneByOne::create();
+    touch->setSwallowTouches(true);
+    touch->onTouchBegan   = [](Touch*, Event*) { return true; };
+    touch->onTouchEnded   = [layer](Touch*, Event*) { layer->removeFromParent(); };
+    layer->getEventDispatcher()->addEventListenerWithSceneGraphPriority(touch, layer);
+    return layer;
 }
 
 }  // namespace mm::app::ui

@@ -18,4 +18,13 @@ void setGameHandlesBack(bool handles)
 #endif
 }
 
+void setMulticastLock(bool on)
+{
+#if AX_TARGET_PLATFORM == AX_PLATFORM_ANDROID
+    ax::JniHelper::callStaticVoidMethod("dev/axmol/app/AppActivity", "setMulticastLock", on);
+#else
+    (void)on;
+#endif
+}
+
 }  // namespace mm::app::platform
