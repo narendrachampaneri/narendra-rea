@@ -98,6 +98,7 @@ public:
         return true;
     }
     void applyKnockback(Vec2 impulse);
+    void drainPower() { _power = 0.0f; }
     Vec2 joyOffset() const { return _joy; }
 
     // Test hooks.

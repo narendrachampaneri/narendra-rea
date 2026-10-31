@@ -86,6 +86,7 @@ public:
         float life = rules::kRocketLife;
         int owner  = -1;
         bool alive = true;
+        bool emp   = false;
     };
     const std::vector<std::unique_ptr<Grenade>>& grenades() const { return _grenades; }
     const std::vector<Rocket>& rockets() const { return _rockets; }
@@ -136,6 +137,7 @@ private:
     std::vector<Rocket> _rockets;
     void throwGrenade(Fighter& f);
     void launchRocket(Fighter& f);
+    void empBlast(Vec2 at, int owner);
     void updateExplosives(float dt);
     int _nextItemUid    = 1;
     std::size_t _spawnCursor = 0;

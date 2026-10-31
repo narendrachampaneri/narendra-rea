@@ -329,6 +329,7 @@ void Match::launchRocket(Fighter& f)
     r.pos = r.prev = s.muzzlePosition();
     r.velocity     = fromCocosAngle(s.fireAngle()) * rules::kRocketSpeed;
     r.owner        = f.id;
+    r.emp          = s.weapon().def().ammoType == 21;
     _rockets.push_back(r);
 }
 
@@ -354,6 +355,18 @@ void Match::explode(Vec2 at, int owner, int ammoType)
         const Vec2 dir = dist > 0.001f ? d * (1.0f / dist) : Vec2{0, 1};
         f.soldier->applyKnockback(dir * (std::min(damage, rules::kExplosionKnockCap) * 10.0f * rules::kSoldierMass));
     }
+}
+
+void Match::empBlast(Vec2 at, int owner)
+{
+    // EMP: no damage; soldiers in range lose their jetpack fuel (NEW: the original's EMP
+    // effect is only partly recovered).
+    GameEvent fx{EventType::Explosion};
+    fx.pos = at;
+    _events.push_back(fx);
+    for (auto& f : _fighters)
+        if (f.alive() && f.id != owner && (f.soldier->position() - at).length() < rules::kExplosionRadius * 1.5f)
+            f.soldier->drainPower();
 }
 
 void Match::updateExplosives(float dt)
@@ -396,7 +409,10 @@ void Match::updateExplosives(float dt)
         }
         if (boom)
         {
-            explode(r.pos, r.owner, 11);
+            if (r.emp)
+                empBlast(r.pos, r.owner);
+            else
+                explode(r.pos, r.owner, 11);
             r.alive = false;
         }
     }
@@ -408,7 +424,7 @@ void Match::fireShots(Fighter& f, int shots)
 {
     Soldier& s        = *f.soldier;
     auto& weapon      = s.weapon();
-    if (weapon.def().ammoType == 11)  // SMAW: a rocket instead of bullets
+    if (weapon.def().ammoType == 11 || weapon.def().ammoType == 21)  // SMAW rocket, EMP charge
     {
         for (int i = 0; i < shots; ++i)
             launchRocket(f);

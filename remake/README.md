@@ -21,7 +21,7 @@ continues from the next unfinished milestone. Private project: never publish to 
 | M1 | Skeleton + release workflow | done: `Remake build` green on `remake/m1-skeleton`; awaiting owner merge |
 | M2 | Assets | done on `remake/m2-assets` (branched from M1): `Remake build` green; awaiting phone check and owner merge |
 | M3 | Single-device slice | **done on `remake/m3-slice` (branched from M2): playable from QUICK PLAY; awaiting green `Remake build`, phone check and owner merge** |
-| M4 | Full single-device game | **built on `remake/m4-game` (branched from M3); awaiting green `Remake build`, phone check and owner merge. Not done: flame / saw / laser / EMP projectiles, dual wield, Survival drones (see "What works (M4)")** |
+| M4 | Full single-device game | **built on `remake/m4-game` (branched from M3); awaiting green `Remake build`, phone check and owner merge. dual wield, gas/proximity grenades and drones are left for M7 (see "What works (M4)")** |
 | M5 | Wi-Fi multiplayer | not started |
 | M6 | Menus and meta | not started |
 | M7 | Performance and polish | not started |
@@ -39,9 +39,10 @@ continues from the next unfinished milestone. Private project: never publish to 
   safest spawn point).
 - **Bots are new** (`Bot.*`): the original's AI function could not be decompiled. They chase, aim with an error
   that shrinks with the level, fire with a clear line, jump and fly up, and detour when stuck.
-- **Not done yet:** projectiles of the flamethrower, saw gun, Phasr laser and EMP (they currently fire plain
-  bullets or nothing special), dual wield (two guns), gas / proximity grenades, Survival's drones (hawk, worm,
-  humanoid), Sarge's voice.
+- Flamethrower, saw gun and Phasr use fast short-range bullets with their original stats; the EMP charge
+  drains the jetpack fuel of soldiers near where it lands (new, approximate).
+- **Left for later (M7 polish):** dual wield (two pistols at once), gas / proximity grenades, the flame and saw
+  visual effects, Survival's drones (hawk, worm, humanoid; Survival uses bots for now), Sarge's voice.
 - The mod patches found in the APK now number six (see the weapon table header in `Weapons.h`).
 
 ## What works (M3: single-device slice)
