@@ -95,7 +95,7 @@ SDK versions: Fabric 1.3.10, Crashlytics 2.5.5, MoPub 3.13.0+kit (`fabric/*.prop
 ## 5e – Configuration summary
 
 - **App**: cocos2d-x 2.2.5 game (the `unityplayer` meta-data is a leftover), RakNet
-  peer-to-peer multiplayer with an own lobby/NAT server, Box2D physics, Cricket
+  peer-to-peer multiplayer with an own lobby/NAT server, Chipmunk physics, Cricket
   audio. Game code is C++ in `libcocos2dcpp.so`; Java is the Android shell.
 - **Platforms**: Google Play (Games, billing, licensing) and Amazon (IAP,
   GameCircle, ads, login), chosen at runtime by `nativeIsPlatformAmazon()`.

@@ -22,7 +22,10 @@ never publish it to any app store.
 This repo is a verified reverse-engineering of the old APK (Mini Militia 2.2.23 mod, package
 com.appsomniacs.da3). Read README.md, docs/PROJECT-MAP.md, docs/analysis/STATIC-ANALYSIS.md
 and docs/VERIFICATION.md before writing code.
-- The game is C++ (cocos2d-x 2.2.5 + Box2D + RakNet) in the 32-bit-only
+- **Start with docs/reference/ORIGINAL-DEFAULTS.md**: every default, table, price, rule and screen of
+  the original, with a confidence tag per fact. It overrides any earlier note that disagrees.
+- The game is C++ (cocos2d-x 2.2.5 + **Chipmunk** physics + RakNet; NOT Box2D, the b2 code in the
+  library is unused) in the 32-bit-only
   source/apk-project/lib/armeabi-v7a/libcocos2dcpp.so. There is no original source.
 - source/native/<Class>.cpp = Ghidra pseudo-C of every game function (179 classes with real
   class/method names). source/native/_asm/<Class>.s = exact ARM assembly per function.
@@ -70,12 +73,17 @@ can't be recompiled, so we rebuild.
 - Training: the original Sarge tutorial and lines, polished to be smooth and inviting for
   first-time players.
 - Survival (solo), Co-op Survival over Wi-Fi, Deathmatch over Wi-Fi, Team Deathmatch over
-  Wi-Fi, Practice vs bots (offline).
+  Wi-Fi (the original has no separate team mode: TEAMS is a toggle inside Deathmatch, so build it
+  as that toggle), Practice vs bots (offline). Original game types: 0 Training, 1 Survival,
+  3 LAN Deathmatch, 5 LAN Co-op (2 and 4 are the online variants).
 - No bots in Wi-Fi matches (bots only in offline modes).
 
 ### Wi-Fi / hotspot multiplayer
-- Max players: the original's maximum (read it from the code); the host chooses the player
-  count up to that maximum.
+- Max players: the host chooses the count; default **12**. (The original's LAN Deathmatch host
+  counter starts at 12 and can be lowered to 2; online Deathmatch was fixed at 4 and Co-op at 2.)
+  Co-op Survival over Wi-Fi: 2 players as in the original unless I say otherwise.
+- Match clock: the original counts down from **400 s (6:40)** and ends the match at 0; the remake
+  host chooses the time limit up to 8 minutes (default: the original 6:40).
 - Joining: automatic list of nearby games, join by IP address, and QR code (camera
   permission requested only when the player opens the scanner).
 - Host lobby options: the original ones (map select or vote, teams) plus time limit (maximum
@@ -202,7 +210,8 @@ M1 Skeleton: remake/ builds (assembleDebug) and shows an empty scene; the GitHub
 M2 Assets: maps (start with hdr/1outpost_new.tmx), atlases, particles, fonts, music, and
    the new sound set.
 M3 Single-device slice: one soldier with dual-joystick controls (Joypad, SoldierController,
-   SoldierView), Box2D physics (PhysicsManager, MapManager), one weapon (Weapon + AK47),
+   SoldierView), Chipmunk physics (PhysicsManager, MapManager; Axmol bundles Chipmunk, check its
+   version against the original's cpSpace API), one weapon (Weapon + AK47),
    Projectile, Explosion, HUD.
 M4 Full single-device game: all weapons and items, all 15 maps, Training (polished), Survival,
    Practice vs bots, Quick Play; AI soldiers and drones (SoldierAIController, Enemy,

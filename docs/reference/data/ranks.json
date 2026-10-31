@@ -1,0 +1,107 @@
+[
+ {
+  "index": 0,
+  "name": "PRIVATE",
+  "exp_required": 0
+ },
+ {
+  "index": 1,
+  "name": "PRIVATE 1ST CLASS",
+  "exp_required": 100
+ },
+ {
+  "index": 2,
+  "name": "CORPORAL",
+  "exp_required": 500
+ },
+ {
+  "index": 3,
+  "name": "SERGEANT",
+  "exp_required": 1000
+ },
+ {
+  "index": 4,
+  "name": "STAFF SERGEANT",
+  "exp_required": 2000
+ },
+ {
+  "index": 5,
+  "name": "SERGEANT 1ST CLASS",
+  "exp_required": 3500
+ },
+ {
+  "index": 6,
+  "name": "MASTER SERGEANT",
+  "exp_required": 5000
+ },
+ {
+  "index": 7,
+  "name": "1ST SERGEANT",
+  "exp_required": 6750
+ },
+ {
+  "index": 8,
+  "name": "SERGEANT MAJOR",
+  "exp_required": 8500
+ },
+ {
+  "index": 9,
+  "name": "2ND LIEUTENANT",
+  "exp_required": 11000
+ },
+ {
+  "index": 10,
+  "name": "1ST LIEUTENANT",
+  "exp_required": 13500
+ },
+ {
+  "index": 11,
+  "name": "CAPTAIN",
+  "exp_required": 16500
+ },
+ {
+  "index": 12,
+  "name": "MAJOR",
+  "exp_required": 19500
+ },
+ {
+  "index": 13,
+  "name": "LIEUTENANT COLONEL",
+  "exp_required": 23000
+ },
+ {
+  "index": 14,
+  "name": "COLONEL",
+  "exp_required": 27000
+ },
+ {
+  "index": 15,
+  "name": "BRIGADIER GENERAL",
+  "exp_required": 31000
+ },
+ {
+  "index": 16,
+  "name": "MAJOR GENERAL",
+  "exp_required": 35000
+ },
+ {
+  "index": 17,
+  "name": "LIEUTENANT GENERAL",
+  "exp_required": 39000
+ },
+ {
+  "index": 18,
+  "name": "GENERAL",
+  "exp_required": 44000
+ },
+ {
+  "index": 19,
+  "name": "ARMY GENERAL",
+  "exp_required": 50000
+ },
+ {
+  "index": 20,
+  "name": "COMMANDER IN CHIEF",
+  "exp_required": 100000
+ }
+]

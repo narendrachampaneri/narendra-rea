@@ -1,0 +1,2892 @@
+{
+ "0hunger_new": {
+  "width_tiles": 52,
+  "height_tiles": 18,
+  "tile_px": 256,
+  "tileset": "t64_new.tsx",
+  "layers": [
+   {
+    "name": "tilebg",
+    "non_empty_tiles": 110
+   },
+   {
+    "name": "tile",
+    "non_empty_tiles": 244
+   }
+  ],
+  "objects": [
+   {
+    "name": "wp_p_00",
+    "x": 1569,
+    "y": 435,
+    "props": {
+     "weapon": "riot"
+    }
+   },
+   {
+    "name": "wp_p_02",
+    "x": 1375,
+    "y": 433,
+    "props": {
+     "weapon": "smaw"
+    }
+   },
+   {
+    "name": "wp_p_01",
+    "x": 2012,
+    "y": 435,
+    "props": {
+     "weapon": "machete"
+    }
+   },
+   {
+    "name": "wp_p_03",
+    "x": 2065,
+    "y": 435,
+    "props": {
+     "weapon": "mp5"
+    }
+   },
+   {
+    "name": "wp_p_04",
+    "x": 1757,
+    "y": 433,
+    "props": {
+     "weapon": "flame"
+    }
+   },
+   {
+    "name": "wp_p_05",
+    "x": 1441,
+    "y": 433,
+    "props": {
+     "weapon": "ak47"
+    }
+   },
+   {
+    "name": "wp_p_06",
+    "x": 1951,
+    "y": 435,
+    "props": {
+     "weapon": "m93ba"
+    }
+   },
+   {
+    "name": "wp_p_07",
+    "x": 1262,
+    "y": 433,
+    "props": {
+     "weapon": "uzi"
+    }
+   },
+   {
+    "name": "wp_p_08",
+    "x": 1314,
+    "y": 432,
+    "props": {
+     "weapon": "shotgun"
+    }
+   },
+   {
+    "name": "sp_p_00",
+    "x": 291,
+    "y": 628,
+    "props": {}
+   },
+   {
+    "name": "sp_p_02",
+    "x": 2787,
+    "y": 33,
+    "props": {}
+   },
+   {
+    "name": "sp_p_04",
+    "x": 2911,
+    "y": 571,
+    "props": {}
+   },
+   {
+    "name": "sp_p_05",
+    "x": 2401,
+    "y": 726,
+    "props": {}
+   },
+   {
+    "name": "sp_p_05",
+    "x": 2093,
+    "y": 655,
+    "props": {}
+   },
+   {
+    "name": "wp_p_12",
+    "x": 1824,
+    "y": 434,
+    "props": {
+     "weapon": "m14"
+    }
+   },
+   {
+    "name": "wp_p_20",
+    "x": 1884,
+    "y": 434,
+    "props": {
+     "weapon": "m16"
+    }
+   },
+   {
+    "name": "wp_p_21",
+    "x": 1506,
+    "y": 433,
+    "props": {
+     "weapon": "phasr"
+    }
+   },
+   {
+    "name": "spritefg",
+    "x": 732,
+    "y": 700,
+    "props": {
+     "sprite": "bushPalm"
+    }
+   },
+   {
+    "name": "spritebg",
+    "x": 1176,
+    "y": 700,
+    "w": "18",
+    "h": "16",
+    "props": {
+     "sprite": "palmTree"
+    }
+   },
+   {
+    "name": "wp_p_30",
+    "x": 1629,
+    "y": 433,
+    "props": {
+     "weapon": "gasnade"
+    }
+   },
+   {
+    "name": "wp_p_31",
+    "x": 1713,
+    "y": 433,
+    "props": {
+     "weapon": "proxynade"
+    }
+   },
+   {
+    "name": "wp_p_32",
+    "x": 1635,
+    "y": 241,
+    "props": {
+     "weapon": "boosttank"
+    }
+   },
+   {
+    "name": "wp_p_33",
+    "x": 1697,
+    "y": 243,
+    "props": {
+     "weapon": "emp"
+    }
+   },
+   {
+    "name": "wp_p_35",
+    "x": 1710,
+    "y": 243,
+    "props": {
+     "weapon": "sawgun"
+    }
+   },
+   {
+    "name": "wp_p_34",
+    "x": 1757,
+    "y": 241,
+    "props": {
+     "weapon": "healthpack"
+    }
+   },
+   {
+    "name": "wp_p_42",
+    "x": 1575,
+    "y": 241,
+    "props": {
+     "weapon": "proxynade"
+    }
+   },
+   {
+    "name": "wp_p_31",
+    "x": 1809,
+    "y": 241,
+    "props": {
+     "weapon": "proxynade"
+    }
+   },
+   {
+    "name": "wp_p_43",
+    "x": 1679,
+    "y": 433,
+    "props": {
+     "weapon": "emp"
+    }
+   }
+  ],
+  "object_kinds": {
+   "wp_p": 21,
+   "sp_p": 5,
+   "spritefg": 1,
+   "spritebg": 1
+  }
+ },
+ "1outpost_new": {
+  "width_tiles": 52,
+  "height_tiles": 18,
+  "tile_px": 256,
+  "tileset": "t64_new.tsx",
+  "layers": [
+   {
+    "name": "tilebg",
+    "non_empty_tiles": 212
+   },
+   {
+    "name": "tile",
+    "non_empty_tiles": 375
+   }
+  ],
+  "objects": [
+   {
+    "name": "wp_p_00",
+    "x": 1697,
+    "y": 445,
+    "props": {
+     "weapon": "m93ba,smaw,machete,riot,phasr,emp"
+    }
+   },
+   {
+    "name": "wp_p_02",
+    "x": 1185,
+    "y": 775,
+    "props": {
+     "weapon": "machete,m16,ak47,mp5,shotgun"
+    }
+   },
+   {
+    "name": "wp_p_01",
+    "x": 2076,
+    "y": 705,
+    "props": {
+     "weapon": "shotgun,mp5,magnum"
+    }
+   },
+   {
+    "name": "wp_p_03",
+    "x": 2315,
+    "y": 509,
+    "props": {
+     "weapon": "fragnade,machete,gasnade,emp,proxynade"
+    }
+   },
+   {
+    "name": "wp_p_04",
+    "x": 2975,
+    "y": 687,
+    "props": {
+     "weapon": "m16,m93ba,ak47,smaw,m14"
+    }
+   },
+   {
+    "name": "wp_p_05",
+    "x": 477,
+    "y": 365,
+    "props": {
+     "weapon": "ak47,m16,m93ba,smaw,m14"
+    }
+   },
+   {
+    "name": "wp_p_06",
+    "x": 2259,
+    "y": 197,
+    "props": {
+     "weapon": "magnum,mp5,shotgun"
+    }
+   },
+   {
+    "name": "wp_p_07",
+    "x": 152,
+    "y": 771,
+    "props": {
+     "weapon": "magnum,mp5,shotgun"
+    }
+   },
+   {
+    "name": "wp_p_08",
+    "x": 1294,
+    "y": 518,
+    "props": {
+     "weapon": "fragnade,flame,gasnade,proxynade,emp"
+    }
+   },
+   {
+    "name": "sp_p_00",
+    "x": 353,
+    "y": 32,
+    "props": {}
+   },
+   {
+    "name": "sp_p_01",
+    "x": 1572,
+    "y": 35,
+    "props": {}
+   },
+   {
+    "name": "sp_p_02",
+    "x": 2787,
+    "y": 33,
+    "props": {}
+   },
+   {
+    "name": "sp_p_04",
+    "x": 1024,
+    "y": 831,
+    "props": {}
+   },
+   {
+    "name": "sp_p_04",
+    "x": 223,
+    "y": 545,
+    "props": {}
+   },
+   {
+    "name": "sp_p_05",
+    "x": 2345,
+    "y": 724,
+    "props": {}
+   },
+   {
+    "name": "sp_p_05",
+    "x": 1763,
+    "y": 711,
+    "props": {}
+   },
+   {
+    "name": "sp_p_06",
+    "x": 3069,
+    "y": 462,
+    "props": {}
+   },
+   {
+    "name": "wp_p_12",
+    "x": 1762,
+    "y": 756,
+    "props": {
+     "weapon": "smaw,m93ba,machete,riot"
+    }
+   },
+   {
+    "name": "wp_p_20",
+    "x": 1524,
+    "y": 760,
+    "props": {
+     "weapon": "healthpack"
+    }
+   },
+   {
+    "name": "wp_p_21",
+    "x": 1888,
+    "y": 305,
+    "props": {
+     "weapon": "healthpack,boosttank,machete,proxynade"
+    }
+   },
+   {
+    "name": "spritefg",
+    "x": 1132,
+    "y": 522,
+    "props": {
+     "sprite": "bushPalm"
+    }
+   },
+   {
+    "name": "spritebg",
+    "x": 1674,
+    "y": 394,
+    "props": {
+     "sprite": "palmTree"
+    }
+   },
+   {
+    "name": "spritebg",
+    "x": 2608,
+    "y": 724,
+    "props": {
+     "sprite": "bushFan"
+    }
+   }
+  ],
+  "object_kinds": {
+   "wp_p": 12,
+   "sp_p": 8,
+   "spritefg": 1,
+   "spritebg": 2
+  }
+ },
+ "2highTower_new": {
+  "width_tiles": 39,
+  "height_tiles": 26,
+  "tile_px": 256,
+  "tileset": "t64_new.tsx",
+  "layers": [
+   {
+    "name": "tilebg",
+    "non_empty_tiles": 302
+   },
+   {
+    "name": "tile",
+    "non_empty_tiles": 420
+   }
+  ],
+  "objects": [
+   {
+    "name": "wp_p_00",
+    "x": 303,
+    "y": 377,
+    "props": {
+     "weapon": "m93ba,smaw,m16"
+    }
+   },
+   {
+    "name": "wp_p_01",
+    "x": 2201,
+    "y": 377,
+    "props": {
+     "weapon": "m93ba,smaw,m16"
+    }
+   },
+   {
+    "name": "sp_p_00",
+    "x": 2148,
+    "y": 1348,
+    "props": {}
+   },
+   {
+    "name": "sp_p_01",
+    "x": 350,
+    "y": 1343,
+    "props": {}
+   },
+   {
+    "name": "sp_p_02",
+    "x": 353,
+    "y": 611,
+    "props": {}
+   },
+   {
+    "name": "sp_p_03",
+    "x": 2142,
+    "y": 607,
+    "props": {}
+   },
+   {
+    "name": "sp_p_04",
+    "x": 1248,
+    "y": 18,
+    "props": {}
+   },
+   {
+    "name": "sp_p_05",
+    "x": 1249,
+    "y": 1446,
+    "props": {}
+   },
+   {
+    "name": "sp_p_05",
+    "x": 2143,
+    "y": 35,
+    "props": {}
+   },
+   {
+    "name": "sp_p_06",
+    "x": 352,
+    "y": 34,
+    "props": {}
+   },
+   {
+    "name": "wp_p_04",
+    "x": 2144,
+    "y": 742,
+    "props": {
+     "weapon": "magnum,mp5,m14,phasr"
+    }
+   },
+   {
+    "name": "wp_p_02",
+    "x": 351,
+    "y": 743,
+    "props": {
+     "weapon": "magnum,mp5,m14,phasr"
+    }
+   },
+   {
+    "name": "wp_p_03",
+    "x": 1825,
+    "y": 1446,
+    "props": {
+     "weapon": "ak47,mp5,shotgun"
+    }
+   },
+   {
+    "name": "wp_p_05",
+    "x": 674,
+    "y": 1444,
+    "props": {
+     "weapon": "ak47,mp5,shotgun"
+    }
+   },
+   {
+    "name": "wp_p_06",
+    "x": 1249,
+    "y": 1471,
+    "props": {
+     "weapon": "m16,mp5,riot,proxynade"
+    }
+   },
+   {
+    "name": "wp_p_07",
+    "x": 546,
+    "y": 1250,
+    "props": {
+     "weapon": "shotgun,magnum,emp"
+    }
+   },
+   {
+    "name": "wp_p_08",
+    "x": 1952,
+    "y": 1247,
+    "props": {
+     "weapon": "shotgun,magnum,emp"
+    }
+   },
+   {
+    "name": "wp_p_09",
+    "x": 1249,
+    "y": 1312,
+    "props": {
+     "weapon": "smaw,m93ba,phasr,flame"
+    }
+   },
+   {
+    "name": "wp_p_10",
+    "x": 1249,
+    "y": 228,
+    "props": {
+     "weapon": "boosttank,healthpack,riot,flame"
+    }
+   },
+   {
+    "name": "wp_p_11",
+    "x": 1407,
+    "y": 286,
+    "props": {
+     "period": "20",
+     "weapon": "gasnade,fragnade,proxynade"
+    }
+   },
+   {
+    "name": "wp_p_12",
+    "x": 1589,
+    "y": 1142,
+    "props": {
+     "period": "20",
+     "weapon": "fragnade,gasnade"
+    }
+   },
+   {
+    "name": "wp_p_14",
+    "x": 905,
+    "y": 1148,
+    "props": {
+     "period": "20",
+     "weapon": "fragnade,gasnade"
+    }
+   },
+   {
+    "name": "wp_p_20",
+    "x": 1664,
+    "y": 1102,
+    "props": {
+     "weapon": "healthpack,boosttank"
+    }
+   },
+   {
+    "name": "wp_p_21",
+    "x": 832,
+    "y": 1104,
+    "props": {
+     "weapon": "healthpack,boosttank"
+    }
+   },
+   {
+    "name": "wp_p_25",
+    "x": 1090,
+    "y": 286,
+    "props": {
+     "period": "20",
+     "weapon": "fragnade,gasnade,proxynade"
+    }
+   },
+   {
+    "name": "wp_p_26",
+    "x": 1248,
+    "y": 444,
+    "props": {
+     "weapon": "boosttank,machete,riot,emp"
+    }
+   }
+  ],
+  "object_kinds": {
+   "wp_p": 18,
+   "sp_p": 8
+  }
+ },
+ "3subdivision_new": {
+  "width_tiles": 56,
+  "height_tiles": 28,
+  "tile_px": 256,
+  "tileset": "t64_new.tsx",
+  "layers": [
+   {
+    "name": "tilebg",
+    "non_empty_tiles": 608
+   },
+   {
+    "name": "tile",
+    "non_empty_tiles": 613
+   }
+  ],
+  "objects": [
+   {
+    "name": "sp_p_06",
+    "x": 3040,
+    "y": 812,
+    "props": {}
+   },
+   {
+    "name": "wp_p_05",
+    "x": 1438,
+    "y": 506,
+    "props": {
+     "weapon": "mp5,proxynade,magnum,machete,phasr,gasnade"
+    }
+   },
+   {
+    "name": "sp_p_05",
+    "x": 1058,
+    "y": 1462,
+    "props": {}
+   },
+   {
+    "name": "sp_p_00",
+    "x": 2018,
+    "y": 800,
+    "props": {}
+   },
+   {
+    "name": "sp_p_01",
+    "x": 2706,
+    "y": 1340,
+    "w": "20",
+    "h": "22",
+    "props": {}
+   },
+   {
+    "name": "sp_p_02",
+    "x": 2502,
+    "y": 210,
+    "props": {}
+   },
+   {
+    "name": "sp_p_03",
+    "x": 1664,
+    "y": 298,
+    "props": {}
+   },
+   {
+    "name": "wp_p_03",
+    "x": 1958,
+    "y": 476,
+    "w": "22",
+    "h": "20",
+    "props": {
+     "weapon": "m16,proxynade,shotgun,riot,phasr,gasnade"
+    }
+   },
+   {
+    "name": "sp_p_04",
+    "x": 1398,
+    "y": 870,
+    "props": {}
+   },
+   {
+    "name": "wp_p_00",
+    "x": 552,
+    "y": 692,
+    "props": {
+     "weapon": "fragnade,proxynade,mp5,gasnade"
+    }
+   },
+   {
+    "name": "wp_p_02",
+    "x": 1510,
+    "y": 1238,
+    "props": {
+     "weapon": "mp5,fragnade,emp,riot,m14"
+    }
+   },
+   {
+    "name": "wp_p_04",
+    "x": 1342,
+    "y": 148,
+    "props": {
+     "weapon": "m16,ak47,smaw,m93ba"
+    }
+   },
+   {
+    "name": "wp_p_01",
+    "x": 1024,
+    "y": 948,
+    "props": {
+     "weapon": "ak47,healthpack,shotgun"
+    }
+   },
+   {
+    "name": "sp_p_07",
+    "x": 566,
+    "y": 308,
+    "props": {}
+   },
+   {
+    "name": "wp_p_06",
+    "x": 2708,
+    "y": 1108,
+    "w": "20",
+    "h": "22",
+    "props": {
+     "weapon": "ak47,m16"
+    }
+   },
+   {
+    "name": "wp_p_07",
+    "x": 3138,
+    "y": 1420,
+    "props": {
+     "weapon": "shotgun,m14"
+    }
+   },
+   {
+    "name": "wp_p_08",
+    "x": 2334,
+    "y": 1462,
+    "props": {
+     "weapon": "mp5,m93ba,smaw"
+    }
+   },
+   {
+    "name": "wp_p_09",
+    "x": 2656,
+    "y": 554,
+    "props": {
+     "weapon": "magnum,fragnade,proxynade,gasnade"
+    }
+   },
+   {
+    "name": "wp_p_09",
+    "x": 322,
+    "y": 1400,
+    "props": {
+     "weapon": "smaw,m93ba,m16,m14"
+    }
+   },
+   {
+    "name": "wp_p_10",
+    "x": 3042,
+    "y": 865,
+    "props": {
+     "weapon": "healthpack,boosttank,machete,riot"
+    }
+   },
+   {
+    "name": "wp_p_11",
+    "x": 1953,
+    "y": 1227,
+    "props": {
+     "weapon": "flame,machete,m14,emp"
+    }
+   }
+  ],
+  "object_kinds": {
+   "sp_p": 8,
+   "wp_p": 13
+  }
+ },
+ "4bottleNeck_new": {
+  "width_tiles": 66,
+  "height_tiles": 33,
+  "tile_px": 256,
+  "tileset": "t64_new.tsx",
+  "layers": [
+   {
+    "name": "tilebg",
+    "non_empty_tiles": 409
+   },
+   {
+    "name": "tile",
+    "non_empty_tiles": 1334
+   }
+  ],
+  "objects": [
+   {
+    "name": "sp_p_00",
+    "x": 3744,
+    "y": 1572,
+    "props": {}
+   },
+   {
+    "name": "sp_p_01",
+    "x": 3742,
+    "y": 710,
+    "props": {}
+   },
+   {
+    "name": "sp_p_02",
+    "x": 3422,
+    "y": 360,
+    "props": {}
+   },
+   {
+    "name": "sp_p_04",
+    "x": 2844,
+    "y": 1430,
+    "props": {}
+   },
+   {
+    "name": "sp_p_05",
+    "x": 388,
+    "y": 1618,
+    "props": {}
+   },
+   {
+    "name": "sp_p_06",
+    "x": 1410,
+    "y": 1408,
+    "props": {}
+   },
+   {
+    "name": "sp_p_07",
+    "x": 418,
+    "y": 728,
+    "props": {}
+   },
+   {
+    "name": "sp_p_08",
+    "x": 1056,
+    "y": 306,
+    "props": {}
+   },
+   {
+    "name": "sp_p_09",
+    "x": 1760,
+    "y": 355,
+    "props": {}
+   },
+   {
+    "name": "sp_p_03",
+    "x": 2532,
+    "y": 354,
+    "props": {}
+   },
+   {
+    "name": "wp_p_00",
+    "x": 1500,
+    "y": 1540,
+    "props": {
+     "weapon": "shotgun,smaw,m93ba"
+    }
+   },
+   {
+    "name": "wp_p_01",
+    "x": 2846,
+    "y": 1514,
+    "props": {
+     "weapon": "shotgun,m93ba,smaw"
+    }
+   },
+   {
+    "name": "wp_p_03",
+    "x": 2082,
+    "y": 1434,
+    "props": {
+     "weapon": "m93ba,smaw,phasr,emp"
+    }
+   },
+   {
+    "name": "wp_p_02",
+    "x": 2078,
+    "y": 868,
+    "props": {
+     "weapon": "fragnade,flame,gasnade,proxynade"
+    }
+   },
+   {
+    "name": "wp_p_04",
+    "x": 2624,
+    "y": 370,
+    "props": {
+     "weapon": "m16,ak47,shotgun,mp5"
+    }
+   },
+   {
+    "name": "wp_p_05",
+    "x": 1760,
+    "y": 378,
+    "props": {
+     "weapon": "m16,ak47,shotgun,mp5"
+    }
+   },
+   {
+    "name": "wp_p_07",
+    "x": 508,
+    "y": 730,
+    "props": {
+     "weapon": "m93ba,smaw,m16,phasr,emp"
+    }
+   },
+   {
+    "name": "wp_p_06",
+    "x": 768,
+    "y": 1796,
+    "props": {
+     "weapon": "smaw,m93ba,shotgun,riot"
+    }
+   },
+   {
+    "name": "wp_p_08",
+    "x": 900,
+    "y": 850,
+    "props": {
+     "weapon": "gasnade,fragnade,healthpack,boosttank,machete"
+    }
+   },
+   {
+    "name": "wp_p_09",
+    "x": 3376,
+    "y": 748,
+    "props": {
+     "weapon": "gasnade,fragnade,healthpack,boosttank,machete"
+    }
+   },
+   {
+    "name": "wp_p_10",
+    "x": 3428,
+    "y": 1716,
+    "props": {
+     "weapon": "smaw,m93ba,shotgun,riot"
+    }
+   },
+   {
+    "name": "wp_p_11",
+    "x": 3614,
+    "y": 628,
+    "props": {
+     "weapon": "m93ba,smaw,m16,phasr,emp"
+    }
+   },
+   {
+    "name": "wp_p_12",
+    "x": 1218,
+    "y": 1382,
+    "props": {
+     "weapon": "mp5,uzi,machete,magnum,m14"
+    }
+   },
+   {
+    "name": "wp_p_13",
+    "x": 3102,
+    "y": 1326,
+    "props": {
+     "weapon": "mp5,ak47,magnum,m14"
+    }
+   },
+   {
+    "name": "wp_p_14",
+    "x": 1314,
+    "y": 374,
+    "props": {
+     "weapon": "machete,proxynade,mp5,riot"
+    }
+   },
+   {
+    "name": "wp_p_15",
+    "x": 3168,
+    "y": 366,
+    "props": {
+     "weapon": "machete,healthpack,boosttank,riot,proxynade"
+    }
+   },
+   {
+    "name": "wp_p_20",
+    "x": 800,
+    "y": 1648,
+    "props": {
+     "weapon": "healthpack,boosttank,gasnade,proxynade"
+    }
+   },
+   {
+    "name": "wp_p_21",
+    "x": 3524,
+    "y": 1510,
+    "props": {
+     "weapon": "healthpack,boosttank,gasnade,proxynade"
+    }
+   },
+   {
+    "name": "wp_p_30",
+    "x": 2080,
+    "y": 1124,
+    "props": {
+     "weapon": "boosttank,healthpack,riot"
+    }
+   }
+  ],
+  "object_kinds": {
+   "sp_p": 10,
+   "wp_p": 19
+  }
+ },
+ "5noEscape_new": {
+  "width_tiles": 51,
+  "height_tiles": 29,
+  "tile_px": 256,
+  "tileset": "t64_new.tsx",
+  "layers": [
+   {
+    "name": "tilebg",
+    "non_empty_tiles": 1017
+   },
+   {
+    "name": "tile",
+    "non_empty_tiles": 531
+   }
+  ],
+  "objects": [
+   {
+    "name": "sp_p_00",
+    "x": 382,
+    "y": 1502,
+    "props": {}
+   },
+   {
+    "name": "sp_p_01",
+    "x": 2938,
+    "y": 1510,
+    "props": {}
+   },
+   {
+    "name": "sp_p_02",
+    "x": 2842,
+    "y": 236,
+    "props": {}
+   },
+   {
+    "name": "sp_p_03",
+    "x": 414,
+    "y": 226,
+    "props": {}
+   },
+   {
+    "name": "sp_p_04",
+    "x": 1314,
+    "y": 930,
+    "props": {}
+   },
+   {
+    "name": "sp_p_05",
+    "x": 2334,
+    "y": 1252,
+    "props": {}
+   },
+   {
+    "name": "sp_p_06",
+    "x": 834,
+    "y": 546,
+    "props": {}
+   },
+   {
+    "name": "sp_p_07",
+    "x": 1568,
+    "y": 1540,
+    "props": {}
+   },
+   {
+    "name": "sp_p_08",
+    "x": 2048,
+    "y": 384,
+    "props": {}
+   },
+   {
+    "name": "wp_p_00",
+    "x": 2720,
+    "y": 1374,
+    "props": {
+     "weapon": "m93ba,smaw,shotgun,riot,m14"
+    }
+   },
+   {
+    "name": "wp_p_02",
+    "x": 1184,
+    "y": 1562,
+    "props": {
+     "weapon": "ak47,m16,magnum"
+    }
+   },
+   {
+    "name": "wp_p_03",
+    "x": 706,
+    "y": 772,
+    "props": {
+     "weapon": "shotgun,machete,m14"
+    }
+   },
+   {
+    "name": "wp_p_05",
+    "x": 2370,
+    "y": 1552,
+    "props": {
+     "weapon": "m16,mp5,ak47,emp"
+    }
+   },
+   {
+    "name": "wp_p_06",
+    "x": 1856,
+    "y": 734,
+    "props": {
+     "weapon": "smaw,m93ba,riot,m14,phasr"
+    }
+   },
+   {
+    "name": "wp_p_07",
+    "x": 2716,
+    "y": 580,
+    "props": {
+     "weapon": "mp5,ak47,m16,phasr"
+    }
+   },
+   {
+    "name": "wp_p_08",
+    "x": 550,
+    "y": 602,
+    "props": {
+     "weapon": "mp5,ak47,m93ba,smaw,phasr"
+    }
+   },
+   {
+    "name": "wp_p_09",
+    "x": 1466,
+    "y": 870,
+    "props": {
+     "weapon": "machete,shotgun,flame"
+    }
+   },
+   {
+    "name": "wp_p_10",
+    "x": 1824,
+    "y": 284,
+    "props": {
+     "weapon": "emp,uzi,mp5"
+    }
+   },
+   {
+    "name": "wp_p_11",
+    "x": 1696,
+    "y": 992,
+    "props": {
+     "period": "20",
+     "weapon": "fragnade,gasnade"
+    }
+   },
+   {
+    "name": "wp_p_12",
+    "x": 1856,
+    "y": 1574,
+    "props": {
+     "period": "20",
+     "weapon": "gasnade,healthpack,boosttank,proxynade"
+    }
+   },
+   {
+    "name": "wp_p_13",
+    "x": 830,
+    "y": 266,
+    "props": {
+     "period": "20",
+     "weapon": "fragnade,gasnade,proxynade"
+    }
+   },
+   {
+    "name": "wp_p_14",
+    "x": 2686,
+    "y": 284,
+    "props": {
+     "period": "20",
+     "weapon": "fragnade,machete,gasnade,proxynade"
+    }
+   },
+   {
+    "name": "wp_p_20",
+    "x": 1855,
+    "y": 419,
+    "props": {
+     "weapon": "healthpack,boosttank"
+    }
+   },
+   {
+    "name": "wp_p_23",
+    "x": 1076,
+    "y": 972,
+    "props": {
+     "weapon": "boosttank,healthpack,fragnade,gasnade,proxynade,riot"
+    }
+   }
+  ],
+  "object_kinds": {
+   "sp_p": 9,
+   "wp_p": 15
+  }
+ },
+ "6solong_new": {
+  "width_tiles": 75,
+  "height_tiles": 17,
+  "tile_px": 256,
+  "tileset": "t64_new.tsx",
+  "layers": [
+   {
+    "name": "tilebg",
+    "non_empty_tiles": 279
+   },
+   {
+    "name": "tile",
+    "non_empty_tiles": 436
+   }
+  ],
+  "objects": [
+   {
+    "name": "sp_p_06",
+    "x": 3678,
+    "y": 546,
+    "props": {}
+   },
+   {
+    "name": "wp_p_05",
+    "x": 288,
+    "y": 480,
+    "props": {
+     "weapon": "m16,ak47,mp5,emp"
+    }
+   },
+   {
+    "name": "sp_p_05",
+    "x": 288,
+    "y": 736,
+    "props": {}
+   },
+   {
+    "name": "sp_p_00",
+    "x": 1120,
+    "y": 548,
+    "props": {}
+   },
+   {
+    "name": "sp_p_02",
+    "x": 2398,
+    "y": 284,
+    "props": {}
+   },
+   {
+    "name": "sp_p_03",
+    "x": 4510,
+    "y": 738,
+    "props": {}
+   },
+   {
+    "name": "sp_p_04",
+    "x": 320,
+    "y": 132,
+    "props": {}
+   },
+   {
+    "name": "wp_p_00",
+    "x": 418,
+    "y": 812,
+    "props": {
+     "weapon": "m16,ak47,m14,phasr"
+    }
+   },
+   {
+    "name": "wp_p_01",
+    "x": 1438,
+    "y": 376,
+    "props": {
+     "weapon": "shotgun,m16,ak47"
+    }
+   },
+   {
+    "name": "sp_p_07",
+    "x": 4480,
+    "y": 130,
+    "props": {}
+   },
+   {
+    "name": "wp_p_07",
+    "x": 2398,
+    "y": 374,
+    "props": {
+     "weapon": "smaw,m93ba,phasr,emp"
+    }
+   },
+   {
+    "name": "wp_p_08",
+    "x": 3392,
+    "y": 828,
+    "props": {
+     "weapon": "shotgun,mp5,proxynade"
+    }
+   },
+   {
+    "name": "wp_p_09",
+    "x": 1408,
+    "y": 826,
+    "props": {
+     "weapon": "shotgun,mp5,proxynade"
+    }
+   },
+   {
+    "name": "wp_p_14",
+    "x": 3360,
+    "y": 380,
+    "props": {
+     "weapon": "m16,ak47,shotgun"
+    }
+   },
+   {
+    "name": "wp_p_15",
+    "x": 4512,
+    "y": 480,
+    "props": {
+     "weapon": "m16,ak47,mp5,emp"
+    }
+   },
+   {
+    "name": "wp_p_16",
+    "x": 4382,
+    "y": 816,
+    "props": {
+     "weapon": "m16,ak47,m14,phasr"
+    }
+   },
+   {
+    "name": "wp_p_17",
+    "x": 2014,
+    "y": 826,
+    "props": {
+     "weapon": "machete,riot,m93ba,smaw"
+    }
+   },
+   {
+    "name": "wp_p_18",
+    "x": 2782,
+    "y": 826,
+    "props": {
+     "weapon": "machete,riot,m93ba,smaw"
+    }
+   },
+   {
+    "name": "wp_p_20",
+    "x": 2400,
+    "y": 704,
+    "props": {
+     "weapon": "healthpack,boosttank,fragnade,gasnade,flame,emp"
+    }
+   },
+   {
+    "name": "spritefg",
+    "x": 1764,
+    "y": 844,
+    "props": {
+     "sprite": "bushPalm"
+    }
+   },
+   {
+    "name": "spritefg_2",
+    "x": 3038,
+    "y": 840,
+    "props": {
+     "sprite": "bushPalm"
+    }
+   },
+   {
+    "name": "spritefg_3",
+    "x": 738,
+    "y": 586,
+    "props": {
+     "sprite": "bushPalm"
+    }
+   },
+   {
+    "name": "spritefg_4",
+    "x": 4066,
+    "y": 584,
+    "props": {
+     "sprite": "bushPalm"
+    }
+   },
+   {
+    "name": "wp_p_21",
+    "x": 4258,
+    "y": 354,
+    "props": {
+     "weapon": "gasnade,fragnade,proxynade"
+    }
+   },
+   {
+    "name": "wp_p_22",
+    "x": 544,
+    "y": 354,
+    "props": {
+     "weapon": "fragnade,gasnade,proxynade"
+    }
+   }
+  ],
+  "object_kinds": {
+   "sp_p": 7,
+   "wp_p": 14,
+   "spritefg": 4
+  }
+ },
+ "7lunarcy_new": {
+  "width_tiles": 56,
+  "height_tiles": 28,
+  "tile_px": 256,
+  "tileset": "t64Moon_new.tsx",
+  "layers": [
+   {
+    "name": "tilebg",
+    "non_empty_tiles": 174
+   },
+   {
+    "name": "tile",
+    "non_empty_tiles": 620
+   }
+  ],
+  "objects": [
+   {
+    "name": "wp_p_05",
+    "x": 1672,
+    "y": 1100,
+    "props": {
+     "weapon": "flame,m93ba,smaw,machete,shotgun"
+    }
+   },
+   {
+    "name": "sp_p_05",
+    "x": 448,
+    "y": 1196,
+    "props": {}
+   },
+   {
+    "name": "sp_p_00",
+    "x": 1826,
+    "y": 1310,
+    "props": {}
+   },
+   {
+    "name": "sp_p_01",
+    "x": 3128,
+    "y": 1102,
+    "w": "20",
+    "h": "22",
+    "props": {}
+   },
+   {
+    "name": "sp_p_02",
+    "x": 3240,
+    "y": 144,
+    "props": {}
+   },
+   {
+    "name": "sp_p_03",
+    "x": 478,
+    "y": 160,
+    "props": {}
+   },
+   {
+    "name": "wp_p_03",
+    "x": 758,
+    "y": 134,
+    "w": "22",
+    "h": "20",
+    "props": {
+     "weapon": "m16,riot,phasr"
+    }
+   },
+   {
+    "name": "wp_p_00",
+    "x": 816,
+    "y": 532,
+    "props": {
+     "weapon": "fragnade,m14,phasr,gasnade,proxynade"
+    }
+   },
+   {
+    "name": "wp_p_04",
+    "x": 1316,
+    "y": 148,
+    "props": {
+     "weapon": "fragnade,gasnade,m14,phasr"
+    }
+   },
+   {
+    "name": "wp_p_01",
+    "x": 896,
+    "y": 1352,
+    "props": {
+     "weapon": "ak47,healthpack,phasr"
+    }
+   },
+   {
+    "name": "sp_p_07",
+    "x": 1694,
+    "y": 162,
+    "props": {}
+   },
+   {
+    "name": "wp_p_07",
+    "x": 2304,
+    "y": 408,
+    "props": {
+     "weapon": "riot,phasr,m16"
+    }
+   },
+   {
+    "name": "wp_p_08",
+    "x": 2978,
+    "y": 914,
+    "props": {
+     "weapon": "ak47,healthpack,phasr"
+    }
+   },
+   {
+    "name": "wp_p_09",
+    "x": 2854,
+    "y": 520,
+    "props": {
+     "weapon": "fragnade,gasnade,m14,phasr,proxynade"
+    }
+   },
+   {
+    "name": "wp_p_10",
+    "x": 2336,
+    "y": 975,
+    "props": {
+     "weapon": "ak47,healthpack,phasr"
+    }
+   },
+   {
+    "name": "wp_p_11",
+    "x": 1765,
+    "y": 1353,
+    "props": {
+     "weapon": "riot,healthpack,mp5,proxynade"
+    }
+   },
+   {
+    "name": "wp_p_15",
+    "x": 1680,
+    "y": 852,
+    "props": {
+     "weapon": "fragnade,gasnade,healthpack"
+    }
+   },
+   {
+    "name": "",
+    "x": 1300,
+    "y": 926,
+    "h": "10",
+    "props": {}
+   },
+   {
+    "name": "wp_p_16",
+    "x": 2830,
+    "y": 1454,
+    "props": {
+     "weapon": "gasnade,fragnade,proxynade"
+    }
+   },
+   {
+    "name": "wp_p_17",
+    "x": 238,
+    "y": 1456,
+    "props": {
+     "weapon": "gasnade,fragnade,proxynade"
+    }
+   },
+   {
+    "name": "",
+    "x": 3072,
+    "y": 1664,
+    "props": {}
+   }
+  ],
+  "object_kinds": {
+   "wp_p": 13,
+   "sp_p": 6,
+   "?": 2
+  }
+ },
+ "8icebox_new": {
+  "width_tiles": 54,
+  "height_tiles": 27,
+  "tile_px": 256,
+  "tileset": "t64Snow_new.tsx",
+  "layers": [
+   {
+    "name": "tilebg",
+    "non_empty_tiles": 527
+   },
+   {
+    "name": "tile",
+    "non_empty_tiles": 708
+   }
+  ],
+  "objects": [
+   {
+    "name": "sp_p_01",
+    "x": 672,
+    "y": 160,
+    "props": {}
+   },
+   {
+    "name": "sp_p_02",
+    "x": 2788,
+    "y": 164,
+    "props": {}
+   },
+   {
+    "name": "sp_p_03",
+    "x": 1730,
+    "y": 374,
+    "props": {}
+   },
+   {
+    "name": "sp_p_04",
+    "x": 2848,
+    "y": 1246,
+    "props": {}
+   },
+   {
+    "name": "sp_p_05",
+    "x": 610,
+    "y": 1242,
+    "props": {}
+   },
+   {
+    "name": "sp_p_06",
+    "x": 1730,
+    "y": 994,
+    "props": {}
+   },
+   {
+    "name": "sp_p_07",
+    "x": 676,
+    "y": 698,
+    "props": {}
+   },
+   {
+    "name": "sp_p_08",
+    "x": 2782,
+    "y": 698,
+    "props": {}
+   },
+   {
+    "name": "wp_p_01",
+    "x": 610,
+    "y": 408,
+    "props": {
+     "weapon": "smaw,shotgun,m14"
+    }
+   },
+   {
+    "name": "wp_p_02",
+    "x": 2850,
+    "y": 402,
+    "props": {
+     "weapon": "smaw,shotgun,m14"
+    }
+   },
+   {
+    "name": "wp_p_03",
+    "x": 1730,
+    "y": 402,
+    "props": {
+     "weapon": "m93ba,flame,phasr,gasnade,proxynade"
+    }
+   },
+   {
+    "name": "wp_p_04",
+    "x": 1730,
+    "y": 1398,
+    "props": {
+     "weapon": "shotgun,riot,machete"
+    }
+   },
+   {
+    "name": "wp_p_05",
+    "x": 2414,
+    "y": 1012,
+    "props": {
+     "weapon": "ak47,m16"
+    }
+   },
+   {
+    "name": "wp_p_06",
+    "x": 1038,
+    "y": 1002,
+    "props": {
+     "weapon": "ak47,m16"
+    }
+   },
+   {
+    "name": "wp_p_07",
+    "x": 610,
+    "y": 1264,
+    "props": {
+     "weapon": "mp5,proxynade"
+    }
+   },
+   {
+    "name": "wp_p_08",
+    "x": 2852,
+    "y": 1268,
+    "props": {
+     "weapon": "mp5,proxynade"
+    }
+   },
+   {
+    "name": "wp_p_09",
+    "x": 1726,
+    "y": 1158,
+    "props": {
+     "weapon": "healthpack,fragnade,gasnade,m14"
+    }
+   },
+   {
+    "name": "wp_p_09",
+    "x": 706,
+    "y": 836,
+    "props": {
+     "weapon": "healthpack,m16"
+    }
+   },
+   {
+    "name": "wp_p_10",
+    "x": 2754,
+    "y": 834,
+    "props": {
+     "weapon": "healthpack,m16"
+    }
+   },
+   {
+    "name": "wp_p_11",
+    "x": 1726,
+    "y": 732,
+    "props": {
+     "weapon": "shotgun,phasr,riot,ak47"
+    }
+   },
+   {
+    "name": "spritefg",
+    "x": 961,
+    "y": 426,
+    "props": {
+     "sprite": "everTree"
+    }
+   },
+   {
+    "name": "spritefg",
+    "x": 2495,
+    "y": 428,
+    "props": {
+     "sprite": "everTree"
+    }
+   },
+   {
+    "name": "spritefg",
+    "x": 1394,
+    "y": 542,
+    "props": {
+     "sprite": "bushLeaf"
+    }
+   },
+   {
+    "name": "spritefg",
+    "x": 2059,
+    "y": 541,
+    "props": {
+     "sprite": "bushLeaf"
+    }
+   },
+   {
+    "name": "spritefg",
+    "x": 1953,
+    "y": 460,
+    "props": {
+     "sprite": "everTree"
+    }
+   },
+   {
+    "name": "spritefg",
+    "x": 1503,
+    "y": 460,
+    "props": {
+     "sprite": "everTree"
+    }
+   }
+  ],
+  "object_kinds": {
+   "sp_p": 8,
+   "wp_p": 12,
+   "spritefg": 6
+  }
+ },
+ "9snowblind_new": {
+  "width_tiles": 82,
+  "height_tiles": 14,
+  "tile_px": 256,
+  "tileset": "t64Snow_new.tsx",
+  "layers": [
+   {
+    "name": "tilebg",
+    "non_empty_tiles": 209
+   },
+   {
+    "name": "tile",
+    "non_empty_tiles": 430
+   }
+  ],
+  "objects": [
+   {
+    "name": "sp_p_01",
+    "x": 1760,
+    "y": 98,
+    "props": {}
+   },
+   {
+    "name": "sp_p_02",
+    "x": 5024,
+    "y": 418,
+    "props": {}
+   },
+   {
+    "name": "sp_p_03",
+    "x": 2624,
+    "y": 66,
+    "props": {}
+   },
+   {
+    "name": "sp_p_04",
+    "x": 4512,
+    "y": 292,
+    "props": {}
+   },
+   {
+    "name": "sp_p_05",
+    "x": 734,
+    "y": 288,
+    "props": {}
+   },
+   {
+    "name": "sp_p_06",
+    "x": 224,
+    "y": 416,
+    "props": {}
+   },
+   {
+    "name": "sp_p_08",
+    "x": 3488,
+    "y": 96,
+    "props": {}
+   },
+   {
+    "name": "wp_p_01",
+    "x": 2304,
+    "y": 638,
+    "props": {
+     "weapon": "smaw,shotgun,riot,machete"
+    }
+   },
+   {
+    "name": "wp_p_02",
+    "x": 2944,
+    "y": 640,
+    "props": {
+     "weapon": "smaw,shotgun,riot,machete"
+    }
+   },
+   {
+    "name": "wp_p_03",
+    "x": 2624,
+    "y": 382,
+    "props": {
+     "weapon": "m93ba,flame,phasr"
+    }
+   },
+   {
+    "name": "wp_p_05",
+    "x": 3490,
+    "y": 412,
+    "props": {
+     "weapon": "ak47,m16,gasnade"
+    }
+   },
+   {
+    "name": "wp_p_06",
+    "x": 1758,
+    "y": 416,
+    "props": {
+     "weapon": "ak47,m16,gasnade"
+    }
+   },
+   {
+    "name": "wp_p_07",
+    "x": 1312,
+    "y": 416,
+    "props": {
+     "weapon": "mp5,gasnade,proxynade"
+    }
+   },
+   {
+    "name": "wp_p_08",
+    "x": 3936,
+    "y": 418,
+    "props": {
+     "weapon": "mp5,gasnade,proxynade"
+    }
+   },
+   {
+    "name": "wp_p_09",
+    "x": 2270,
+    "y": 350,
+    "props": {
+     "weapon": "healthpack,fragnade,gasnade,proxynade,m14"
+    }
+   },
+   {
+    "name": "wp_p_09",
+    "x": 544,
+    "y": 550,
+    "props": {
+     "weapon": "healthpack,m16"
+    }
+   },
+   {
+    "name": "wp_p_10",
+    "x": 4706,
+    "y": 550,
+    "props": {
+     "weapon": "healthpack,m16"
+    }
+   },
+   {
+    "name": "wp_p_11",
+    "x": 2974,
+    "y": 354,
+    "props": {
+     "weapon": "healthpack,fragnade,gasnade,proxynade,m14"
+    }
+   },
+   {
+    "name": "spritefg",
+    "x": 2081,
+    "y": 272,
+    "props": {
+     "sprite": "everTree"
+    }
+   },
+   {
+    "name": "spritefg",
+    "x": 3041,
+    "y": 400,
+    "props": {
+     "sprite": "everTree"
+    }
+   },
+   {
+    "name": "spritefg",
+    "x": 1786,
+    "y": 216,
+    "props": {
+     "sprite": "bushLeaf"
+    }
+   },
+   {
+    "name": "spritefg",
+    "x": 3465,
+    "y": 215,
+    "props": {
+     "sprite": "bushLeaf"
+    }
+   },
+   {
+    "name": "spritefg",
+    "x": 3167,
+    "y": 274,
+    "props": {
+     "sprite": "everTree"
+    }
+   },
+   {
+    "name": "spritefg",
+    "x": 2209,
+    "y": 400,
+    "props": {
+     "sprite": "everTree"
+    }
+   },
+   {
+    "name": "spritefg",
+    "x": 1057,
+    "y": 530,
+    "props": {
+     "sprite": "everTree"
+    }
+   },
+   {
+    "name": "spritefg",
+    "x": 4193,
+    "y": 530,
+    "props": {
+     "sprite": "everTree"
+    }
+   },
+   {
+    "name": "spritefg",
+    "x": 2869,
+    "y": 471,
+    "props": {
+     "sprite": "bushLeaf"
+    }
+   },
+   {
+    "name": "spritefg",
+    "x": 2379,
+    "y": 471,
+    "props": {
+     "sprite": "bushLeaf"
+    }
+   },
+   {
+    "name": "spritefg",
+    "x": 1697,
+    "y": 144,
+    "props": {
+     "sprite": "everTree"
+    }
+   },
+   {
+    "name": "spritefg",
+    "x": 3553,
+    "y": 146,
+    "props": {
+     "sprite": "everTree"
+    }
+   }
+  ],
+  "object_kinds": {
+   "sp_p": 7,
+   "wp_p": 11,
+   "spritefg": 12
+  }
+ },
+ "10pyramid_new": {
+  "width_tiles": 66,
+  "height_tiles": 33,
+  "tile_px": 256,
+  "tileset": "t64Desert_new.tsx",
+  "layers": [
+   {
+    "name": "tilebg",
+    "non_empty_tiles": 555
+   },
+   {
+    "name": "tile",
+    "non_empty_tiles": 760
+   }
+  ],
+  "objects": [
+   {
+    "name": "sp_p_00",
+    "x": 3510,
+    "y": 1322,
+    "props": {}
+   },
+   {
+    "name": "sp_p_01",
+    "x": 3862,
+    "y": 1164,
+    "props": {}
+   },
+   {
+    "name": "sp_p_02",
+    "x": 324,
+    "y": 1186,
+    "props": {}
+   },
+   {
+    "name": "sp_p_04",
+    "x": 2558,
+    "y": 1670,
+    "props": {}
+   },
+   {
+    "name": "sp_p_05",
+    "x": 702,
+    "y": 1388,
+    "props": {}
+   },
+   {
+    "name": "sp_p_06",
+    "x": 1608,
+    "y": 1674,
+    "props": {}
+   },
+   {
+    "name": "sp_p_07",
+    "x": 2078,
+    "y": 1388,
+    "props": {}
+   },
+   {
+    "name": "sp_p_08",
+    "x": 1192,
+    "y": 378,
+    "props": {}
+   },
+   {
+    "name": "sp_p_09",
+    "x": 2078,
+    "y": 39,
+    "props": {}
+   },
+   {
+    "name": "sp_p_03",
+    "x": 3048,
+    "y": 354,
+    "props": {}
+   },
+   {
+    "name": "wp_p_00",
+    "x": 1314,
+    "y": 1800,
+    "props": {
+     "weapon": "phasr,m14,proxynade,gasnade"
+    }
+   },
+   {
+    "name": "wp_p_01",
+    "x": 514,
+    "y": 1748,
+    "props": {
+     "weapon": "m16,emp,m14"
+    }
+   },
+   {
+    "name": "wp_p_03",
+    "x": 2080,
+    "y": 1836,
+    "props": {
+     "weapon": "m93ba,smaw"
+    }
+   },
+   {
+    "name": "wp_p_02",
+    "x": 2364,
+    "y": 1246,
+    "props": {
+     "weapon": "shotgun,flame,gasnade,proxynade"
+    }
+   },
+   {
+    "name": "wp_p_04",
+    "x": 3084,
+    "y": 606,
+    "props": {
+     "weapon": "ak47,mp5,emp"
+    }
+   },
+   {
+    "name": "wp_p_05",
+    "x": 2078,
+    "y": 738,
+    "props": {
+     "weapon": "shotgun,healthpack,smaw,m93ba"
+    }
+   },
+   {
+    "name": "wp_p_07",
+    "x": 2078,
+    "y": 164,
+    "props": {
+     "weapon": "healthpack,boosttank"
+    }
+   },
+   {
+    "name": "wp_p_06",
+    "x": 1470,
+    "y": 1060,
+    "props": {
+     "weapon": "proxynade,gasnade"
+    }
+   },
+   {
+    "name": "wp_p_08",
+    "x": 790,
+    "y": 1076,
+    "props": {
+     "weapon": "gasnade,fragnade,healthpack,boosttank"
+    }
+   },
+   {
+    "name": "wp_p_09",
+    "x": 3414,
+    "y": 1080,
+    "props": {
+     "weapon": "gasnade,fragnade,healthpack,boosttank"
+    }
+   },
+   {
+    "name": "wp_p_10",
+    "x": 3230,
+    "y": 1802,
+    "props": {
+     "weapon": "phasr,m14,proxynade,gasnade"
+    }
+   },
+   {
+    "name": "wp_p_11",
+    "x": 3812,
+    "y": 1410,
+    "props": {
+     "weapon": "mp5,ak47,m16"
+    }
+   },
+   {
+    "name": "wp_p_12",
+    "x": 328,
+    "y": 1380,
+    "props": {
+     "weapon": "mp5,ak47,m16"
+    }
+   },
+   {
+    "name": "wp_p_13",
+    "x": 3808,
+    "y": 1794,
+    "props": {
+     "weapon": "m16,emp,m14"
+    }
+   },
+   {
+    "name": "wp_p_14",
+    "x": 1136,
+    "y": 624,
+    "props": {
+     "weapon": "ak47,mp5,emp"
+    }
+   },
+   {
+    "name": "wp_p_15",
+    "x": 2676,
+    "y": 1054,
+    "props": {
+     "weapon": "proxynade,gasnade"
+    }
+   },
+   {
+    "name": "wp_p_20",
+    "x": -220,
+    "y": -232,
+    "props": {
+     "weapon": "healthpack,boosttank,gasnade,proxynade"
+    }
+   },
+   {
+    "name": "wp_p_30",
+    "x": 1798,
+    "y": 1250,
+    "props": {
+     "weapon": "shotgun,gasnade,proxynade,riot"
+    }
+   },
+   {
+    "name": "wp_p_25",
+    "x": 2080,
+    "y": 1264,
+    "props": {
+     "weapon": "healthpack"
+    }
+   },
+   {
+    "name": "spritefg",
+    "x": 1582,
+    "y": 1451,
+    "props": {
+     "sprite": "obelisk"
+    }
+   },
+   {
+    "name": "spritefg",
+    "x": 2574,
+    "y": 1449,
+    "props": {
+     "sprite": "obelisk"
+    }
+   },
+   {
+    "name": "spritefg",
+    "x": 242,
+    "y": 1318,
+    "props": {
+     "sprite": "fanTree"
+    }
+   },
+   {
+    "name": "spritefg",
+    "x": 3972,
+    "y": 1286,
+    "props": {
+     "sprite": "fanTree"
+    }
+   }
+  ],
+  "object_kinds": {
+   "sp_p": 10,
+   "wp_p": 19,
+   "spritefg": 4
+  }
+ },
+ "11catacombs_new": {
+  "width_tiles": 55,
+  "height_tiles": 35,
+  "tile_px": 256,
+  "tileset": "t64Desert_new.tsx",
+  "layers": [
+   {
+    "name": "tilebg",
+    "non_empty_tiles": 680
+   },
+   {
+    "name": "tile",
+    "non_empty_tiles": 1066
+   }
+  ],
+  "objects": [
+   {
+    "name": "sp_p_00",
+    "x": 1244,
+    "y": 1656,
+    "props": {}
+   },
+   {
+    "name": "sp_p_01",
+    "x": 2836,
+    "y": 524,
+    "props": {}
+   },
+   {
+    "name": "sp_p_02",
+    "x": 2186,
+    "y": 1628,
+    "props": {}
+   },
+   {
+    "name": "sp_p_04",
+    "x": 2820,
+    "y": 1184,
+    "props": {}
+   },
+   {
+    "name": "sp_p_05",
+    "x": 2256,
+    "y": 754,
+    "props": {}
+   },
+   {
+    "name": "sp_p_06",
+    "x": 852,
+    "y": 1950,
+    "props": {}
+   },
+   {
+    "name": "sp_p_07",
+    "x": 2622,
+    "y": 1922,
+    "props": {}
+   },
+   {
+    "name": "sp_p_08",
+    "x": 1280,
+    "y": 710,
+    "props": {}
+   },
+   {
+    "name": "sp_p_09",
+    "x": 740,
+    "y": 1181,
+    "props": {}
+   },
+   {
+    "name": "sp_p_03",
+    "x": 618,
+    "y": 574,
+    "props": {}
+   },
+   {
+    "name": "wp_p_00",
+    "x": 922,
+    "y": 1656,
+    "props": {
+     "weapon": "mp5,ak47,sawgun"
+    }
+   },
+   {
+    "name": "wp_p_01",
+    "x": 2064,
+    "y": 376,
+    "props": {
+     "weapon": "m16,sawgun,m14"
+    }
+   },
+   {
+    "name": "wp_p_03",
+    "x": 1760,
+    "y": 1120,
+    "props": {
+     "weapon": "m93ba,smaw,emp"
+    }
+   },
+   {
+    "name": "wp_p_02",
+    "x": 1050,
+    "y": 2116,
+    "props": {
+     "weapon": "gasnade,proxynade"
+    }
+   },
+   {
+    "name": "wp_p_04",
+    "x": 2628,
+    "y": 722,
+    "props": {
+     "weapon": "ak47,mp5,sawgun"
+    }
+   },
+   {
+    "name": "wp_p_05",
+    "x": 2978,
+    "y": 1188,
+    "props": {
+     "weapon": "shotgun,flame,riot"
+    }
+   },
+   {
+    "name": "wp_p_07",
+    "x": 2454,
+    "y": 386,
+    "props": {
+     "weapon": "healthpack,boosttank"
+    }
+   },
+   {
+    "name": "wp_p_08",
+    "x": 1262,
+    "y": 1186,
+    "props": {
+     "weapon": "gasnade,fragnade"
+    }
+   },
+   {
+    "name": "wp_p_09",
+    "x": 1112,
+    "y": 386,
+    "props": {
+     "weapon": "healthpack,boosttank"
+    }
+   },
+   {
+    "name": "wp_p_10",
+    "x": 2268,
+    "y": 1186,
+    "props": {
+     "weapon": "proxynade,gasnade"
+    }
+   },
+   {
+    "name": "wp_p_11",
+    "x": 2464,
+    "y": 1592,
+    "props": {
+     "weapon": "mp5,ak47,sawgun"
+    }
+   },
+   {
+    "name": "wp_p_13",
+    "x": 1468,
+    "y": 380,
+    "props": {
+     "weapon": "m16,sawgun,m14"
+    }
+   },
+   {
+    "name": "wp_p_14",
+    "x": 1054,
+    "y": 774,
+    "props": {
+     "weapon": "ak47,mp5,sawgun"
+    }
+   },
+   {
+    "name": "wp_p_15",
+    "x": 2526,
+    "y": 2102,
+    "props": {
+     "weapon": "proxynade,gasnade"
+    }
+   },
+   {
+    "name": "wp_p_20",
+    "x": -156,
+    "y": -232,
+    "props": {
+     "weapon": "healthpack,boosttank,gasnade,proxynade"
+    }
+   },
+   {
+    "name": "wp_p_30",
+    "x": 542,
+    "y": 1190,
+    "props": {
+     "weapon": "shotgun,flame,riot"
+    }
+   },
+   {
+    "name": "wp_p_25",
+    "x": 1768,
+    "y": 2106,
+    "props": {
+     "weapon": "healthpack"
+    }
+   }
+  ],
+  "object_kinds": {
+   "sp_p": 10,
+   "wp_p": 17
+  }
+ },
+ "12overseer_new": {
+  "width_tiles": 66,
+  "height_tiles": 45,
+  "tile_px": 256,
+  "tileset": "t64Desert_new.tsx",
+  "layers": [
+   {
+    "name": "tilebg",
+    "non_empty_tiles": 698
+   },
+   {
+    "name": "tile",
+    "non_empty_tiles": 705
+   }
+  ],
+  "objects": [
+   {
+    "name": "sp_p_00",
+    "x": 2910,
+    "y": 2512,
+    "props": {}
+   },
+   {
+    "name": "sp_p_01",
+    "x": 3952,
+    "y": 432,
+    "props": {}
+   },
+   {
+    "name": "sp_p_02",
+    "x": 1248,
+    "y": 2496,
+    "props": {}
+   },
+   {
+    "name": "sp_p_04",
+    "x": 3948,
+    "y": 1370,
+    "props": {}
+   },
+   {
+    "name": "sp_p_05",
+    "x": 2144,
+    "y": 80,
+    "props": {}
+   },
+   {
+    "name": "sp_p_06",
+    "x": 326,
+    "y": 2542,
+    "props": {}
+   },
+   {
+    "name": "sp_p_07",
+    "x": 3788,
+    "y": 2444,
+    "props": {}
+   },
+   {
+    "name": "sp_p_08",
+    "x": 2146,
+    "y": 2492,
+    "props": {}
+   },
+   {
+    "name": "sp_p_09",
+    "x": 294,
+    "y": 1441,
+    "props": {}
+   },
+   {
+    "name": "sp_p_03",
+    "x": 294,
+    "y": 414,
+    "props": {}
+   },
+   {
+    "name": "wp_p_00",
+    "x": 2146,
+    "y": 2526,
+    "props": {
+     "weapon": "smaw,shotgun,shield"
+    }
+   },
+   {
+    "name": "wp_p_01",
+    "x": 1750,
+    "y": 110,
+    "props": {
+     "weapon": "emp,m16"
+    }
+   },
+   {
+    "name": "wp_p_03",
+    "x": 2144,
+    "y": 1476,
+    "props": {
+     "weapon": "m93ba"
+    }
+   },
+   {
+    "name": "wp_p_02",
+    "x": 2914,
+    "y": 316,
+    "props": {
+     "weapon": "gasnade,fragnade"
+    }
+   },
+   {
+    "name": "wp_p_04",
+    "x": 292,
+    "y": 1478,
+    "props": {
+     "weapon": "m14"
+    }
+   },
+   {
+    "name": "wp_p_05",
+    "x": 3790,
+    "y": 2556,
+    "props": {
+     "weapon": "m14,m16"
+    }
+   },
+   {
+    "name": "wp_p_07",
+    "x": 3710,
+    "y": 478,
+    "props": {
+     "weapon": "healthpack,boosttank,shield"
+    }
+   },
+   {
+    "name": "wp_p_08",
+    "x": 1236,
+    "y": 322,
+    "props": {
+     "weapon": "gasnade,fragnade"
+    }
+   },
+   {
+    "name": "wp_p_09",
+    "x": 800,
+    "y": 478,
+    "props": {
+     "weapon": "healthpack,boosttank,shield"
+    }
+   },
+   {
+    "name": "wp_p_10",
+    "x": 1638,
+    "y": 2608,
+    "props": {
+     "weapon": "proxynade,gasnade,boosttank"
+    }
+   },
+   {
+    "name": "wp_p_11",
+    "x": 3932,
+    "y": 1412,
+    "props": {
+     "weapon": "m14"
+    }
+   },
+   {
+    "name": "wp_p_13",
+    "x": 344,
+    "y": 192,
+    "props": {
+     "weapon": "m14"
+    }
+   },
+   {
+    "name": "wp_p_14",
+    "x": 3908,
+    "y": 228,
+    "props": {
+     "weapon": "m14"
+    }
+   },
+   {
+    "name": "wp_p_15",
+    "x": 2780,
+    "y": 2610,
+    "props": {
+     "weapon": "proxynade,gasnade,boosttank"
+    }
+   },
+   {
+    "name": "wp_p_20",
+    "x": 2144,
+    "y": 1056,
+    "props": {
+     "weapon": "boosttank"
+    }
+   },
+   {
+    "name": "wp_p_30",
+    "x": 328,
+    "y": 2596,
+    "props": {
+     "weapon": "m16,m14"
+    }
+   },
+   {
+    "name": "wp_p_25",
+    "x": 2500,
+    "y": 104,
+    "props": {
+     "weapon": "emp,m16"
+    }
+   }
+  ],
+  "object_kinds": {
+   "sp_p": 10,
+   "wp_p": 17
+  }
+ },
+ "survival_new": {
+  "width_tiles": 52,
+  "height_tiles": 18,
+  "tile_px": 256,
+  "tileset": "t64_new.tsx",
+  "layers": [
+   {
+    "name": "tilebg",
+    "non_empty_tiles": 124
+   },
+   {
+    "name": "tile",
+    "non_empty_tiles": 553
+   }
+  ],
+  "objects": [
+   {
+    "name": "sp_p_00",
+    "x": 1600,
+    "y": 14,
+    "props": {}
+   },
+   {
+    "name": "spritebg",
+    "x": 2084,
+    "y": 334,
+    "props": {
+     "sprite": "palmTree"
+    }
+   },
+   {
+    "name": "spritebg",
+    "x": 934,
+    "y": 162,
+    "props": {
+     "sprite": "bushFan"
+    }
+   },
+   {
+    "name": "spritebg",
+    "x": 2754,
+    "y": 404,
+    "props": {
+     "sprite": "bushPalm"
+    }
+   }
+  ],
+  "object_kinds": {
+   "sp_p": 1,
+   "spritebg": 3
+  }
+ },
+ "training_new": {
+  "width_tiles": 30,
+  "height_tiles": 20,
+  "tile_px": 256,
+  "tileset": "t64_new.tsx",
+  "layers": [
+   {
+    "name": "tilebg",
+    "non_empty_tiles": 21
+   },
+   {
+    "name": "tile",
+    "non_empty_tiles": 245
+   }
+  ],
+  "objects": [],
+  "object_kinds": {}
+ }
+}

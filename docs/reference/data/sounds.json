@@ -1,0 +1,497 @@
+[
+ {
+  "id": 0,
+  "file": "dryfire.wav",
+  "group": 0
+ },
+ {
+  "id": 1,
+  "file": "checkpoint.wav",
+  "group": 1
+ },
+ {
+  "id": 2,
+  "file": "swipe.wav",
+  "group": 1
+ },
+ {
+  "id": 3,
+  "file": "throw.wav",
+  "group": 1
+ },
+ {
+  "id": 4,
+  "file": "reload.wav",
+  "group": 1
+ },
+ {
+  "id": 5,
+  "file": "mp5.wav",
+  "group": 0
+ },
+ {
+  "id": 6,
+  "file": "impale.wav",
+  "group": 0
+ },
+ {
+  "id": 7,
+  "file": "m16.wav",
+  "group": 0
+ },
+ {
+  "id": 8,
+  "file": "jet.wav",
+  "group": 0
+ },
+ {
+  "id": 9,
+  "file": "explode.wav",
+  "group": 1
+ },
+ {
+  "id": 10,
+  "file": "impact.wav",
+  "group": 0
+ },
+ {
+  "id": 11,
+  "file": "impact2.wav",
+  "group": 0
+ },
+ {
+  "id": 12,
+  "file": "impact3.wav",
+  "group": 1
+ },
+ {
+  "id": 13,
+  "file": "grenade1.wav",
+  "group": 1
+ },
+ {
+  "id": 14,
+  "file": "grenade2.wav",
+  "group": 1
+ },
+ {
+  "id": 15,
+  "file": "clank.wav",
+  "group": 0
+ },
+ {
+  "id": 16,
+  "file": "ricochet.wav",
+  "group": 0
+ },
+ {
+  "id": 17,
+  "file": "snatch.wav",
+  "group": 1
+ },
+ {
+  "id": 18,
+  "file": "deagle.wav",
+  "group": 0
+ },
+ {
+  "id": 19,
+  "file": "magnum.wav",
+  "group": 0
+ },
+ {
+  "id": 20,
+  "file": "uzi.wav",
+  "group": 0
+ },
+ {
+  "id": 21,
+  "file": "shotgun.wav",
+  "group": 0
+ },
+ {
+  "id": 22,
+  "file": "m93ba.wav",
+  "group": 1
+ },
+ {
+  "id": 23,
+  "file": "ak47.wav",
+  "group": 0
+ },
+ {
+  "id": 24,
+  "file": "death1.wav",
+  "group": 1
+ },
+ {
+  "id": 25,
+  "file": "death2.wav",
+  "group": 1
+ },
+ {
+  "id": 26,
+  "file": "death3.wav",
+  "group": 1
+ },
+ {
+  "id": 27,
+  "file": "death4.wav",
+  "group": 1
+ },
+ {
+  "id": 28,
+  "file": "death5.wav",
+  "group": 1
+ },
+ {
+  "id": 29,
+  "file": "death6.wav",
+  "group": 1
+ },
+ {
+  "id": 30,
+  "file": "death7.wav",
+  "group": 1
+ },
+ {
+  "id": 31,
+  "file": "death8.wav",
+  "group": 1
+ },
+ {
+  "id": 32,
+  "file": "death9.wav",
+  "group": 1
+ },
+ {
+  "id": 33,
+  "file": "saw.wav",
+  "group": 3
+ },
+ {
+  "id": 34,
+  "file": "rocket.wav",
+  "group": 3
+ },
+ {
+  "id": 35,
+  "file": "m14.wav",
+  "group": 0
+ },
+ {
+  "id": 36,
+  "file": "laser.wav",
+  "group": 3
+ },
+ {
+  "id": 37,
+  "file": "lock.wav",
+  "group": 2
+ },
+ {
+  "id": 38,
+  "file": "control.wav",
+  "group": 2
+ },
+ {
+  "id": 39,
+  "file": "ugly.wav",
+  "group": 2
+ },
+ {
+  "id": 40,
+  "file": "bringit.wav",
+  "group": 1
+ },
+ {
+  "id": 41,
+  "file": "cmonboy.wav",
+  "group": 1
+ },
+ {
+  "id": 42,
+  "file": "piece.wav",
+  "group": 1
+ },
+ {
+  "id": 43,
+  "file": "yeah.wav",
+  "group": 1
+ },
+ {
+  "id": 44,
+  "file": "gotme.wav",
+  "group": 1
+ },
+ {
+  "id": 45,
+  "file": "silencer.wav",
+  "group": 0
+ },
+ {
+  "id": 46,
+  "file": "flame.wav",
+  "group": 3
+ },
+ {
+  "id": 47,
+  "file": "gas.wav",
+  "group": 3
+ },
+ {
+  "id": 48,
+  "file": "energy.wav",
+  "group": 0
+ },
+ {
+  "id": 49,
+  "file": "proxy.wav",
+  "group": 1
+ },
+ {
+  "id": 50,
+  "file": "goodgame.wav",
+  "group": 1
+ },
+ {
+  "id": 51,
+  "file": "dead.wav",
+  "group": 2
+ },
+ {
+  "id": 52,
+  "file": "time.wav",
+  "group": 2
+ },
+ {
+  "id": 53,
+  "file": "green.wav",
+  "group": 2
+ },
+ {
+  "id": 54,
+  "file": "basics.wav",
+  "group": 2
+ },
+ {
+  "id": 55,
+  "file": "look.wav",
+  "group": 2
+ },
+ {
+  "id": 56,
+  "file": "good.wav",
+  "group": 2
+ },
+ {
+  "id": 57,
+  "file": "weps.wav",
+  "group": 2
+ },
+ {
+  "id": 58,
+  "file": "pickup.wav",
+  "group": 2
+ },
+ {
+  "id": 59,
+  "file": "well.wav",
+  "group": 2
+ },
+ {
+  "id": 60,
+  "file": "switch.wav",
+  "group": 2
+ },
+ {
+  "id": 61,
+  "file": "zoom.wav",
+  "group": 2
+ },
+ {
+  "id": 62,
+  "file": "live.wav",
+  "group": 2
+ },
+ {
+  "id": 63,
+  "file": "pull.wav",
+  "group": 2
+ },
+ {
+  "id": 64,
+  "file": "center.wav",
+  "group": 2
+ },
+ {
+  "id": 65,
+  "file": "will.wav",
+  "group": 2
+ },
+ {
+  "id": 66,
+  "file": "targets.wav",
+  "group": 2
+ },
+ {
+  "id": 67,
+  "file": "awol.wav",
+  "group": 2
+ },
+ {
+  "id": 68,
+  "file": "grenades.wav",
+  "group": 2
+ },
+ {
+  "id": 69,
+  "file": "explosives.wav",
+  "group": 2
+ },
+ {
+  "id": 70,
+  "file": "made.wav",
+  "group": 2
+ },
+ {
+  "id": 71,
+  "file": "mecha.wav",
+  "group": 2
+ },
+ {
+  "id": 72,
+  "file": "future.wav",
+  "group": 2
+ },
+ {
+  "id": 73,
+  "file": "perfect.wav",
+  "group": 2
+ },
+ {
+  "id": 74,
+  "file": "think.wav",
+  "group": 2
+ },
+ {
+  "id": 75,
+  "file": "malfunction.wav",
+  "group": 2
+ },
+ {
+  "id": 76,
+  "file": "destroy.wav",
+  "group": 1
+ },
+ {
+  "id": 77,
+  "file": "standdown.wav",
+  "group": 2
+ },
+ {
+  "id": 78,
+  "file": "bolt.wav",
+  "group": 2
+ },
+ {
+  "id": 79,
+  "file": "nuts.wav",
+  "group": 2
+ },
+ {
+  "id": 80,
+  "file": "over.wav",
+  "group": 2
+ },
+ {
+  "id": 81,
+  "file": "melee.wav",
+  "group": 2
+ },
+ {
+  "id": 82,
+  "file": "back.wav",
+  "group": 2
+ },
+ {
+  "id": 83,
+  "file": "thanks.wav",
+  "group": 2
+ },
+ {
+  "id": 84,
+  "file": "boots.wav",
+  "group": 2
+ },
+ {
+  "id": 85,
+  "file": "jumps.wav",
+  "group": 2
+ },
+ {
+  "id": 86,
+  "file": "thrust.wav",
+  "group": 2
+ },
+ {
+  "id": 87,
+  "file": "gotit.wav",
+  "group": 2
+ },
+ {
+  "id": 88,
+  "file": "base.wav",
+  "group": 2
+ },
+ {
+  "id": 89,
+  "file": "disassemble.wav",
+  "group": 2
+ },
+ {
+  "id": 90,
+  "file": "welcome.wav",
+  "group": 2
+ },
+ {
+  "id": 91,
+  "file": "hoorah.wav",
+  "group": 1
+ },
+ {
+  "id": 91,
+  "file": "hoorah.wav",
+  "group": 2
+ },
+ {
+  "id": 92,
+  "file": "readyup.wav",
+  "group": 1
+ },
+ {
+  "id": 93,
+  "file": "moveout.wav",
+  "group": 1
+ },
+ {
+  "id": 94,
+  "file": "coverme.wav",
+  "group": 1
+ },
+ {
+  "id": 95,
+  "file": "niceshot.wav",
+  "group": 1
+ },
+ {
+  "id": 96,
+  "file": "no.wav",
+  "group": 1
+ },
+ {
+  "id": 97,
+  "file": "getsome.wav",
+  "group": 1
+ }
+]

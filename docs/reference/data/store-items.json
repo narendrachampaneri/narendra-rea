@@ -1,0 +1,100 @@
+[
+ {
+  "id": "boostrecharge",
+  "name": "BOOST REGEN",
+  "price_bp": 1250,
+  "requires_pro_pack": false,
+  "description": "50% faster booster recharge"
+ },
+ {
+  "id": "healthrecharge",
+  "name": "HEALTH REGEN",
+  "price_bp": 1000,
+  "requires_pro_pack": false,
+  "description": "2X faster health recharge"
+ },
+ {
+  "id": "boostincrease",
+  "name": "BOOST INCREASE",
+  "price_bp": 2000,
+  "requires_pro_pack": false,
+  "description": "Increase boost duration by 20%"
+ },
+ {
+  "id": "gdeagle",
+  "name": "GOLDEN EAGLE",
+  "price_bp": 250,
+  "requires_pro_pack": false,
+  "description": "Spawn with a silenced golden desert eagle"
+ },
+ {
+  "id": "accuracy",
+  "name": "INCREASE ACCURACY",
+  "price_bp": 2000,
+  "requires_pro_pack": false,
+  "description": "Increase accuracy on all bullet firing weapons by 20%"
+ },
+ {
+  "id": "grenade1",
+  "name": "GRENADE +1",
+  "price_bp": 1000,
+  "requires_pro_pack": false,
+  "description": "Carry one extra grenade"
+ },
+ {
+  "id": "meleeplus",
+  "name": "MELEE +10",
+  "price_bp": 800,
+  "requires_pro_pack": false,
+  "description": "Increase melee attack damage by 10 damage points"
+ },
+ {
+  "id": "pistolclip",
+  "name": "HANDGUN CLIP EXTENDER",
+  "price_bp": 1250,
+  "requires_pro_pack": false,
+  "description": "Increase clip size for the uzi and desert eagle by 25%"
+ },
+ {
+  "id": "rifleclip",
+  "name": "RIFLE CLIP EXTENDER",
+  "price_bp": 1500,
+  "requires_pro_pack": false,
+  "description": "Increase clip size for the m4, m14 and ak47 by 25%"
+ },
+ {
+  "id": "lasersight",
+  "name": "LASER SIGHT",
+  "price_bp": 1000,
+  "requires_pro_pack": false,
+  "description": "Add a laser sight to pistols and rifles"
+ },
+ {
+  "id": "gasnade",
+  "name": "GAS GRENADE",
+  "price_bp": 500,
+  "requires_pro_pack": false,
+  "description": "Add a gas grenade to your starting weapons"
+ },
+ {
+  "id": "pistolreload",
+  "name": "FASTER RELOAD",
+  "price_bp": 1000,
+  "requires_pro_pack": false,
+  "description": "Reduce reload time for the uzi, desert eagle and magnum by 30%"
+ },
+ {
+  "id": "riflereload",
+  "name": "FASTER RELOAD",
+  "price_bp": 1500,
+  "requires_pro_pack": false,
+  "description": "Reduce reload time for the m4, m14 and ak47 by 30%"
+ },
+ {
+  "id": "maskpack1",
+  "name": "MASK PACK 1",
+  "price_bp": 500,
+  "requires_pro_pack": true,
+  "description": ""
+ }
+]

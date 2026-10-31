@@ -4,7 +4,7 @@ Where things live in the app and in this repository, and where to start a change
 
 ## The one thing to know first
 
-The **game itself is C++** (cocos2d-x 2.2.5 + Box2D physics + RakNet networking),
+The **game itself is C++** (cocos2d-x 2.2.5 + Chipmunk physics + RakNet networking),
 compiled into `source/apk-project/lib/armeabi-v7a/libcocos2dcpp.so`. Weapons,
 soldiers, AI, maps, lobbies and multiplayer all live there; their pseudo-C is in
 `source/native/` (one `.cpp` per class).

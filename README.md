@@ -30,6 +30,7 @@ Ghidra) and verified end to end. Starting point for modifying the app.
 │   ├── PROJECT-MAP.md    where the game logic, networking and Java⇄C++ bridge are
 │   ├── analysis/STATIC-ANALYSIS.md   signature, manifest, package, embedded config
 │   ├── setup/TOOLCHAIN.md            tool versions, checksums, REA/Ghidra settings
+│   ├── reference/ORIGINAL-DEFAULTS.md   every default, table, price, rule and screen of the original app
 │   ├── VERIFICATION.md   how every part was checked
 │   └── REMAKE-PROMPT.md  decisions + new-session prompt for the Android 15/16 remake
 └── minimilitia.code-workspace       VS Code multi-root workspace
