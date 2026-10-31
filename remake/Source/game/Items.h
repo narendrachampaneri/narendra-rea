@@ -31,6 +31,9 @@ public:
     Vec2 position() const;
     float angle() const;
 
+    // Client mirror: a kinematic body at the host's pose.
+    void setMirrorPose(Vec2 at, float angle);
+
     int spawn = -1;     // index of the wp_ point it came from, -1 when dropped
     float age = 0.0f;
 

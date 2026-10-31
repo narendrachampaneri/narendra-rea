@@ -44,6 +44,13 @@ public:
     // Returns how many burst shots are due this step.
     int takeBurstShots();
 
+    // Client mirror: take over what the host reports.
+    void setNetState(int clip, int ammo, bool reloading, float reloadFraction)
+    {
+        _clip = clip; _ammo = ammo; _reloading = reloading;
+        _reloadTimer = reloadFraction * _def->reloadTime;
+    }
+
     // Zoom (Weapon::changeZoomLevel): cycles the weapon's zoom levels.
     void nextZoom();
     float zoom() const { return _info ? _info->zooms[_zoom] : 1.0f; }

@@ -17,6 +17,7 @@
 #include "game/Ragdoll.h"
 #include "game/Soldier.h"
 #include "game/Tracers.h"
+#include "net/Protocol.h"
 
 namespace mm::game
 {
@@ -33,10 +34,13 @@ struct Fighter
     std::string name;
     int team = 0;          // 0 = everyone for himself
     bool human = false;    // the local player (collision 0x15); bots are 0x84
-    std::unique_ptr<Soldier> soldier;  // empty while dead
+    std::unique_ptr<Soldier> soldier;  // empty until first spawned; dead soldiers stay until respawn
+    bool remote = false;     // a person on another phone: steered by netInput (host) or by snapshots (client)
+    PadState netInput;       // the latest input of a remote player (host side)
     float respawnTimer = 0.0f;
     int kills = 0, deaths = 0;
     Brain brain;
+    int lives = -1;        // -1 = unlimited; a death uses one, at 0 the fighter stays dead
     int nearItem = -1;     // uid of a weapon within reach that would be a swap (pick-up button)
 
     bool alive() const { return soldier && !soldier->isDead(); }
@@ -45,6 +49,11 @@ struct Fighter
 struct MatchOptions
 {
     float respawnTime = 9.0f;  // SoldierManager::respawnPlayer: 9 s
+    bool createLocal  = true;  // false: a client mirror; fighters are added with addFighter()
+    int localId       = 0;     // the fighter this phone controls
+    bool mirror       = false; // client mirror: no soldier logic, driven by applySnapshot()
+    bool weaponPickups = true; // weapons spawn on the map (off in Fair mode)
+    bool friendlyFire  = false; // team mates hurt each other (never, in the original rules)
     bool respawn      = true;  // bots come back (unlimited lives, SoldierManager +0x35)
     bool playerRespawn = true; // the local player comes back
     std::uint32_t seed = 1;
@@ -62,10 +71,27 @@ public:
     // One fixed step. `pad` is the local player's joypad state for this frame.
     void step(float dt, const PadState& pad);
 
-    Soldier& player() { return *_fighters.front().soldier; }
-    const Soldier& player() const { return *_fighters.front().soldier; }
-    bool playerAlive() const { return _fighters.front().alive(); }
-    const Fighter& playerFighter() const { return _fighters.front(); }
+    Soldier& player() { return *fighter(_options.localId)->soldier; }
+    const Soldier& player() const { return *const_cast<Match*>(this)->fighter(_options.localId)->soldier; }
+    bool playerAlive() const { return const_cast<Match*>(this)->fighter(_options.localId)->alive(); }
+    const Fighter& playerFighter() const { return *const_cast<Match*>(this)->fighter(_options.localId); }
+    bool hasPlayer() const { return const_cast<Match*>(this)->fighter(_options.localId) && playerFighter().soldier; }
+
+    // Multiplayer: a person on another phone (host) or any fighter of a client mirror.
+    int addFighter(int id, std::string name, int team, bool local, bool remote);
+    void setRemoteInput(int id, const PadState& in);
+    void spawnFighter(int id);
+    void addMirrorSoldier(int id, Vec2 at);          // client: before the first snapshot arrives                       // at the safest spawn point
+    void removeFighter(int id);                      // someone left
+    void giveWeapon(int id, WeaponId w);
+    // What the host sends / what a client mirror applies (see net/Protocol.h).
+    void makeSnapshot(net::Snapshot& out) const;
+    void applySnapshot(const net::Snapshot& s);
+    void makeItemList(net::ItemList& out) const;
+    void applyItemList(const net::ItemList& l);
+    // A client mirror's step: physics for ragdolls, effects and timers only.
+    void stepMirror(float dt, const PadState& localPad);
+    void pushEvent(const GameEvent& e) { _events.push_back(e); }
     const std::vector<Fighter>& fighters() const { return _fighters; }
     Fighter* fighter(int id);
     const std::vector<std::unique_ptr<Ragdoll>>& ragdolls() const { return _ragdolls; }
@@ -89,6 +115,8 @@ public:
         bool emp   = false;
     };
     const std::vector<std::unique_ptr<Grenade>>& grenades() const { return _grenades; }
+    struct GrenadeView { Vec2 pos; float angle; };
+    std::vector<GrenadeView> grenadeViews() const;
     const std::vector<Rocket>& rockets() const { return _rockets; }
     // Explosion::applyDamage around a point: soldiers within 125 points take
     // max(10, 100 - 0.8 d) and a push away from the blast.
@@ -135,6 +163,7 @@ private:
     std::vector<std::unique_ptr<MapItem>> _items;
     std::vector<std::unique_ptr<Grenade>> _grenades;
     std::vector<Rocket> _rockets;
+    std::vector<GrenadeView> _netGrenades;  // mirror only
     void throwGrenade(Fighter& f);
     void launchRocket(Fighter& f);
     void empBlast(Vec2 at, int owner);

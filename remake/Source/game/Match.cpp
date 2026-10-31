@@ -21,12 +21,72 @@ Match::Match(const assets::MapDef& def, const assets::MapData& data, int spawnIn
     if (_spawns.empty())
         _spawns.push_back({data.widthPoints() / 2.0f, data.heightPoints() / 2.0f});
 
-    Fighter player;
-    player.id    = 0;
-    player.name  = "You";
-    player.human = true;
-    _fighters.push_back(std::move(player));
-    spawn(_fighters.front(), spawnPoint(spawnIndex));
+    if (_options.createLocal)
+    {
+        addFighter(0, "You", 0, true, false);
+        spawn(*fighter(0), spawnPoint(spawnIndex));
+    }
+}
+
+int Match::addFighter(int id, std::string name, int team, bool local, bool remote)
+{
+    Fighter f;
+    f.id     = id;
+    f.name   = std::move(name);
+    f.team   = team;
+    f.human  = local;
+    f.remote = remote;
+    _fighters.push_back(std::move(f));
+    return id;
+}
+
+void Match::spawnFighter(int id)
+{
+    if (Fighter* f = fighter(id))
+        spawn(*f, safeSpawnFor(id));
+}
+
+void Match::addMirrorSoldier(int id, Vec2 at)
+{
+    Fighter* f = fighter(id);
+    if (!f || f->soldier)
+        return;
+    f->soldier = std::make_unique<Soldier>(_physics, at, _def.gravityFactor, _events, id,
+                                           f->human ? rules::kSoldierCollision : rules::kRemoteCollision);
+    f->soldier->setMirror();
+}
+
+void Match::removeFighter(int id)
+{
+    for (auto it = _fighters.begin(); it != _fighters.end(); ++it)
+        if (it->id == id)
+        {
+            it->soldier.reset();
+            _fighters.erase(it);
+            return;
+        }
+}
+
+void Match::giveWeapon(int id, WeaponId w)
+{
+    if (Fighter* f = fighter(id); f && f->soldier)
+        f->soldier->setWeapon(std::make_unique<Weapon>(w));
+}
+
+void Match::setRemoteInput(int id, const PadState& in)
+{
+    if (Fighter* f = fighter(id))
+    {
+        // One-shot buttons stay latched until the step that uses them.
+        const PadState old = f->netInput;
+        f->netInput        = in;
+        f->netInput.melee        |= old.melee;
+        f->netInput.grenade      |= old.grenade;
+        f->netInput.reload       |= old.reload;
+        f->netInput.switchWeapon |= old.switchWeapon;
+        f->netInput.pickUp       |= old.pickUp;
+        f->netInput.zoom         |= old.zoom;
+    }
 }
 
 Match::~Match()
@@ -99,7 +159,7 @@ void Match::spawn(Fighter& f, Vec2 at)
 
 void Match::respawn(int spawnIndex)
 {
-    spawn(_fighters.front(), spawnPoint(spawnIndex));
+    spawn(*fighter(_options.localId), spawnPoint(spawnIndex));
 }
 
 float Match::random11()
@@ -111,6 +171,8 @@ void Match::killFighter(Fighter& f)
 {
     Soldier& s = *f.soldier;
     ++f.deaths;
+    if (f.lives > 0)
+        --f.lives;
     const int killer = s.lastAttacker();
     if (killer >= 0 && killer != f.id)
         if (Fighter* k = fighter(killer))
@@ -142,6 +204,9 @@ bool Match::onBulletHit(Tracer& t, cpShape* shape, Vec2 point)
         Soldier& victim = *f.soldier;
         if (f.id == t.owner)
             return false;  // never your own bullet
+        if (!_options.friendlyFire && f.team != 0)
+            if (const Fighter* shooter = fighter(t.owner); shooter && shooter->team == f.team)
+                return false;  // team mates fly through each other's bullets
         if (victim.isHead(shape))
         {
             if (victim.isCrouching())
@@ -346,6 +411,9 @@ void Match::explode(Vec2 at, int owner, int ammoType)
     {
         if (!f.alive())
             continue;
+        if (!_options.friendlyFire && f.team != 0 && f.id != owner)
+            if (const Fighter* shooter = fighter(owner); shooter && shooter->team == f.team)
+                continue;
         const Vec2 d   = f.soldier->position() - at;
         const float dist = d.length();
         if (dist >= rules::kExplosionRadius)
@@ -458,11 +526,17 @@ void Match::step(float dt, const PadState& pad)
             continue;
         if (f.soldier->isDead())
         {
-            if ((f.human ? _options.playerRespawn : _options.respawn) && (f.respawnTimer -= dt) <= 0.0f)
+            if ((f.human || f.remote ? _options.playerRespawn : _options.respawn) && f.lives != 0 &&
+                (f.respawnTimer -= dt) <= 0.0f)
                 spawn(f, safeSpawnFor(f.id));
             continue;
         }
-        const PadState in = f.human ? pad : (f.brain ? f.brain(*this, f) : PadState{});
+        PadState in = f.human ? pad : (f.remote ? f.netInput : (f.brain ? f.brain(*this, f) : PadState{}));
+        if (f.remote)
+        {
+            f.netInput.melee = f.netInput.grenade = f.netInput.reload = f.netInput.switchWeapon = false;
+            f.netInput.pickUp = f.netInput.zoom = false;
+        }
         Soldier& s        = *f.soldier;
         s.setFireAngle(in.aimAngle);
         s.updateStep(dt, in);
@@ -488,7 +562,8 @@ void Match::step(float dt, const PadState& pad)
         updateMelee(f);
         updatePickUps(f, in.pickUp);
     }
-    updateWeaponSpawns(dt);
+    if (_options.weaponPickups)
+        updateWeaponSpawns(dt);
     updateExplosives(dt);
 
     _tracers.updateStep(dt, _physics, _events,
@@ -524,6 +599,160 @@ EventQueue Match::takeEvents()
     EventQueue out;
     out.swap(_events);
     return out;
+}
+
+}  // namespace mm::game
+
+namespace mm::game
+{
+
+std::vector<Match::GrenadeView> Match::grenadeViews() const
+{
+    if (_options.mirror)
+        return _netGrenades;
+    std::vector<GrenadeView> out;
+    for (const auto& g : _grenades)
+        out.push_back({toVec(cpBodyGetPosition(g->body)), static_cast<float>(cpBodyGetAngle(g->body))});
+    return out;
+}
+
+void Match::makeSnapshot(net::Snapshot& out) const
+{
+    for (const auto& f : _fighters)
+        if (f.soldier)
+            out.fighters.push_back(f.soldier->netState());
+    _tracers.toNet(out.tracers);
+    for (const auto& g : grenadeViews())
+        out.grenades.push_back({g.pos.x, g.pos.y, g.angle});
+    for (const auto& r : _rockets)
+    {
+        const float deg = std::fmod(std::fmod(toCocosAngle(r.velocity), 360.0f) + 360.0f, 360.0f);
+        out.rockets.push_back({r.pos.x, r.pos.y, static_cast<std::uint16_t>(deg * 10.0f)});
+    }
+    for (const auto& f : _fighters)
+        out.scores.push_back({static_cast<std::uint8_t>(f.id), static_cast<std::uint16_t>(f.kills),
+                              static_cast<std::uint16_t>(f.deaths)});
+}
+
+void Match::applySnapshot(const net::Snapshot& s)
+{
+    for (const auto& fs : s.fighters)
+    {
+        Fighter* f = fighter(fs.id);
+        if (!f)  // an enemy of Co-op Survival
+        {
+            addFighter(fs.id, "Drone", 2, false, true);
+            f = fighter(fs.id);
+        }
+        const bool alive = fs.flags & 1;
+        if (!f->soldier)
+        {
+            f->soldier = std::make_unique<Soldier>(_physics, Vec2{fs.x, fs.y}, _def.gravityFactor, _events, f->id,
+                                                   f->human ? rules::kSoldierCollision : rules::kRemoteCollision);
+            f->soldier->setMirror();
+        }
+        Soldier& sol = *f->soldier;
+        const bool wasAlive = !sol.isDead();
+        sol.applyNet(fs);
+        if (wasAlive && !alive)
+        {
+            // Dies here: the same ragdoll and death effect as on the host.
+            _ragdolls.push_back(std::make_unique<Ragdoll>(_physics, sol.position(), sol.velocity(), _def.gravityFactor,
+                                                          sol.facingRight(), [this] { return random11(); }));
+            sol.deactivate();
+        }
+        else if (!wasAlive && alive)
+        {
+            // Respawn: a fresh mirror soldier.
+            f->soldier = std::make_unique<Soldier>(_physics, Vec2{fs.x, fs.y}, _def.gravityFactor, _events, f->id,
+                                                   f->human ? rules::kSoldierCollision : rules::kRemoteCollision);
+            f->soldier->setMirror();
+            f->soldier->applyNet(fs);
+        }
+    }
+    for (const auto& sc : s.scores)
+        if (Fighter* f = fighter(sc.id))
+        {
+            f->kills  = sc.kills;
+            f->deaths = sc.deaths;
+        }
+    _tracers.setFromNet(s.tracers);
+    _netGrenades.clear();
+    for (const auto& g : s.grenades)
+        _netGrenades.push_back({{g.x, g.y}, g.angle});
+    _rockets.clear();
+    for (const auto& r : s.rockets)
+    {
+        Rocket k;
+        k.pos      = {r.x, r.y};
+        k.prev     = k.pos;
+        k.velocity = fromCocosAngle(r.angle / 10.0f) * rules::kRocketSpeed;
+        _rockets.push_back(k);
+    }
+    _time = static_cast<float>(s.tick) / 60.0f;
+}
+
+void Match::makeItemList(net::ItemList& out) const
+{
+    for (const auto& i : _items)
+        if (!i->taken())
+            out.items.push_back({static_cast<std::uint16_t>(i->uid()), static_cast<std::uint8_t>(i->weapon().id()),
+                                 i->position().x, i->position().y, i->angle()});
+}
+
+void Match::applyItemList(const net::ItemList& l)
+{
+    std::vector<std::unique_ptr<MapItem>> kept;
+    for (const auto& st : l.items)
+    {
+        std::unique_ptr<MapItem> item;
+        for (auto& i : _items)
+            if (i && i->uid() == st.uid)
+            {
+                item = std::move(i);
+                break;
+            }
+        if (!item)
+            item = std::make_unique<MapItem>(
+                _physics, st.uid,
+                std::make_unique<Weapon>(static_cast<WeaponId>(std::min<int>(st.weapon, static_cast<int>(WeaponId::Count) - 1))),
+                Vec2{st.x, st.y}, Vec2{}, _def.gravityFactor);
+        item->setMirrorPose({st.x, st.y}, st.angle);
+        kept.push_back(std::move(item));
+    }
+    _items.swap(kept);  // whatever the host no longer lists is gone
+}
+
+void Match::stepMirror(float dt, const PadState& localPad)
+{
+    dt = std::min(dt, rules::kMaxFrameDt);
+    _physics.step(dt);  // ragdolls only; mirror bodies are kinematic
+    for (auto& r : _ragdolls)
+        r->updateStep(dt);
+    _ragdolls.erase(std::remove_if(_ragdolls.begin(), _ragdolls.end(), [](const auto& r) { return r->expired(); }),
+                    _ragdolls.end());
+    // Soldiers glide on the last velocity between snapshots (kinematic integration is Chipmunk's).
+    if (hasPlayer() && playerAlive())
+    {
+        Fighter& me = *fighter(_options.localId);
+        me.soldier->setFireAngle(localPad.aimAngle);  // the aim reacts at once
+        // Pick-up prompt, like the host's rule (the host decides the actual pick-up).
+        me.nearItem = -1;
+        if (me.soldier->velocity().length() <= 200.0f)
+        {
+            float best = 35.0f;
+            for (const auto& i : _items)
+            {
+                const float d = (i->position() - me.soldier->position()).length();
+                if (d < best)
+                {
+                    best        = d;
+                    me.nearItem = i->uid();
+                }
+            }
+        }
+    }
+    _time += dt;
 }
 
 }  // namespace mm::game

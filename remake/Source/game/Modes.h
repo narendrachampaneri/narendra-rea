@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "game/Bot.h"
+#include "game/Driver.h"
 #include "game/Match.h"
 
 namespace mm::game
@@ -29,7 +30,6 @@ struct ModeSettings
     std::uint32_t seed = 1;
 };
 
-enum class ModeState { Running, Won, Lost, Finished };
 
 // A lesson of the training course: what Sarge says and what the player has to do.
 struct Lesson
@@ -39,18 +39,24 @@ struct Lesson
     float amount;  // seconds, count or points, depending on the goal
 };
 
-class ModeController
+class ModeController : public GameDriver
 {
 public:
     ModeController(const assets::MapDef& def, const assets::MapData& data, ModeSettings settings);
 
-    Match& match() { return *_match; }
+    Match& match() override { return *_match; }
     const Match& match() const { return *_match; }
     const ModeSettings& settings() const { return _settings; }
 
-    void step(float dt, const PadState& pad);
+    void step(float dt, const PadState& pad) override;
 
-    ModeState state() const { return _state; }
+    ModeState state() const override { return _state; }
+    std::string status() const override;
+    std::string banner() const override { return _banner; }
+    std::string hint() const override;
+    std::string scoreboard() const override;
+    std::vector<Row> results() const override;
+    std::string resultTitle() const override;
     float timeLeft() const { return _timeLeft; }       // Quick Play / Practice
     int wave() const { return _wave; }                 // Survival
     int lives() const { return _lives; }               // Survival
@@ -58,7 +64,6 @@ public:
     int lesson() const { return _lesson; }             // Training: index into lessons()
     const Lesson* currentLesson() const;
     static const std::vector<Lesson>& lessons();
-    const std::string& banner() const { return _banner; }  // "WAVE 3" and so on, for a moment
 
     // Enemies in a Survival wave: count, and the bots' skill.
     static int waveSize(int wave) { return 2 + wave; }

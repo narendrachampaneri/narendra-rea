@@ -483,3 +483,62 @@ void Soldier::applyKnockback(Vec2 impulse)
     cpBodyApplyImpulseAtLocalPoint(_body, cpv(impulse), cpvzero);
 }
 }  // namespace mm::game
+
+namespace mm::game
+{
+
+void Soldier::setMirror()
+{
+    _mirror = true;
+    cpBodySetType(_body, CP_BODY_TYPE_KINEMATIC);
+    cpBodySetVelocityUpdateFunc(_body, [](cpBody*, cpVect, cpFloat, cpFloat) {});
+}
+
+net::FighterState Soldier::netState() const
+{
+    net::FighterState f;
+    f.id        = static_cast<std::uint8_t>(_id);
+    const Vec2 p = position(), v = velocity();
+    f.x = p.x; f.y = p.y; f.vx = v.x; f.vy = v.y;
+    f.angle     = bodyAngle();
+    f.aim       = static_cast<std::uint16_t>(std::fmod(_fireAngle + 360.0f, 360.0f) * 10.0f);
+    f.health    = static_cast<std::uint8_t>(std::clamp(_health, 0.0f, 255.0f));
+    f.power     = static_cast<std::uint8_t>(std::clamp(_power, 0.0f, 255.0f));
+    f.weapon    = static_cast<std::uint8_t>(_weapon->id());
+    f.secondary = _secondary ? static_cast<std::uint8_t>(_secondary->id()) : 255;
+    f.clip      = static_cast<std::uint8_t>(std::min(_weapon->clip(), 255));
+    f.ammo      = static_cast<std::uint16_t>(std::min(_weapon->ammo(), 65535));
+    f.grenades  = static_cast<std::uint8_t>(_grenades);
+    f.flags     = static_cast<std::uint8_t>((_dead ? 0 : 1) | (_crouch ? 2 : 0) | (_jetting ? 4 : 0) |
+                                            (_footContactPrev ? 8 : 0) | (_weapon->isReloading() ? 16 : 0) |
+                                            (static_cast<int>(std::clamp(_thrustFactor, 0.0f, 1.0f) * 7.0f) << 5));
+    f.reloadPct = static_cast<std::uint8_t>(_weapon->reloadProgress() * 255.0f);
+    return f;
+}
+
+void Soldier::applyNet(const net::FighterState& s)
+{
+    cpBodySetPosition(_body, ::cpv(s.x, s.y));
+    cpBodySetVelocity(_body, ::cpv(s.vx, s.vy));
+    cpBodySetAngle(_body, s.angle);
+    _fireAngle    = s.aim / 10.0f;
+    _health       = s.health;
+    _power        = s.power;
+    _dead         = !(s.flags & 1);
+    _crouch       = s.flags & 2;
+    _jetting      = s.flags & 4;
+    _onGroundNet  = s.flags & 8;
+    _thrustFactor = ((s.flags >> 5) & 7) / 7.0f;
+    _grenades     = s.grenades;
+    const auto id = static_cast<WeaponId>(std::min<int>(s.weapon, static_cast<int>(WeaponId::Count) - 1));
+    if (!_weapon || _weapon->id() != id)
+        _weapon = std::make_unique<Weapon>(id);
+    _weapon->setNetState(s.clip, s.ammo, s.flags & 16, s.reloadPct / 255.0f);
+    if (s.secondary == 255)
+        _secondary.reset();
+    else if (const auto sid = static_cast<WeaponId>(std::min<int>(s.secondary, static_cast<int>(WeaponId::Count) - 1));
+             !_secondary || _secondary->id() != sid)
+        _secondary = std::make_unique<Weapon>(sid);
+}
+
+}  // namespace mm::game

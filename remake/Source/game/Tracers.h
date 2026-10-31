@@ -5,7 +5,11 @@
 #include <array>
 #include <functional>
 
+#include <vector>
+
 #include "chipmunk/chipmunk.h"
+
+#include "net/Protocol.h"
 
 #include "game/Events.h"
 #include "game/Rules.h"
@@ -56,6 +60,9 @@ public:
 
     const std::array<Tracer, rules::kTracerPool>& tracers() const { return _pool; }
     int activeCount() const;
+    // Multiplayer: the host's bullets for a client mirror to draw, and the reverse.
+    void setFromNet(const std::vector<net::TracerState>& states);
+    void toNet(std::vector<net::TracerState>& out) const;
 
 private:
     std::array<Tracer, rules::kTracerPool> _pool{};

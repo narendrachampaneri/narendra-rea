@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstdio>
 
 namespace mm::game
 {
@@ -187,6 +188,60 @@ void ModeController::step(float dt, const PadState& pad)
     case ModeKind::Practice: stepTimed(dt); break;
     case ModeKind::Survival: stepSurvival(dt); break;
     case ModeKind::Training: stepTraining(dt, pad); break;
+    }
+}
+
+}  // namespace mm::game
+
+namespace mm::game
+{
+
+std::string ModeController::status() const
+{
+    char buf[96];
+    switch (_settings.kind)
+    {
+    case ModeKind::Survival:
+        std::snprintf(buf, sizeof buf, "WAVE %d   LIVES %d   SCORE %d", _wave, _lives, _score);
+        return buf;
+    case ModeKind::Training:
+        std::snprintf(buf, sizeof buf, "TRAINING %d / %d", std::min<int>(_lesson + 1, static_cast<int>(lessons().size())),
+                      static_cast<int>(lessons().size()));
+        return buf;
+    default:
+        std::snprintf(buf, sizeof buf, "%d:%02d", static_cast<int>(_timeLeft) / 60, static_cast<int>(_timeLeft) % 60);
+        return buf;
+    }
+}
+
+std::string ModeController::hint() const
+{
+    const Lesson* l = currentLesson();
+    return (_settings.kind == ModeKind::Training && l) ? l->text : "";
+}
+
+std::string ModeController::scoreboard() const
+{
+    const auto& f = _match->playerFighter();
+    return "KILLS " + std::to_string(f.kills) + "   DEATHS " + std::to_string(f.deaths);
+}
+
+std::vector<GameDriver::Row> ModeController::results() const
+{
+    std::vector<Row> rows;
+    for (const auto& f : _match->fighters())
+        rows.push_back({f.name, f.team, f.kills, f.deaths, f.human});
+    std::stable_sort(rows.begin(), rows.end(), [](const Row& a, const Row& b) { return a.kills > b.kills; });
+    return rows;
+}
+
+std::string ModeController::resultTitle() const
+{
+    switch (_state)
+    {
+    case ModeState::Lost: return "GAME OVER";
+    case ModeState::Won: return "COMPLETE";
+    default: return "TIME UP";
     }
 }
 

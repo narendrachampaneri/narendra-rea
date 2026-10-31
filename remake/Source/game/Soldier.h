@@ -10,6 +10,7 @@
 #include "game/Joypad.h"
 #include "game/Weapon.h"
 #include "game/Weapons.h"
+#include "net/Protocol.h"
 
 namespace mm::game
 {
@@ -68,8 +69,9 @@ public:
     bool isJetting() const { return _jetting; }
     bool isCrouching() const { return _crouch; }
     bool isDead() const { return _dead; }
-    bool onGround() const { return _footContactPrev; }
+    bool onGround() const { return _mirror ? _onGroundNet : _footContactPrev; }
     bool facingRight() const;
+    void setWeapon(std::unique_ptr<Weapon> w) { _weapon = std::move(w); }
     Weapon& weapon() { return *_weapon; }
     const Weapon& weapon() const { return *_weapon; }
     const Weapon* secondary() const { return _secondary.get(); }
@@ -98,6 +100,13 @@ public:
         return true;
     }
     void applyKnockback(Vec2 impulse);
+
+    // Multiplayer. A mirror soldier on a client does no simulation of its own: its body is
+    // moved by the host's snapshots (kinematic, so it glides on the reported velocity).
+    void setMirror();
+    bool isMirror() const { return _mirror; }
+    void applyNet(const net::FighterState& s);
+    net::FighterState netState() const;
     void drainPower() { _power = 0.0f; }
     Vec2 joyOffset() const { return _joy; }
 
@@ -130,6 +139,8 @@ private:
 
     std::unique_ptr<Weapon> _weapon;     // in hand (+0x148)
     std::unique_ptr<Weapon> _secondary;  // the other one (+0x14c)
+    bool _mirror        = false;
+    bool _onGroundNet   = false;
     bool _melee         = false;         // +0x166
     float _meleeTime    = 0.0f;          // +0x178
     float _meleeCharge  = 0.0f;          // +0x1e4

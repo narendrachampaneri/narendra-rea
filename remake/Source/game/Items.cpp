@@ -49,6 +49,18 @@ MapItem::~MapItem()
     cpBodyFree(_body);
 }
 
+void MapItem::setMirrorPose(Vec2 at, float angle)
+{
+    if (cpBodyGetType(_body) != CP_BODY_TYPE_KINEMATIC)
+    {
+        cpBodySetType(_body, CP_BODY_TYPE_KINEMATIC);
+        cpBodySetVelocityUpdateFunc(_body, [](cpBody*, cpVect, cpFloat, cpFloat) {});
+        cpShapeSetFilter(_shape, CP_SHAPE_FILTER_NONE);
+    }
+    cpBodySetPosition(_body, cpv(at));
+    cpBodySetAngle(_body, angle);
+}
+
 Vec2 MapItem::position() const { return toVec(cpBodyGetPosition(_body)); }
 float MapItem::angle() const { return static_cast<float>(cpBodyGetAngle(_body)); }
 

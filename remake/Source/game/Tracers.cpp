@@ -1,6 +1,7 @@
 #include "game/Tracers.h"
 
 #include <algorithm>
+#include <cmath>
 
 #include "game/Physics.h"
 
@@ -82,6 +83,43 @@ void TracerPool::updateStep(float dt, const Physics& physics, EventQueue& events
             e.dir = wall.normal;
             events.push_back(e);
         }
+    }
+}
+
+}  // namespace mm::game
+
+namespace mm::game
+{
+
+void TracerPool::toNet(std::vector<net::TracerState>& out) const
+{
+    for (const Tracer& t : _pool)
+    {
+        if (!t.active || t.fresh)
+            continue;
+        const float deg = std::fmod(std::fmod(t.angle, 360.0f) + 360.0f, 360.0f);
+        out.push_back({t.pos.x, t.pos.y, static_cast<std::uint16_t>(deg * 10.0f),
+                       static_cast<std::uint8_t>(std::min(t.trail, 15.0f) * 16.0f),
+                       static_cast<std::uint8_t>(std::clamp(t.opacity, 0.0f, 255.0f))});
+    }
+}
+
+void TracerPool::setFromNet(const std::vector<net::TracerState>& states)
+{
+    for (std::size_t i = 0; i < _pool.size(); ++i)
+    {
+        Tracer& t = _pool[i];
+        if (i < states.size())
+        {
+            t.active  = true;
+            t.fresh   = false;
+            t.pos     = {states[i].x, states[i].y};
+            t.angle   = states[i].angle / 10.0f;
+            t.trail   = states[i].trail / 16.0f;
+            t.opacity = states[i].opacity;
+        }
+        else
+            t.active = false;
     }
 }
 
