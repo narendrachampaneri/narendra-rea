@@ -45,7 +45,8 @@ struct Fighter
 struct MatchOptions
 {
     float respawnTime = 9.0f;  // SoldierManager::respawnPlayer: 9 s
-    bool respawn      = true;  // unlimited lives (SoldierManager +0x35)
+    bool respawn      = true;  // bots come back (unlimited lives, SoldierManager +0x35)
+    bool playerRespawn = true; // the local player comes back
     std::uint32_t seed = 1;
 };
 

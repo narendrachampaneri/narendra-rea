@@ -442,7 +442,7 @@ void Match::step(float dt, const PadState& pad)
             continue;
         if (f.soldier->isDead())
         {
-            if (_options.respawn && (f.respawnTimer -= dt) <= 0.0f)
+            if ((f.human ? _options.playerRespawn : _options.respawn) && (f.respawnTimer -= dt) <= 0.0f)
                 spawn(f, safeSpawnFor(f.id));
             continue;
         }

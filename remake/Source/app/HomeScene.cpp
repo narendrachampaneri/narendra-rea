@@ -3,6 +3,8 @@
 #include "app/AssetViewerScene.h"
 #include "app/AudioSystem.h"
 #include "app/GameScene.h"
+#include "app/PlayScene.h"
+#include <random>
 #include "app/Platform.h"
 #include "app/Ui.h"
 #include "config/GameConfig.h"
@@ -31,15 +33,28 @@ bool HomeScene::init()
 
     // Button panel on the right, like the original menu (b03_top / mid / bot pieces).
     auto* menu = Menu::create(
-        // M3 slice: Outpost with the AK47 (the full Quick Play rules arrive in M4).
+        // Quick Play = an instant offline match against bots on a random map.
         ui::panelButton("b03_top.png", "QUICK PLAY",
                         [this, click](Object*) {
                             click();
-                            if (auto* scene = GameScene::create(*assets::findMap("outpost")))
+                            std::vector<const assets::MapDef*> pool;
+                            for (const auto& m : assets::kMaps)
+                                if (m.kind == assets::MapKind::Multiplayer && m.inOriginalRotation)
+                                    pool.push_back(&m);
+                            std::random_device rd;
+                            game::ModeSettings settings;
+                            settings.kind = game::ModeKind::QuickPlay;
+                            settings.seed = rd();
+                            const auto* map = pool[settings.seed % pool.size()];
+                            if (auto* scene = GameScene::create(*map, settings))
                                 _director->replaceScene(TransitionFade::create(0.4f, scene));
                         }),
         ui::panelButton("b03_mid.png", "MULTIPLAYER", comingIn("Wi-Fi multiplayer arrives in M5")),
-        ui::panelButton("b03_mid.png", "SOLO PLAY", comingIn("Training, Survival and Practice arrive in M4")),
+        ui::panelButton("b03_mid.png", "SOLO PLAY",
+                        [this, click](Object*) {
+                            click();
+                            _director->replaceScene(TransitionFade::create(0.4f, utils::createInstance<PlayScene>()));
+                        }),
         ui::panelButton("b03_mid.png", "SETTINGS", comingIn("Settings arrive in M6")),
         ui::panelButton("b03_bot.png", "ASSET CHECK",
                         [this, click](Object*) {

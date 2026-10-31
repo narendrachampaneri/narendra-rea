@@ -9,6 +9,7 @@
 #include "assets/MapData.h"
 #include "game/Joypad.h"
 #include "game/Match.h"
+#include "game/Modes.h"
 #include "game/TileCollision.h"
 #include "game/Weapon.h"
 
@@ -650,4 +651,82 @@ TEST_CASE("A grenade detonates after 1.75 s; a rocket on the first wall")
     }
     CHECK(boom2);
     CHECK(m.rockets().empty());
+}
+
+#include "game/Bot.h"
+
+TEST_CASE("Bots find each other and fight; kills are counted")
+{
+    const auto data = loadMap("1outpost_new.tmx");
+    ModeSettings st;
+    st.minutes = 3;
+    ModeController mode(*assets::findMap("outpost"), data, st);
+    for (int i = 0; i < 60 * 60 && mode.state() == ModeState::Running; ++i)
+        mode.step(kDt, idle());
+    int kills = 0, deaths = 0;
+    for (const auto& f : mode.match().fighters())
+    {
+        kills += f.kills;
+        deaths += f.deaths;
+    }
+    CHECK(kills >= 1);
+    CHECK(deaths >= kills);
+}
+
+
+TEST_CASE("Quick Play: bots, a timer and a finish")
+{
+    const auto data = loadMap("1outpost_new.tmx");
+    ModeSettings st;
+    st.minutes = 1;
+    ModeController mode(*assets::findMap("outpost"), data, st);
+    CHECK(mode.match().fighters().size() == 4);  // you and three bots
+    for (int i = 0; i < 60 * 61 && mode.state() == ModeState::Running; ++i)
+        mode.step(kDt, idle());
+    CHECK(mode.state() == ModeState::Finished);
+}
+
+TEST_CASE("Survival: waves grow, three lives, game over")
+{
+    const auto data = loadMap("1outpost_new.tmx");
+    ModeSettings st;
+    st.kind = ModeKind::Survival;
+    ModeController mode(*assets::findMap("survival"), data, st);
+    CHECK(mode.wave() == 0);
+    for (int i = 0; i < 60 * 3; ++i)
+        mode.step(kDt, idle());
+    CHECK(mode.wave() == 1);
+    CHECK(mode.match().fighters().size() == 1 + ModeController::waveSize(1));
+    CHECK(mode.lives() == 3);
+    // Three deaths end the run; the player comes back after each of the first two.
+    for (int death = 1; death <= 3; ++death)
+    {
+        REQUIRE(mode.match().playerAlive());
+        mode.match().player().setHealth(0.0f);
+        mode.step(kDt, idle());
+        CHECK(mode.lives() == 3 - death);
+        if (death < 3)
+        {
+            for (int i = 0; i < 60 * 10 && !mode.match().playerAlive(); ++i)
+                mode.step(kDt, idle());
+        }
+    }
+    CHECK(mode.state() == ModeState::Lost);
+}
+
+TEST_CASE("Training: lessons advance when the player does what Sarge asks")
+{
+    const auto data = loadMap("1outpost_new.tmx");
+    ModeSettings st;
+    st.kind = ModeKind::Training;
+    ModeController mode(*assets::findMap("training"), data, st);
+    REQUIRE(ModeController::lessons().size() == 11);
+    CHECK(mode.lesson() == 0);
+    for (int i = 0; i < 60 * 5; ++i)
+        mode.step(kDt, idle());
+    CHECK(mode.lesson() == 0);  // standing around does nothing
+    PadState walk = stick({1, 0});
+    for (int i = 0; i < 60 * 3 && mode.lesson() == 0; ++i)
+        mode.step(kDt, walk);
+    CHECK(mode.lesson() == 1);
 }

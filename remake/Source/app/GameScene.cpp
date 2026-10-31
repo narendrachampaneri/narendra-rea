@@ -92,10 +92,10 @@ private:
 
 }  // namespace
 
-GameScene* GameScene::create(const assets::MapDef& def)
+GameScene* GameScene::create(const assets::MapDef& def, game::ModeSettings settings)
 {
     auto* scene = new GameScene();
-    if (scene->init(def))
+    if (scene->init(def, settings))
     {
         scene->autorelease();
         return scene;
@@ -104,7 +104,7 @@ GameScene* GameScene::create(const assets::MapDef& def)
     return nullptr;
 }
 
-bool GameScene::init(const assets::MapDef& def)
+bool GameScene::init(const assets::MapDef& def, game::ModeSettings settings)
 {
     if (!Scene::init())
         return false;
@@ -131,7 +131,8 @@ bool GameScene::init(const assets::MapDef& def)
         return false;
     _scaleLayer->addChild(_map);
 
-    _match = std::make_unique<game::Match>(def, AssetManager::get().mapData(def), 0);
+    _mode  = std::make_unique<game::ModeController>(def, AssetManager::get().mapData(def), settings);
+    _match = &_mode->match();
 
     _soldier = SoldierView::create();
     _map->addChild(_soldier, MapView::kZEntities);
@@ -267,6 +268,20 @@ void GameScene::buildHud()
         _pickUp->addChild(icon);
     }
     _hud->addChild(_pickUp, 1);
+
+    auto text = [&](float size, Vec2 pos, TextHAlignment align) {
+        auto* l = Label::createWithTTF("", "fonts/arial.ttf", size);
+        l->setPosition(pos);
+        l->setHorizontalAlignment(align);
+        l->enableOutline(Color4B::BLACK, 1);
+        _hud->addChild(l, 2);
+        return l;
+    };
+    _status = text(12, {visible.width / 2, visible.height - 62}, TextHAlignment::CENTER);
+    _score  = text(10, {visible.width / 2, visible.height - 76}, TextHAlignment::CENTER);
+    _banner = text(26, {visible.width / 2, visible.height * 0.68f}, TextHAlignment::CENTER);
+    _sarge  = text(12, {visible.width / 2, 22}, TextHAlignment::CENTER);
+    _sarge->setMaxLineWidth(visible.width - 120);
     _ammo = Label::createWithTTF("", "fonts/arial.ttf", 12);
     _ammo->setPosition(ammoFrame->getContentSize().width - 24, ammoFrame->getContentSize().height / 2 + 2);
     _ammo->enableOutline(Color4B::BLACK, 1);
@@ -389,7 +404,7 @@ void GameScene::update(float dt)
         in.switchWeapon = std::exchange(_pressed.switchWeapon, false);
         in.pickUp       = std::exchange(_pressed.pickUp, false);
         in.grenade      = std::exchange(_pressed.grenade, false);
-        _match->step(_stepper.step(), in);
+        _mode->step(_stepper.step(), in);
         // Camera smoothing runs per step like Stage::updateView did per frame at 60 fps.
         const float zoom = _match->player().weapon().zoom();  // Weapon::getZoomScale
         _viewScale       = _viewScale * rules::kViewScaleSmoothing + (1.0f - rules::kViewScaleSmoothing) * zoom;
@@ -429,6 +444,48 @@ void GameScene::update(float dt)
     _firePad->setColor(_pad.fire() ? Color3B(255, 150, 150) : Color3B::WHITE);
     updateCamera(dt);
     updateHud();
+    updateModeHud();
+}
+
+void GameScene::updateModeHud()
+{
+    using game::ModeKind;
+    using game::ModeState;
+    const auto kind = _mode->settings().kind;
+    std::string status;
+    if (kind == ModeKind::Survival)
+        status = fmt::format("WAVE {}   LIVES {}   SCORE {}", _mode->wave(), _mode->lives(), _mode->score());
+    else if (kind == ModeKind::Training)
+        status = fmt::format("TRAINING {} / {}", std::min<int>(_mode->lesson() + 1, game::ModeController::lessons().size()),
+                             game::ModeController::lessons().size());
+    else
+        status = fmt::format("{}:{:02}", static_cast<int>(_mode->timeLeft()) / 60, static_cast<int>(_mode->timeLeft()) % 60);
+    _status->setString(status);
+    const auto& f = _match->playerFighter();
+    _score->setString(fmt::format("KILLS {}   DEATHS {}", f.kills, f.deaths));
+    _banner->setString(_mode->banner());
+    if (const auto* lesson = _mode->currentLesson(); kind == ModeKind::Training && lesson)
+        _sarge->setString(lesson->text);
+    else
+        _sarge->setString("");
+    if (!_match->playerAlive() && _mode->state() == ModeState::Running)
+        _banner->setString("RESPAWNING...");
+    if (_mode->state() != ModeState::Running && !_ended)
+        showEnd();
+}
+
+void GameScene::showEnd()
+{
+    using game::ModeState;
+    _ended = true;
+    setPaused(true);
+    const char* title = _mode->state() == ModeState::Lost ? "GAME OVER" : (_mode->state() == ModeState::Won ? "COMPLETE" : "TIME UP");
+    if (auto* label = Label::createWithTTF(title, "fonts/arial.ttf", 28))
+    {
+        label->setPosition(_director->getVisibleOrigin() + _director->getVisibleSize() / 2 + Vec2(0, 60));
+        label->enableOutline(Color4B::BLACK, 2);
+        addChild(label, kZPause + 1);
+    }
 }
 
 void GameScene::handleEvents()

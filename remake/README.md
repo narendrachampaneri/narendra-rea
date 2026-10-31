@@ -21,11 +21,28 @@ continues from the next unfinished milestone. Private project: never publish to 
 | M1 | Skeleton + release workflow | done: `Remake build` green on `remake/m1-skeleton`; awaiting owner merge |
 | M2 | Assets | done on `remake/m2-assets` (branched from M1): `Remake build` green; awaiting phone check and owner merge |
 | M3 | Single-device slice | **done on `remake/m3-slice` (branched from M2): playable from QUICK PLAY; awaiting green `Remake build`, phone check and owner merge** |
-| M4 | Full single-device game | not started |
+| M4 | Full single-device game | **built on `remake/m4-game` (branched from M3); awaiting green `Remake build`, phone check and owner merge. Not done: flame / saw / laser / EMP projectiles, dual wield, Survival drones (see "What works (M4)")** |
 | M5 | Wi-Fi multiplayer | not started |
 | M6 | Menus and meta | not started |
 | M7 | Performance and polish | not started |
 | M8 | Release v1 | not started |
+
+## What works (M4: full single-device game, in progress)
+- **Modes** (`Source/game/Modes.*`): QUICK PLAY (home button: random map, 3 bots, 5 min, respawns), SOLO PLAY
+  picker (`PlayScene`): Practice (map, 1-7 bots, level), Survival (3 lives, waves of 3, 4, 5... enemies on
+  team 1, +100 per kill), Training (11 lessons, the Sarge lines are new text and silent).
+- 17 weapons (`Weapons.h`, all stats from the original), pick-ups from the map's `wp_` points (first spawn
+  after 10 s, 15 s period, 8 s above 10 weapons), two hands, switch, same-kind ammo top-up, melee dash,
+  M16 bursts, zoom levels, frag grenades (2, fuse 1.75 s), rocket launcher, explosion damage
+  `max(10, 100 - 0.8 d)` within 125 points.
+- Damage and death like the original (range fall-off, headshots x1.5, crouch dodge, ragdoll, 9 s respawn,
+  safest spawn point).
+- **Bots are new** (`Bot.*`): the original's AI function could not be decompiled. They chase, aim with an error
+  that shrinks with the level, fire with a clear line, jump and fly up, and detour when stuck.
+- **Not done yet:** projectiles of the flamethrower, saw gun, Phasr laser and EMP (they currently fire plain
+  bullets or nothing special), dual wield (two guns), gas / proximity grenades, Survival's drones (hawk, worm,
+  humanoid), Sarge's voice.
+- The mod patches found in the APK now number six (see the weapon table header in `Weapons.h`).
 
 ## What works (M3: single-device slice)
 - **QUICK PLAY** opens Outpost with one soldier and the AK47: the original dual joysticks (left

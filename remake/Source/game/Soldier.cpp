@@ -217,6 +217,8 @@ void Soldier::deactivate()
     cpBodySetVelocity(_body, cpvzero);
     cpBodySetAngularVelocity(_body, 0.0);
     cpBodySetType(_body, CP_BODY_TYPE_KINEMATIC);
+    // No more gravity or steering: the ragdoll took over.
+    cpBodySetVelocityUpdateFunc(_body, [](cpBody*, cpVect, cpFloat, cpFloat) {});
 }
 
 void Soldier::emitSound(SoundId id, float volume)

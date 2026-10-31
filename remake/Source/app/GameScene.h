@@ -12,6 +12,7 @@
 #include "core/FixedStepper.h"
 #include "game/Joypad.h"
 #include "game/Match.h"
+#include "game/Modes.h"
 
 namespace mm::app
 {
@@ -22,14 +23,16 @@ class SoldierView;
 class GameScene : public ax::Scene
 {
 public:
-    static GameScene* create(const assets::MapDef& def);
+    static GameScene* create(const assets::MapDef& def, game::ModeSettings settings = {});
 
     void onEnter() override;
     void onExit() override;
     void update(float dt) override;
 
 private:
-    bool init(const assets::MapDef& def);
+    bool init(const assets::MapDef& def, game::ModeSettings settings);
+    void updateModeHud();
+    void showEnd();
     void buildHud();
     void layoutPads();
     void handleEvents();
@@ -50,7 +53,13 @@ private:
     ax::Vec2 hudPoint(const ax::Touch* touch) const;
 
     const assets::MapDef* _def = nullptr;
-    std::unique_ptr<game::Match> _match;
+    std::unique_ptr<game::ModeController> _mode;
+    game::Match* _match = nullptr;
+    ax::Label* _status = nullptr;   // timer, wave, score
+    ax::Label* _banner = nullptr;   // "WAVE 2", "GO!"
+    ax::Label* _sarge  = nullptr;   // the training lesson
+    ax::Label* _score  = nullptr;   // kills / deaths
+    bool _ended = false;
     game::Joypad _pad;
     FixedStepper _stepper{1.0f / 60.0f, 5};
 
