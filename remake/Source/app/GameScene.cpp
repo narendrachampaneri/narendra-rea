@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <utility>
 
 #include "app/AssetManager.h"
 #include "app/AudioSystem.h"
@@ -229,12 +230,34 @@ void GameScene::buildHud()
     ammoFrame->setAnchorPoint(Vec2::ANCHOR_TOP_LEFT);
     ammoFrame->setPosition(visible.width / 2 + 2, top);
     _hud->addChild(ammoFrame, 1);
+    _ammoFrame = ammoFrame;  // tapping it switches weapons (wepSwitchArea)
+    _hudWeapon = Sprite::createWithSpriteFrameName("ak47.png");
+    _hudWeapon->setScale(0.42f);
+    _hudWeapon->setPosition(42, ammoFrame->getContentSize().height / 2 + 2);
+    ammoFrame->addChild(_hudWeapon);
+
+    // Melee at PUNCH_POS (width - 185, 35), zoom at ZOOM_POS (34, height - 34), scale 0.8.
+    _melee = Sprite::createWithSpriteFrameName("meleeBtn.png");
+    _melee->setScale(0.8f);
+    _melee->setPosition(visible.width - 185, 35);
+    _hud->addChild(_melee, 1);
+    _zoom = Sprite::createWithSpriteFrameName("zoomBtn.png");
+    _zoom->setScale(0.8f);
+    _zoom->setPosition(34, visible.height - 34);
+    _hud->addChild(_zoom, 1);
+    // NEW placement: the weapon within reach, tap to take it (the original showed it on a
+    // pop-up button next to the soldier).
+    _pickUp = Sprite::createWithSpriteFrameName("wepChangeBtn.png");
+    _pickUp->setPosition(visible.width - 120, 130);
+    _pickUp->setVisible(false);
     if (auto* icon = Sprite::createWithSpriteFrameName("ak47.png"))
     {
-        icon->setScale(0.42f);
-        icon->setPosition(42, ammoFrame->getContentSize().height / 2 + 2);
-        ammoFrame->addChild(icon);
+        icon->setName("icon");
+        icon->setScale(0.45f);
+        icon->setPosition(_pickUp->getContentSize() / 2);
+        _pickUp->addChild(icon);
     }
+    _hud->addChild(_pickUp, 1);
     _ammo = Label::createWithTTF("", "fonts/arial.ttf", 12);
     _ammo->setPosition(ammoFrame->getContentSize().width - 24, ammoFrame->getContentSize().height / 2 + 2);
     _ammo->enableOutline(Color4B::BLACK, 1);
@@ -276,18 +299,32 @@ void GameScene::onTouchesBegan(const std::vector<Touch*>& touches, Event*)
         const Vec2 p = hudPoint(t);
         if (_paused)
             continue;
-        if (p.distance(_pauseButton) < 18)
+        bool button = false;
+        for (const auto& [id, centre] : buttonsAt())
         {
-            _buttonTouches[t->getID()] = 2;
-            continue;
+            if (p.distance(centre) < (id == kPause ? 18.0f : 28.0f))
+            {
+                _buttonTouches[t->getID()] = id;
+                button                     = true;
+                break;
+            }
         }
-        if (p.distance(_reload->getPosition()) < 28)
-        {
-            _buttonTouches[t->getID()] = 1;
-            continue;
-        }
-        _pad.touchBegan(t->getID(), {p.x, p.y});
+        if (!button)
+            _pad.touchBegan(t->getID(), {p.x, p.y});
     }
+}
+
+std::vector<std::pair<int, Vec2>> GameScene::buttonsAt() const
+{
+    std::vector<std::pair<int, Vec2>> out{{kPause, _pauseButton},
+                                          {kReload, _reload->getPosition()},
+                                          {kMelee, _melee->getPosition()},
+                                          {kZoom, _zoom->getPosition()},
+                                          {kSwitch, _ammoFrame->getPosition() + Vec2(_ammoFrame->getContentSize().width / 2,
+                                                                                    -_ammoFrame->getContentSize().height / 2)}};
+    if (_pickUp->isVisible())
+        out.push_back({kPickUp, _pickUp->getPosition()});
+    return out;
 }
 
 void GameScene::onTouchesMoved(const std::vector<Touch*>& touches, Event*)
@@ -310,18 +347,14 @@ void GameScene::onTouchesEnded(const std::vector<Touch*>& touches, Event*)
         {
             const int button = it->second;
             _buttonTouches.erase(it);
-            if (button == 2)
+            switch (button)
             {
-                setPaused(true);
-            }
-            else if (button == 1 && _match)
-            {
-                auto& weapon = _match->player().weapon();
-                if (!weapon.isReloading() && weapon.clip() < weapon.def().clip && weapon.ammo() > 0)
-                {
-                    weapon.reload();
-                    AudioSystem::get().play(audio::SoundId::Reload);
-                }
+            case kPause: setPaused(true); break;
+            case kReload: _pressed.reload = true; break;
+            case kMelee: _pressed.melee = true; break;
+            case kZoom: _pressed.zoom = true; break;
+            case kSwitch: _pressed.switchWeapon = true; break;
+            case kPickUp: _pressed.pickUp = true; break;
             }
             continue;
         }
@@ -338,9 +371,15 @@ void GameScene::update(float dt)
     for (int i = 0; i < steps; ++i)
     {
         _pad.updateStep();
-        _match->step(_stepper.step(), _pad.state());
+        game::PadState in = _pad.state();
+        in.melee        = std::exchange(_pressed.melee, false);
+        in.zoom         = std::exchange(_pressed.zoom, false);
+        in.reload       = std::exchange(_pressed.reload, false);
+        in.switchWeapon = std::exchange(_pressed.switchWeapon, false);
+        in.pickUp       = std::exchange(_pressed.pickUp, false);
+        _match->step(_stepper.step(), in);
         // Camera smoothing runs per step like Stage::updateView did per frame at 60 fps.
-        const float zoom = 1.0f;  // AK47 zoom level 1 (Weapon::getZoomScale)
+        const float zoom = _match->player().weapon().zoom();  // Weapon::getZoomScale
         _viewScale       = _viewScale * rules::kViewScaleSmoothing + (1.0f - rules::kViewScaleSmoothing) * zoom;
         // getViewOffset: one point per step towards the weapon's offset * (2 - zoom).
         const int target = static_cast<int>(_match->player().weapon().def().viewOffset * (2.0f - zoom));
@@ -531,6 +570,44 @@ void GameScene::updateCamera(float)
 
 void GameScene::updateHud()
 {
+    const auto& w0 = _match->player().weapon();
+    if (auto* frame = SpriteFrameCache::getInstance()->findFrame(w0.def().sprite); frame && _hudWeapon->getSpriteFrame() != frame)
+        _hudWeapon->setSpriteFrame(frame);
+    const int near = _match->playerFighter().nearItem;
+    const auto* item = near >= 0 ? _match->item(near) : nullptr;
+    _pickUp->setVisible(item && !item->taken() && _match->playerAlive());
+    if (_pickUp->isVisible())
+        if (auto* icon = static_cast<Sprite*>(_pickUp->getChildByName("icon")))
+            if (auto* frame = SpriteFrameCache::getInstance()->findFrame(item->weapon().def().sprite))
+                icon->setSpriteFrame(frame);
+    // Map weapons.
+    std::unordered_map<int, Sprite*> seen;
+    for (const auto& i : _match->items())
+    {
+        if (i->taken())
+            continue;
+        Sprite* s = nullptr;
+        if (auto it = _itemViews.find(i->uid()); it != _itemViews.end())
+        {
+            s = it->second;
+            _itemViews.erase(it);
+        }
+        else
+        {
+            s = Sprite::createWithSpriteFrameName(i->weapon().def().sprite);
+            if (!s)
+                s = Sprite::create();
+            s->setScale(rules::kPlayerScale);
+            _map->addChild(s, MapView::kZEntities - 1);
+        }
+        s->setPosition(toAx(i->position()));
+        s->setRotation(-i->angle() * game::kRadToDeg);
+        seen.emplace(i->uid(), s);
+    }
+    for (auto& [uid, sprite] : _itemViews)
+        sprite->removeFromParent();
+    _itemViews.swap(seen);
+
     const auto& p = _match->player();
     // Bar slots inside healthBar.png (health on the heart row, jetpack fuel on the rocket row).
     _bars->clear();

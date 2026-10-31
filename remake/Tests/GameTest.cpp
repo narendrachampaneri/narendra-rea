@@ -487,3 +487,102 @@ TEST_CASE("Safe spawns keep away from the others")
         CHECK((s - p).length() > nearest);  // never the spawn closest to the player
     }
 }
+
+TEST_CASE("Weapons appear at the wp_ points after 10 s")
+{
+    const auto data = loadMap("1outpost_new.tmx");
+    Match m(*assets::findMap("outpost"), data);
+    run(m, idle(), 9.5f);
+    CHECK(m.items().empty());
+    run(m, idle(), 3.0f);
+    CHECK(m.items().size() == data.objectsWithPrefix("wp_").size());
+}
+
+TEST_CASE("Pick-up: swap with the button, same kind refills ammo, switch hands")
+{
+    const auto data = loadMap("1outpost_new.tmx");
+    Match m(*assets::findMap("outpost"), data);
+    run(m, idle(), 4.0f);
+    Soldier& s = m.player();
+
+    // A shotgun at the feet: offered, taken with the button into the free hand.
+    m.dropItem(std::make_unique<Weapon>(WeaponId::Shotgun), s.position(), {});
+    run(m, idle(), 0.3f);
+    CHECK(m.playerFighter().nearItem >= 0);
+    PadState press = idle();
+    press.pickUp   = true;
+    m.step(kDt, press);
+    CHECK(s.weapon().id() == WeaponId::Shotgun);
+    REQUIRE(s.secondary());
+    CHECK(s.secondary()->id() == WeaponId::AK47);
+
+    // Both hands full: the next pick-up drops the weapon in hand.
+    m.dropItem(std::make_unique<Weapon>(WeaponId::Sniper), s.position(), {});
+    run(m, idle(), 0.3f);
+    m.step(kDt, press);
+    CHECK(s.weapon().id() == WeaponId::Sniper);
+    bool shotgunOnFloor = false;
+    for (const auto& i : m.items())
+        shotgunOnFloor |= !i->taken() && i->weapon().id() == WeaponId::Shotgun;
+    CHECK(shotgunOnFloor);
+
+    // Switch back to the AK and spend some rounds; a dropped AK tops them up by itself.
+    PadState sw   = idle();
+    sw.switchWeapon = true;
+    m.step(kDt, sw);
+    CHECK(s.weapon().id() == WeaponId::AK47);
+    run(m, shootAt(90.0f), 1.0f);
+    const int before = s.weapon().ammo() + s.weapon().clip();
+    m.dropItem(std::make_unique<Weapon>(WeaponId::AK47), s.position() + Vec2{60, 0}, {});
+    cpBodySetPosition(s.body(), cpv(s.position()));  // stand still next to it
+    for (int i = 0; i < 120 && s.weapon().ammo() + s.weapon().clip() == before; ++i)
+    {
+        for (const auto& it : m.items())
+            if (!it->taken() && it->weapon().id() == WeaponId::AK47)
+                cpBodySetPosition(s.body(), cpv(it->position() + Vec2{0, 12}));
+        m.step(kDt, idle());
+    }
+    CHECK(s.weapon().ammo() + s.weapon().clip() > before);
+}
+
+TEST_CASE("M16 fires three-round bursts; zoom cycles the weapon's levels")
+{
+    Weapon m16(WeaponId::M16);
+    CHECK(m16.zoom() == 1.0f);
+    m16.nextZoom();
+    CHECK(m16.zoom() == doctest::Approx(0.8f));
+    m16.nextZoom();
+    m16.nextZoom();
+    CHECK(m16.zoom() == 1.0f);
+
+    int shots = 0;
+    for (int i = 0; i < 40; ++i)  // 0.67 s: the trigger is ready after 0.5 s, so one burst
+    {
+        m16.updateStep(kDt);
+        shots += m16.takeBurstShots();
+        shots += m16.triggerPull() == Weapon::Trigger::Fired;
+    }
+    CHECK(shots == 3);
+    CHECK(m16.clip() == 24 - 3);
+}
+
+TEST_CASE("Melee: a dash that hits the soldier in front for the weapon's melee damage")
+{
+    const auto data = loadMap("1outpost_new.tmx");
+    Match m(*assets::findMap("outpost"), data);
+    float aim     = 0.0f;
+    const int bot = duelSetup(m, 30.0f, aim);
+    run(m, idle(), 3.0f);  // charge the punch
+    Soldier& b = *m.fighter(bot)->soldier;
+    PadState punch = idle();
+    punch.aimAngle = aim;
+    punch.melee    = true;
+    const float before = b.health();
+    m.step(kDt, punch);
+    PadState hold = idle();
+    hold.aimAngle = aim;
+    for (int i = 0; i < 30; ++i)
+        m.step(kDt, hold);
+    CHECK(before - b.health() >= 29.0f);  // AK47 melee damage 30 (one regenerated point at most)
+    CHECK(before - b.health() <= 30.0f);
+}

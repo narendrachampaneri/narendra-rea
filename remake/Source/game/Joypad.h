@@ -17,6 +17,8 @@ struct PadState
     bool moveTouched = false;  // Joypad +0x12f (copied to the soldier's +0x11c)
     float aimAngle = 0.0f;     // Joypad::getFireAngle, clockwise degrees
     bool firing = false;       // Joypad::fire
+    // HUD buttons pressed this step (one step each).
+    bool melee = false, switchWeapon = false, pickUp = false, reload = false, zoom = false;
 };
 
 class Joypad

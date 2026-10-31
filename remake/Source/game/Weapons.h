@@ -13,6 +13,7 @@
 #include <array>
 #include <string_view>
 
+#include "audio/SoundBank.h"
 #include "game/Rules.h"
 
 namespace mm::game
@@ -116,5 +117,24 @@ inline constexpr std::array<WeaponInfo, static_cast<int>(WeaponId::Count)> kWeap
 // clang-format on
 
 constexpr const WeaponInfo& weaponInfo(WeaponId id) { return kWeapons[static_cast<int>(id)]; }
+
+// <CLASS>::playSound: the sound id each weapon fires with.
+constexpr audio::SoundId fireSound(WeaponId id)
+{
+    using S = audio::SoundId;
+    constexpr S kSounds[] = {S::Ak47, S::Deagle, S::Silencer, S::Magnum, S::Uzi,    S::Mp5,   S::M16,   S::M14, S::M93ba,
+                             S::Shotgun, S::Rocket, S::Laser, S::Flame,    S::Saw, S::Laser, S::Swipe, S::Swipe};
+    return kSounds[static_cast<int>(id)];
+}
+
+// WeaponFactory::init (+0x14): the ammo types WeaponManager draws from at a weapon spawn,
+// as the remake's weapon ids. Grenade pick-ups (frag 2, gas 20, proximity 23) and the saw
+// blade item (24) arrive with the grenades.
+inline constexpr WeaponId kSpawnWeapons[] = {
+    WeaponId::Machete, WeaponId::Deagle, WeaponId::Magnum, WeaponId::MP5,        WeaponId::Uzi,
+    WeaponId::AK47,    WeaponId::M16,    WeaponId::Shotgun, WeaponId::Sniper,    WeaponId::Rocket,
+    WeaponId::M14,     WeaponId::Phasr,  WeaponId::GoldDeagle, WeaponId::Flamethrower, WeaponId::SawGun,
+    WeaponId::EMP,
+};
 
 }  // namespace mm::game

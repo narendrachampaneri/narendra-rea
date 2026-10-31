@@ -2,6 +2,7 @@
 #pragma once
 
 #include "game/Rules.h"
+#include "game/Weapons.h"
 
 namespace mm::game
 {
@@ -10,6 +11,12 @@ class Weapon
 {
 public:
     explicit Weapon(const rules::WeaponDef& def);
+    explicit Weapon(WeaponId id);  // with the weapon's starting clip and spare ammo
+    Weapon(WeaponId id, int clip, int ammo);
+
+    // The weapon table entry, or nullptr for a bare WeaponDef (tests).
+    const WeaponInfo* info() const { return _info; }
+    WeaponId id() const { return _info ? _info->id : WeaponId::AK47; }
 
     const rules::WeaponDef& def() const { return *_def; }
 
@@ -28,6 +35,19 @@ public:
     // Weapon::reloadWeapon (the reload button).
     void reload();
 
+    // WeaponManager::transferAmmo: takes rounds from a dropped weapon of the same kind, up to
+    // the maximum; returns how many were taken.
+    int addAmmo(int rounds);
+    bool ammoFull() const { return _ammo >= _def->maxAmmo; }
+
+    // M16: the two shots that follow a burst's first one, 0.06 s apart (M16::updateItemStep).
+    // Returns how many burst shots are due this step.
+    int takeBurstShots();
+
+    // Zoom (Weapon::changeZoomLevel): cycles the weapon's zoom levels.
+    void nextZoom();
+    float zoom() const { return _info ? _info->zooms[_zoom] : 1.0f; }
+
     // Weapon::getRandomFiringAngle: a fixed pseudo-random sequence, in degrees.
     float randomFiringAngle();
 
@@ -39,6 +59,11 @@ public:
 
 private:
     const rules::WeaponDef* _def;
+    const WeaponInfo* _info = nullptr;
+    int _zoom          = 0;
+    int _burstLeft     = 0;
+    float _burstTimer  = 0.0f;
+    int _burstDue      = 0;
     int _clip;
     int _ammo;
     float _shotTimer   = 0.0f;   // +0x110

@@ -7,6 +7,30 @@ namespace mm::game
 
 Weapon::Weapon(const rules::WeaponDef& def) : _def(&def), _clip(def.clip), _ammo(def.startAmmo) {}
 
+Weapon::Weapon(WeaponId id) : Weapon(id, weaponInfo(id).def.clip, weaponInfo(id).def.startAmmo) {}
+
+Weapon::Weapon(WeaponId id, int clip, int ammo) : _def(&weaponInfo(id).def), _info(&weaponInfo(id)), _clip(clip), _ammo(ammo) {}
+
+int Weapon::addAmmo(int rounds)
+{
+    const int taken = std::clamp(_def->maxAmmo - _ammo, 0, rounds);
+    _ammo += taken;
+    return taken;
+}
+
+int Weapon::takeBurstShots()
+{
+    const int due = _burstDue;
+    _burstDue     = 0;
+    return due;
+}
+
+void Weapon::nextZoom()
+{
+    if (_info)
+        _zoom = (_zoom + 1) % _info->zoomCount;
+}
+
 Weapon::Trigger Weapon::triggerPull()
 {
     Trigger result = Trigger::None;
@@ -19,6 +43,11 @@ Weapon::Trigger Weapon::triggerPull()
             // the original game spends one round per shot.
             _clip -= 1;
             result = Trigger::Fired;
+            if (_info && _info->burstInterval > 0.0f)
+            {
+                _burstLeft  = 2;  // a three-round burst
+                _burstTimer = 0.0f;
+            }
         }
         else if (!_reloading)
         {
@@ -36,6 +65,20 @@ void Weapon::updateStep(float dt)
     _reloadTimer += dt;
     _shotTimer += dt;  // Weapon::updateStep (also hides the muzzle flare)
     _flare = false;
+    if (_burstLeft > 0)
+    {
+        _burstTimer += dt;
+        while (_burstLeft > 0 && _burstTimer >= _info->burstInterval && _clip > 0)
+        {
+            _burstTimer -= _info->burstInterval;
+            --_burstLeft;
+            --_clip;
+            ++_burstDue;
+            _flare = true;
+        }
+        if (_clip <= 0)
+            _burstLeft = 0;
+    }
     if (_reloading && _def->reloadTime < _reloadTimer)
     {
         _reloading     = false;

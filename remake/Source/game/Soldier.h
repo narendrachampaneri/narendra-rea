@@ -72,6 +72,21 @@ public:
     bool facingRight() const;
     Weapon& weapon() { return *_weapon; }
     const Weapon& weapon() const { return *_weapon; }
+    const Weapon* secondary() const { return _secondary.get(); }
+
+    // SoldierHostController::switchWeapons.
+    void switchWeapons();
+    // Picks up a weapon: into the free hand if there is one, else in place of the one held,
+    // which is returned to be dropped.
+    std::unique_ptr<Weapon> takeWeapon(std::unique_ptr<Weapon> weapon);
+
+    // SoldierHostController::meleeAttack: a dash along the aim; the charge (+0x1e4) grows by
+    // 0.6 a step up to 125 and each punch spends 35. Returns false while one is under way.
+    bool meleeAttack();
+    bool meleeActive() const { return _melee; }
+    float meleeTime() const { return _meleeTime; }
+    float meleeCharge() const { return _meleeCharge; }
+    void endMelee() { _melee = false; _meleeTime = 0.0f; }
     Vec2 joyOffset() const { return _joy; }
 
     // Test hooks.
@@ -101,7 +116,11 @@ private:
     cpShape* _head  = nullptr;  // +0x140
     Vec2 _gravity;              // +0x128
 
-    std::unique_ptr<Weapon> _weapon;  // primary (+0x148)
+    std::unique_ptr<Weapon> _weapon;     // in hand (+0x148)
+    std::unique_ptr<Weapon> _secondary;  // the other one (+0x14c)
+    bool _melee         = false;         // +0x166
+    float _meleeTime    = 0.0f;          // +0x178
+    float _meleeCharge  = 0.0f;          // +0x1e4
 
     Vec2 _joy;                   // +0x114: last pad offset
     float _fireAngle = 0.0f;     // +0x118 of the weapon / getFireAngle

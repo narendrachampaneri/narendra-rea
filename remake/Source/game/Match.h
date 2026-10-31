@@ -11,6 +11,7 @@
 #include "assets/MapCatalog.h"
 #include "assets/MapData.h"
 #include "game/Events.h"
+#include "game/Items.h"
 #include "game/Joypad.h"
 #include "game/Physics.h"
 #include "game/Ragdoll.h"
@@ -36,6 +37,7 @@ struct Fighter
     float respawnTimer = 0.0f;
     int kills = 0, deaths = 0;
     Brain brain;
+    int nearItem = -1;     // uid of a weapon within reach that would be a swap (pick-up button)
 
     bool alive() const { return soldier && !soldier->isDead(); }
 };
@@ -66,6 +68,10 @@ public:
     const std::vector<Fighter>& fighters() const { return _fighters; }
     Fighter* fighter(int id);
     const std::vector<std::unique_ptr<Ragdoll>>& ragdolls() const { return _ragdolls; }
+    const std::vector<std::unique_ptr<MapItem>>& items() const { return _items; }
+    const MapItem* item(int uid) const;
+    // Drops a weapon at a point (tests, and dropped weapons).
+    int dropItem(std::unique_ptr<Weapon> weapon, Vec2 at, Vec2 velocity, int spawn = -1);
 
     const TracerPool& tracers() const { return _tracers; }
     Physics& physics() { return _physics; }
@@ -89,6 +95,23 @@ private:
     void spawn(Fighter& f, Vec2 at);
     void killFighter(Fighter& f);
     bool onBulletHit(Tracer& t, cpShape* shape, Vec2 point);
+    void hitSoldier(Fighter& victim, cpShape* shape, float damage, bool network, int attacker, int ammoType,
+                    Vec2 point, Vec2 dir);
+    void updateWeaponSpawns(float dt);
+    void updatePickUps(Fighter& f, bool pickUpPressed);
+    void updateMelee(Fighter& f);
+    void fireShots(Fighter& f, int shots);
+
+    struct WeaponSpawn
+    {
+        Vec2 pos;
+        float nextSpawn = 0.0f;  // "NextSpawnElapsed"
+        int item        = -1;    // "WeaponInstanceUUID"
+    };
+    std::vector<WeaponSpawn> _weaponSpawns;
+    std::vector<std::unique_ptr<MapItem>> _items;
+    int _nextItemUid    = 1;
+    std::size_t _spawnCursor = 0;
     float random11();  // uniform in [-1, 1]
 
     const assets::MapDef& _def;

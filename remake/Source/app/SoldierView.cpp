@@ -102,6 +102,9 @@ void SoldierView::sync(const game::Soldier& s, float dt)
 {
     const auto p = s.position();
     setPosition(p.x, p.y);
+    if (auto* frame = SpriteFrameCache::getInstance()->findFrame(s.weapon().def().sprite);
+        frame && _weapon->getSpriteFrame() != frame)
+        _weapon->setSpriteFrame(frame);
     setVisible(!s.isDead());
 
     const bool right       = s.facingRight();

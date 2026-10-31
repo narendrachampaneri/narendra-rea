@@ -117,7 +117,7 @@ void Soldier::installCollisionHandlers(cpSpace* space)
 Soldier::Soldier(Physics& physics, Vec2 spawn, float gravityFactor, EventQueue& events, int id,
                  std::uint32_t collision, WeaponId weapon)
     : _physics(physics), _events(events), _gravityFactor(gravityFactor), _id(id), _collision(collision),
-      _weapon(std::make_unique<Weapon>(weaponInfo(weapon).def))
+      _weapon(std::make_unique<Weapon>(weapon))
 {
     cpSpace* space = physics.space();
     _body = cpSpaceAddBody(space, cpBodyNew(rules::kSoldierMass, rules::kSoldierMoment));
@@ -332,7 +332,10 @@ void Soldier::updateStep(float dt, const PadState& pad)
         _jetSoundTimer = 0.75f;
     }
 
-    const float weight = _weapon ? _weapon->def().weight : 1.0f;  // getWeaponWeightFactor
+    // getWeaponWeightFactor: the weapon in hand, and half the burden of the other one.
+    float weight = _weapon ? _weapon->def().weight : 1.0f;
+    if (_secondary)
+        weight = (_secondary->def().weight + 1.0f) * weight / 2.0f;
     if (!_touching)
     {
         setMaterial(rules::kGravityIdle, rules::kIdleElasticity, rules::kIdleFriction);
@@ -390,6 +393,19 @@ void Soldier::updateStep(float dt, const PadState& pad)
     if (_weapon)
         _weapon->updateStep(dt);
 
+    // Punch charge and the punch itself (updateStep +0x1e4 / +0x166 / +0x178).
+    if (!_melee)
+    {
+        if (_meleeCharge < 125.0f)
+            _meleeCharge += 0.6f;
+    }
+    else
+    {
+        _meleeTime += dt;
+        if (_meleeTime > 0.35f)
+            endMelee();
+    }
+
     _contactPrev     = _contact;
     _contact         = false;
     _footContactPrev = _footContact;
@@ -400,10 +416,12 @@ bool Soldier::fire()
 {
     if (!_weapon || _dead)
         return false;
+    if (_weapon->info() && _weapon->info()->melee)
+        return false;  // a machete or shield swings with the melee button instead
     switch (_weapon->triggerPull())
     {
     case Weapon::Trigger::Fired:
-        emitSound(SoundId::Ak47);
+        emitSound(fireSound(_weapon->id()));
         return true;
     case Weapon::Trigger::Empty:
         emitSound(SoundId::Dryfire);
@@ -412,6 +430,46 @@ bool Soldier::fire()
         return false;
     }
     return false;
+}
+
+}  // namespace mm::game
+
+namespace mm::game
+{
+
+void Soldier::switchWeapons()
+{
+    if (_secondary)
+    {
+        std::swap(_weapon, _secondary);
+        emitSound(SoundId::Reload);
+    }
+}
+
+std::unique_ptr<Weapon> Soldier::takeWeapon(std::unique_ptr<Weapon> weapon)
+{
+    emitSound(SoundId::Reload);
+    if (!_secondary)
+    {
+        _secondary = std::move(_weapon);
+        _weapon    = std::move(weapon);
+        return nullptr;
+    }
+    std::swap(_weapon, weapon);
+    return weapon;
+}
+
+bool Soldier::meleeAttack()
+{
+    if (_melee || _dead)
+        return false;
+    const Vec2 dir = fromCocosAngle(_fireAngle);
+    cpBodyApplyImpulseAtLocalPoint(_body, cpv(dir * (_meleeCharge * rules::kSoldierMass)), cpvzero);
+    emitSound(SoundId::Swipe);
+    _melee       = true;
+    _meleeTime   = 0.0f;
+    _meleeCharge = std::max(0.0f, _meleeCharge - 35.0f);
+    return true;
 }
 
 }  // namespace mm::game
