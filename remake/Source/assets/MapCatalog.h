@@ -2,6 +2,8 @@
 #pragma once
 
 #include <array>
+#include <cstdint>
+#include <vector>
 #include <string_view>
 
 namespace mm::assets
@@ -47,6 +49,20 @@ inline constexpr std::array<MapDef, 15> kMaps{{
     {"survival", "Survival", "survival_new.tmx", "bg_new.png", 1.0f, 100, true, MapKind::Survival},
     {"training", "Training", "training_new.tmx", "bg_new.png", 1.0f, 100, true, MapKind::Training},
 }};
+
+// Maps a Wi-Fi match can use: the 12 of the original rotation, or Co-op's survival map.
+inline std::vector<int> wifiMaps(bool survival)
+{
+    std::vector<int> out;
+    for (int i = 0; i < static_cast<int>(kMaps.size()); ++i)
+    {
+        const auto& m = kMaps[i];
+        if (survival ? m.kind == MapKind::Survival : (m.kind == MapKind::Multiplayer && m.inOriginalRotation))
+            out.push_back(i);
+    }
+    return out;
+}
+constexpr std::uint8_t kRandomMap = 254;  // lobby choice "RANDOM": the host picks when the match starts
 
 constexpr const MapDef* findMap(std::string_view id)
 {

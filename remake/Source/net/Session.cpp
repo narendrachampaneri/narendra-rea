@@ -230,11 +230,18 @@ bool HostSession::startMatch()
 {
     if (!canStart())
         return false;
-    const MapRef map = _maps(_options.map);
+    const std::uint32_t seed = 0x9e3779b9u * _seedCounter++ + static_cast<std::uint32_t>(_players.size());
+    HostOptions chosen = _options;
+    if (chosen.map == assets::kRandomMap)
+    {
+        const auto pool = assets::wifiMaps(chosen.mode == GameMode::CoopSurvival);
+        if (!pool.empty())
+            chosen.map = static_cast<std::uint8_t>(pool[seed % pool.size()]);
+    }
+    const MapRef map = _maps(chosen.map);
     if (!map.def || !map.data)
         return false;
-    const std::uint32_t seed = 0x9e3779b9u * _seedCounter++ + static_cast<std::uint32_t>(_players.size());
-    auto game                = std::make_unique<game::MultiplayerGame>(*map.def, *map.data, _options, _players, seed);
+    auto game                = std::make_unique<game::MultiplayerGame>(*map.def, *map.data, chosen, _players, seed);
     _game                    = game.get();
     _players                 = _game->players();  // teams are settled now
     _driver                  = std::make_unique<HostDriver>(*this, std::move(game));
@@ -242,7 +249,7 @@ bool HostSession::startMatch()
     _tick                    = 0;
     StartMatch s;
     s.seed    = seed;
-    s.options = _options;
+    s.options = chosen;
     s.players = _players;
     _start    = s;
     _startsLeft  = 4;

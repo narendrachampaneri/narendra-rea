@@ -1,5 +1,6 @@
 #include "doctest/doctest.h"
 
+#include "assets/MapCatalog.h"
 #include "net/Protocol.h"
 
 using namespace mm::net;
@@ -677,4 +678,33 @@ TEST_CASE("Fuzz: damaged save text never crashes and stays within limits")
             CHECK(r->settings.soundVolume <= 100);
         }
     }
+}
+
+TEST_CASE("Random map: the host picks a real map when the match starts")
+{
+    const auto pool = mm::assets::wifiMaps(false);
+    CHECK(pool.size() == 12);
+    CHECK(mm::assets::wifiMaps(true).size() == 1);
+    for (int i : pool)
+        CHECK(mm::assets::kMaps[i].kind == mm::assets::MapKind::Multiplayer);
+    CHECK(mm::assets::kRandomMap >= mm::assets::kMaps.size());
+}
+
+TEST_CASE("Random map: a started match runs on a real map everywhere")
+{
+    World w;
+    HostOptions o;
+    o.mode = GameMode::Deathmatch;
+    o.map  = mm::assets::kRandomMap;
+    w.host->setOptions(o);
+    auto& a = w.addClient("Ann");
+    auto& b = w.addClient("Bo");
+    w.joinAll();
+    a.setReady(true);
+    b.setReady(true);
+    w.pump(0.3f);
+    REQUIRE(w.host->startMatch());
+    w.pump(1.0f);
+    REQUIRE(a.clientState() == ClientState::Playing);
+    REQUIRE(b.clientState() == ClientState::Playing);
 }

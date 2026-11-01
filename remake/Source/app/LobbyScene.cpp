@@ -72,8 +72,15 @@ bool LobbyScene::init()
                 break;
             case 1:
             {
-                auto it = std::find(maps.begin(), maps.end(), static_cast<int>(o.map));
-                o.map   = static_cast<std::uint8_t>(maps[(it == maps.end() ? 0 : (it - maps.begin() + 1)) % maps.size()]);
+                // Cycles the maps, then "RANDOM", then back to the first.
+                if (o.map == assets::kRandomMap)
+                    o.map = static_cast<std::uint8_t>(maps.front());
+                else
+                {
+                    auto it = std::find(maps.begin(), maps.end(), static_cast<int>(o.map));
+                    o.map   = (it == maps.end() || it + 1 == maps.end()) ? assets::kRandomMap
+                                                                           : static_cast<std::uint8_t>(*(it + 1));
+                }
                 break;
             }
             case 2: o.minutes = o.minutes % 8 + 1; break;
@@ -188,7 +195,8 @@ void LobbyScene::refresh()
     }
     const int mapIndex = std::min<int>(o.map, assets::kMaps.size() - 1);
     _options[0]->setString(std::string("MODE: ") + kModes[std::min<int>(static_cast<int>(o.mode), 2)]);
-    _options[1]->setString(std::string("MAP: ") + std::string(assets::kMaps[mapIndex].name));
+    _options[1]->setString(std::string("MAP: ") +
+                           (o.map == assets::kRandomMap ? std::string("RANDOM") : std::string(assets::kMaps[mapIndex].name)));
     _options[2]->setString(o.mode == GameMode::CoopSurvival ? "LENGTH: until everyone is out" : fmt::format("LENGTH: {} MIN", o.minutes));
     _options[3]->setString(fmt::format("MAX PLAYERS: {}", o.maxPlayers));
     _options[4]->setString(std::string("FAIR MODE: ") + (o.fair ? "ON (same gun, no pick-ups)" : "OFF"));
