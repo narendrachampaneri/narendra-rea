@@ -264,3 +264,28 @@ TEST_CASE("Gas grenade: the upgrade turns throws into a cloud that hurts enemies
     CHECK(m.player().health() >= 99.0f);  // never hurts the thrower
     CHECK(m.fighter(bot)->soldier->health() <= botHealth);
 }
+
+TEST_CASE("Pro Pack dual wield: two handguns fire together, one does not")
+{
+    using namespace mm::game;
+    const auto data = loadOutpost();
+    for (bool pro : {false, true})
+    {
+        Match m(*mm::assets::findMap("outpost"), data);
+        m.setUpgrades(0, (1u << GoldenEagle) | (pro ? (1u << mm::economy::kProBit) : 0u));
+        m.giveWeapon(0, WeaponId::Deagle);
+        auto& s = m.player();
+        REQUIRE(s.secondary());
+        CHECK(s.dualActive() == pro);
+        const int clip2 = s.secondary()->clip();
+        PadState fire;
+        fire.firing = true;
+        for (int i = 0; i < 120; ++i)
+            m.step(1.0f / 60.0f, fire);
+        if (pro)
+            CHECK(s.secondary()->clip() < clip2);
+        else
+            CHECK(s.secondary()->clip() == clip2);
+    }
+    CHECK(mm::economy::networkMask(mm::save::SaveData{}) == 0);
+}

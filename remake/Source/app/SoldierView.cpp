@@ -98,6 +98,10 @@ bool SoldierView::init(const save::Avatar& avatar)
     _frontArm = Node::create();
     _frontArm->setPosition(-17, 15);
     _frontArm->addChild(part("arm" + std::to_string(avatar.arm) + ".png", {0.1f, 0.6f}), 1);
+    _weapon2 = part("ak47.png", {0.25f, 0.55f});
+    _weapon2->setPosition(18, 0);
+    _weapon2->setVisible(false);
+    _frontArm->addChild(_weapon2, 2);
     _root->addChild(_frontArm, 5);
     return true;
 }
@@ -116,6 +120,12 @@ void SoldierView::sync(const game::Soldier& s, float dt)
         frame && _weapon->getSpriteFrame() != frame)
         _weapon->setSpriteFrame(frame);
     setVisible(!s.isDead());
+    // Pro Pack dual wield: draw the second handgun in the other hand.
+    _weapon2->setVisible(s.dualActive());
+    if (s.dualActive() && s.secondary())
+        if (auto* f2 = SpriteFrameCache::getInstance()->findFrame(s.secondary()->def().sprite);
+            f2 && _weapon2->getSpriteFrame() != f2)
+            _weapon2->setSpriteFrame(f2);
 
     const bool right       = s.facingRight();
     const float bodyDeg    = -s.bodyAngle() * game::kRadToDeg;  // SoldierView::updateBody

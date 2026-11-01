@@ -354,7 +354,7 @@ void HostSession::handle(const Packet& p)
                 PlayerInfo info;
                 info.id   = static_cast<std::uint8_t>(id);
                 info.name = cleanName(m.name);
-                info.upgrades = static_cast<std::uint16_t>(m.upgrades & ((1u << 14) - 1));
+                info.upgrades = static_cast<std::uint16_t>(m.upgrades & ((1u << 15) - 1));
                 for (int dup = 2;; ++dup)  // names are unique in the lobby
                 {
                     bool clash = false;

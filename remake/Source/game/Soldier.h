@@ -40,6 +40,10 @@ public:
 
     // SoldierHostController::fire: pulls the trigger; true when a shot left the barrel.
     bool fire();
+    // Pro Pack dual wield: with two handguns in hand the second one fires with the first.
+    bool dualActive() const;
+    bool fireSecondary();
+    Weapon* secondaryWeapon() { return _secondary.get(); }
 
     // SoldierController::addDamage: health never goes below 0; the last attacker gets the kill.
     void addDamage(float amount, int attacker, int ammoType);

@@ -394,6 +394,8 @@ void Soldier::updateStep(float dt, const PadState& pad)
 
     if (_weapon)
         _weapon->updateStep(dt);
+    if (dualActive())
+        _secondary->updateStep(dt);
 
     // Punch charge and the punch itself (updateStep +0x1e4 / +0x166 / +0x178).
     if (!_melee)
@@ -412,6 +414,19 @@ void Soldier::updateStep(float dt, const PadState& pad)
     _contact         = false;
     _footContactPrev = _footContact;
     _footContact     = false;
+}
+
+bool Soldier::dualActive() const
+{
+    return _boosts.dualWield && !_dead && _weapon && _secondary && economy::isHandgun(_weapon->id()) &&
+           economy::isHandgun(_secondary->id());
+}
+
+bool Soldier::fireSecondary()
+{
+    if (!dualActive())
+        return false;
+    return _secondary->triggerPull() == Weapon::Trigger::Fired;
 }
 
 bool Soldier::fire()

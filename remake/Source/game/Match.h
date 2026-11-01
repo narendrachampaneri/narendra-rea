@@ -170,7 +170,7 @@ private:
     void updateWeaponSpawns(float dt);
     void updatePickUps(Fighter& f, bool pickUpPressed);
     void updateMelee(Fighter& f);
-    void fireShots(Fighter& f, int shots);
+    void fireShots(Fighter& f, int shots, Weapon* gun = nullptr);
 
     struct WeaponSpawn
     {

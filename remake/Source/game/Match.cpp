@@ -532,10 +532,10 @@ void Match::updateExplosives(float dt)
                    _rockets.end());
 }
 
-void Match::fireShots(Fighter& f, int shots)
+void Match::fireShots(Fighter& f, int shots, Weapon* gun)
 {
     Soldier& s        = *f.soldier;
-    auto& weapon      = s.weapon();
+    auto& weapon      = gun ? *gun : s.weapon();
     if (weapon.def().ammoType == 11 || weapon.def().ammoType == 21)  // SMAW rocket, EMP charge
     {
         for (int i = 0; i < shots; ++i)
@@ -600,6 +600,8 @@ void Match::step(float dt, const PadState& pad)
         if (in.reload && !s.weapon().isReloading() && s.weapon().clip() < s.weapon().clipCapacity() &&
             s.weapon().ammo() > 0)
             s.weapon().reload();
+        if (in.reload && s.dualActive() && !s.secondaryWeapon()->isReloading() && s.secondaryWeapon()->ammo() > 0)
+            s.secondaryWeapon()->reload();
         if (in.switchWeapon)
             s.switchWeapons();
         if (in.grenade)
@@ -614,6 +616,8 @@ void Match::step(float dt, const PadState& pad)
             ++shots;
         if (shots > 0)
             fireShots(f, shots);
+        if (in.firing && s.fireSecondary())
+            fireShots(f, 1, s.secondaryWeapon());
         if (_options.party.unlimitedAmmo && !_options.mirror)
             s.weapon().refill();
         updateMelee(f);

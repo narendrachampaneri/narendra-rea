@@ -49,7 +49,7 @@ bool NetContext::startHosting()
     platform::setMulticastLock(true);
     _host = std::make_unique<net::HostSession>(*_game, "Host", playerName(), resolver());
     _host->setDiscoveryTransport(_discovery.get());
-    _host->setHostUpgrades(static_cast<std::uint16_t>(SaveStore::get().data().upgrades));
+    _host->setHostUpgrades(economy::networkMask(SaveStore::get().data()));
     return true;
 }
 
@@ -61,7 +61,7 @@ bool NetContext::startClient()
         return false;
     platform::setMulticastLock(true);
     _client = std::make_unique<net::ClientSession>(*_game, playerName(), resolver(),
-                                                    static_cast<std::uint16_t>(SaveStore::get().data().upgrades));
+                                                    economy::networkMask(SaveStore::get().data()));
     return true;
 }
 

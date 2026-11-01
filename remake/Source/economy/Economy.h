@@ -47,7 +47,14 @@ struct Boosts
     bool laserSight    = false;
     bool gasNade       = false; // +0x1f8 backup grenade = gas
     bool maskPack      = false;
+    bool dualWield     = false; // Pro Pack: two handguns fire together (mask bit 14, see kProBit)
 };
+// The Pro Pack travels in bit 14 of the upgrade mask (the 14 upgrades use bits 0..13).
+constexpr int kProBit = 14;
+inline std::uint16_t networkMask(const save::SaveData& d)
+{
+    return static_cast<std::uint16_t>(d.upgrades | (d.proPack ? (1u << kProBit) : 0u));
+}
 Boosts boostsFor(std::uint16_t ownedMask);
 
 // Which upgrade class a weapon belongs to (WeaponFactory::isClipHandgun / isReloadHandgun /

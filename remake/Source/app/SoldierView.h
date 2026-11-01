@@ -34,6 +34,7 @@ private:
     ax::Node* _legs[2]   = {};       // +0x108, +0x10c
     ax::Sprite* _flames[2] = {};     // Boostie
     ax::Sprite* _weapon  = nullptr;
+    ax::Sprite* _weapon2 = nullptr;  // Pro Pack: the second handgun in the front hand
     ax::Sprite* _flare   = nullptr;
     float _walkPhase     = 0.0f;
     float _recoil        = 0.0f;

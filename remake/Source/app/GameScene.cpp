@@ -168,7 +168,7 @@ bool GameScene::init(const assets::MapDef& def, std::unique_ptr<game::GameDriver
     _driver      = driver;
     _match       = &_driver->match();
     if (!_networked)
-        _match->setUpgrades(0, SaveStore::get().data().upgrades);
+        _match->setUpgrades(0, economy::networkMask(SaveStore::get().data()));
 
     _soldier = SoldierView::create(SaveStore::get().data().avatar);
     _map->addChild(_soldier, MapView::kZEntities);

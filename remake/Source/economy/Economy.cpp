@@ -73,6 +73,7 @@ Boosts boostsFor(std::uint16_t m)
     b.laserSight  = has(LaserSight);
     b.gasNade     = has(GasNade);
     b.maskPack    = has(MaskPack1);
+    b.dualWield   = has(kProBit);
     return b;
 }
 
