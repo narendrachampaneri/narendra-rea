@@ -55,6 +55,7 @@ Event toNet(const GameEvent& g)
     case EventType::Death: e.kind = EventKind::Death; break;
     case EventType::Blood: e.kind = EventKind::Blood; break;
     case EventType::Throw: e.kind = EventKind::Throw; break;
+    case EventType::Gas: e.kind = EventKind::Gas; break;
     }
     e.sound   = static_cast<std::uint8_t>(g.sound);
     e.fighter = g.fighter < 0 ? 255 : static_cast<std::uint8_t>(g.fighter);
@@ -75,6 +76,7 @@ GameEvent fromNet(const Event& e)
     case EventKind::Death: g.type = EventType::Death; break;
     case EventKind::Blood: g.type = EventType::Blood; break;
     case EventKind::Throw: g.type = EventType::Throw; break;
+    case EventKind::Gas: g.type = EventType::Gas; break;
     default: g.type = EventType::Sound; break;
     }
     g.sound   = static_cast<audio::SoundId>(std::min<int>(e.sound, 97));

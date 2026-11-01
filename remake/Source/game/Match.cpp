@@ -381,6 +381,7 @@ void Match::throwGrenade(Fighter& f)
         return;
     auto g   = std::make_unique<Grenade>();
     g->owner = f.id;
+    g->gas   = f.boosts.gasNade;  // NEW: the Gas Grenade upgrade makes every throw a gas grenade
     g->gravity = Vec2{0.0f, rules::kGrenadeGravity} * gravityFactor();
     g->body  = cpSpaceAddBody(_physics.space(), cpBodyNew(1.0, cpMomentForCircle(1.0, 0, 4, cpvzero)));
     cpBodySetPosition(g->body, cpv(s.muzzlePosition()));
@@ -462,7 +463,16 @@ void Match::updateExplosives(float dt)
     for (auto& g : _grenades)
         if (g->fuse <= 0.0f)
         {
-            explode(toVec(cpBodyGetPosition(g->body)), g->owner, 2);
+            if (g->gas)
+            {
+                const Vec2 at = toVec(cpBodyGetPosition(g->body));
+                _gas.push_back({at, rules::kGasLife, g->owner});
+                GameEvent e{EventType::Gas};
+                e.pos = at;
+                _events.push_back(e);
+            }
+            else
+                explode(toVec(cpBodyGetPosition(g->body)), g->owner, 2);
             g->fuse = -1000.0f;  // removed below
         }
     _grenades.erase(std::remove_if(_grenades.begin(), _grenades.end(),
@@ -476,6 +486,22 @@ void Match::updateExplosives(float dt)
                                        return true;
                                    }),
                     _grenades.end());
+
+    for (auto& c : _gas)
+    {
+        c.life -= dt;
+        for (auto& f : _fighters)
+        {
+            if (!f.alive() || f.id == c.owner)
+                continue;
+            if (!_options.friendlyFire && f.team != 0)
+                if (const Fighter* owner = fighter(c.owner); owner && owner->team == f.team)
+                    continue;
+            if ((f.soldier->position() - c.pos).length() < rules::kGasRadius)
+                f.soldier->addDamage(rules::kGasDamage * dt, c.owner, 2);
+        }
+    }
+    _gas.erase(std::remove_if(_gas.begin(), _gas.end(), [](const GasCloud& c) { return c.life <= 0.0f; }), _gas.end());
 
     for (auto& r : _rockets)
     {

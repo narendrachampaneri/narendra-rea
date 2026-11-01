@@ -239,3 +239,28 @@ TEST_CASE("The upgrade mask travels in Join and the lobby")
     REQUIRE(back.has_value());
     CHECK(std::get<mm::net::LobbyState>(*back).players[0].upgrades == 0x155);
 }
+
+TEST_CASE("Gas grenade: the upgrade turns throws into a cloud that hurts enemies only")
+{
+    using namespace mm::game;
+    const auto data = loadOutpost();
+    Match m(*mm::assets::findMap("outpost"), data);
+    m.setUpgrades(0, 1u << GasNade);
+    const int bot = m.addBot("Bot");
+    m.spawnFighter(bot);
+    for (int i = 0; i < 120; ++i)
+        m.step(1.0f / 60.0f, {});
+    // Put the bot at the thrower's feet and drop a cloud by hand through a throw.
+    PadState throwIt;
+    throwIt.grenade = true;
+    throwIt.aimAngle = 270.0f;  // straight down
+    m.step(1.0f / 60.0f, throwIt);
+    CHECK(m.grenades().size() == 1);
+    CHECK(m.grenades()[0]->gas);
+    const float botHealth = m.fighter(bot)->soldier->health();
+    for (int i = 0; i < 60 * 3; ++i)
+        m.step(1.0f / 60.0f, {});
+    CHECK_FALSE(m.gasClouds().empty());
+    CHECK(m.player().health() >= 99.0f);  // never hurts the thrower
+    CHECK(m.fighter(bot)->soldier->health() <= botHealth);
+}

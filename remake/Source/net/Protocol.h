@@ -117,7 +117,7 @@ struct Snapshot
 struct ItemState { std::uint16_t uid = 0; std::uint8_t weapon = 0; float x = 0, y = 0; float angle = 0; };
 struct ItemList { std::vector<ItemState> items; };
 
-enum class EventKind : std::uint8_t { Sound = 1, Shot, Spark, Explosion, Death, Blood, Throw, Respawn };
+enum class EventKind : std::uint8_t { Sound = 1, Shot, Spark, Explosion, Death, Blood, Throw, Respawn, Gas };
 struct Event
 {
     EventKind kind = EventKind::Sound;

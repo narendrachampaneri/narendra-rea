@@ -152,6 +152,11 @@ constexpr float kExplosionKnockCap = 40.0f;   // impulse = min(damage, 40) * 10 
 // NEW: launch speeds (ProjectileManager::addGrenade / addRocket are only partly recovered).
 constexpr float kGrenadeSpeed     = 420.0f;
 constexpr float kRocketSpeed      = 650.0f;
+// Gas grenade (NEW in M13; the original only has the "gasnade" upgrade flag): a cloud that
+// hurts everyone inside, except the thrower and his team mates, for a few seconds.
+constexpr float kGasRadius   = 80.0f;
+constexpr float kGasLife     = 6.0f;
+constexpr float kGasDamage   = 14.0f;  // per second
 constexpr float kRocketLife       = 4.0f;
 
 }  // namespace mm::rules

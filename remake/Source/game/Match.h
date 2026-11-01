@@ -121,7 +121,10 @@ public:
         float fuse     = rules::kGrenadeFuse;
         int owner      = -1;
         Vec2 gravity;
+        bool gas = false;
     };
+    struct GasCloud { Vec2 pos; float life = rules::kGasLife; int owner = -1; };
+    const std::vector<GasCloud>& gasClouds() const { return _gas; }
     struct Rocket
     {
         Vec2 pos, prev, velocity;
@@ -179,6 +182,7 @@ private:
     std::vector<std::unique_ptr<MapItem>> _items;
     std::vector<std::unique_ptr<Grenade>> _grenades;
     std::vector<Rocket> _rockets;
+    std::vector<GasCloud> _gas;
     std::vector<GrenadeView> _netGrenades;  // mirror only
     void throwGrenade(Fighter& f);
     void launchRocket(Fighter& f);

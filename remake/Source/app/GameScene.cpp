@@ -710,6 +710,21 @@ void GameScene::handleEvents()
         case game::EventType::Explosion:
             spawnExplosion(e.pos);
             break;
+        case game::EventType::Gas:
+        {
+            // NEW (M13): a green cloud that swells, then fades over its lifetime.
+            auto* cloud = DrawNode::create();
+            for (int i = 0; i < 6; ++i)
+                cloud->drawSolidCircle(Vec2(ax::random(-30.0f, 30.0f), ax::random(-20.0f, 20.0f)),
+                                       rules::kGasRadius * ax::random(0.45f, 0.8f), 0, 20, Color4F(0.4f, 0.9f, 0.3f, 0.16f));
+            cloud->setPosition(toAx(e.pos));
+            cloud->setScale(0.3f);
+            cloud->runAction(Sequence::create(Spawn::create(ScaleTo::create(0.6f, 1.0f), nullptr),
+                                              DelayTime::create(rules::kGasLife - 2.6f), FadeOut::create(2.0f),
+                                              RemoveSelf::create(), nullptr));
+            _map->addChild(cloud, MapView::kZFrontDecor);
+            break;
+        }
         case game::EventType::Death:
             spawnBlood(e.pos, 3);
             break;
