@@ -44,6 +44,7 @@ private:
     void updateHud();
     void updateCrosshair();
     ax::DrawNode* _cross = nullptr;
+    int _bloodLive = 0;
     void spawnSpark(const game::Vec2& pos, const game::Vec2& normal);
     void spawnExplosion(const game::Vec2& pos);
     void spawnBlood(const game::Vec2& pos, int amount);

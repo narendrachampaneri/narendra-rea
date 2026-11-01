@@ -22,6 +22,7 @@ continues from the next unfinished milestone. Private project: never publish to 
 | M2 | Assets | done on `remake/m2-assets` (branched from M1): `Remake build` green; awaiting phone check and owner merge |
 | M3 | Single-device slice | **done on `remake/m3-slice` (branched from M2): playable from QUICK PLAY; awaiting green `Remake build`, phone check and owner merge** |
 | M4 | Full single-device game | **built on `remake/m4-game` (branched from M3); awaiting green `Remake build`, phone check and owner merge. dual wield, gas/proximity grenades and drones are left for M7 (see "What works (M4)")** |
+| M14 | Laser sight, quality effect levels | **on `remake/m14-laser-prox` (from M13)** |
 | M13 | Gas grenades | **on `remake/m13-grenades` (from M12)** |
 | M12 | Controller and button placement | **on `remake/m12-controls` (from M11): Bluetooth/USB gamepad, button-placement editor** |
 | M11 | Allowed weapons in the lobby | **on `remake/m11-weapons`: five pick-up groups the host can switch off** |
@@ -34,6 +35,11 @@ continues from the next unfinished milestone. Private project: never publish to 
 | M6 | Menus and meta | not started |
 | M7 | Performance and polish | not started |
 | M8 | Release v1 | not started |
+
+## What works (M14: laser sight and effect levels)
+- Laser Sight upgrade: a thin red beam from the muzzle to the first wall for the weapons that support it (AK47, M16, shotgun, Golden Eagle, sniper). The beam is drawn in a new style.
+- Graphics quality now also scales effects: Smooth drops small blood bursts and shrapnel and keeps at most 8 blood bursts alive; Medium (and Auto) 20; High / Extreme 40.
+- Still open: proximity grenades (no grenade pick-ups exist yet), Pro Pack dual-wield drawing and masks, Survival drones, map vote, QR joining, an actual 4 GB memory measurement.
 
 ## What works (M13: gas grenade)
 - Buying the Gas Grenade upgrade turns every grenade you throw into a gas grenade: a green cloud (80 points wide, 6 s, 14 damage a second) that hurts everyone inside except you and your team mates. Cloud size and damage are NEW values (the original only has the upgrade flag). Other phones see the cloud through a new `Gas` event (LAN-PROTOCOL.md event kind 9).
@@ -290,7 +296,7 @@ Create the key once: `keytool -genkeypair -v -keystore release.jks -alias kadiya
 Keep the file out of git (it is git-ignored); losing it means future updates cannot install over old ones.
 
 ## Known problems / not reproduced yet
-- Still missing from the spec (as of M7): map vote in the lobby, Pro Pack dual-wield drawing and masks, proximity grenades, laser-sight drawing, flame/saw visuals, Survival drones, button-placement editor, Bluetooth controller, QR joining. Each has a place in M9.
+- Still missing from the spec (as of M7): map vote in the lobby, Pro Pack dual-wield drawing and masks, proximity grenades, flame/saw visuals, Survival drones, button-placement editor, Bluetooth controller, QR joining. Each has a place in M9.
 - The authoring sandbox cannot run Gradle (no Android SDK); builds are verified by GitHub Actions. Not yet run on a phone.
 - Spoken lines have no new recordings except "cover me", "ready", "go go go" and "target
   destroyed" (CC0 Kenney voiceover). Sarge's ~40 training lines and the other taunts are silent

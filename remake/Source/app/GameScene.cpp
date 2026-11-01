@@ -22,6 +22,16 @@ using namespace ax;
 namespace mm::app
 {
 
+// Effect detail from the quality setting: 0 Smooth, 1 Medium (and Auto), 2 High / Extreme.
+static int effectsLevel()
+{
+    const auto& c = SaveStore::get().data().settings;
+    if (c.qualityAuto)
+        return 1;
+    return c.quality == save::Quality::Smooth ? 0 : c.quality == save::Quality::Medium ? 1 : 2;
+}
+
+
 namespace
 {
 constexpr int kZBackground = -10;
@@ -55,6 +65,7 @@ public:
         _flash = Sprite::createWithSpriteFrameName("explosion.png");
         _flash->setScale(0.01f);
         addChild(_flash);
+        if (effectsLevel() >= 1)
         if (auto* shrapnel = ParticleSystemQuad::create("Shrapnel.plist"))
         {
             shrapnel->setPositionType(ParticleSystem::PositionType::GROUPED);
@@ -543,11 +554,26 @@ void GameScene::updateCrosshair()
         _map->addChild(_cross, MapView::kZEntities + 2);
     }
     _cross->clear();
-    if (style == 0 || !_match || !_match->playerAlive())
+    if (!_match || !_match->playerAlive())
         return;
     const auto& s   = _match->player();
     const float a   = s.fireAngle() * 3.14159265f / 180.0f;
     const auto p    = s.position();
+    // Laser Sight upgrade: a thin red beam from the muzzle to the first wall (drawing is NEW).
+    const bool laser = (s.isMirror() ? SaveStore::get().boosts().laserSight : s.boosts().laserSight) &&
+                       economy::hasLaserSightSupport(s.weapon().id()) && !s.weapon().isReloading();
+    if (laser)
+    {
+        const game::Vec2 from = s.muzzlePosition();
+        const game::Vec2 to   = from + game::Vec2{std::cos(a), -std::sin(a)} * 700.0f;
+        const auto hit        = _match->physics().segmentQuery(from, to, rules::kTracerMapLayers);
+        const game::Vec2 end  = hit ? hit.point : to;
+        _cross->drawLine(toAx(from), toAx(end), Color4F(1.0f, 0.1f, 0.1f, 0.55f));
+        if (hit)
+            _cross->drawSolidCircle(toAx(end), 2.0f, 0, 8, Color4F(1.0f, 0.2f, 0.2f, 0.9f));
+    }
+    if (style == 0)
+        return;
     const Vec2 c(p.x + std::cos(a) * 90.0f, p.y - std::sin(a) * 90.0f);
     const Color4F col(1.0f, 0.95f, 0.4f, 0.85f);
     if (style == 1)
@@ -764,6 +790,11 @@ void GameScene::spawnBlood(const game::Vec2& pos, int amount)
     if (!cfg.blood)
         return;
     const auto& c = save::kBloodColours[cfg.bloodColour];
+    // Quality presets (M14): Smooth skips the small bursts; every level caps the live bursts.
+    if (effectsLevel() == 0 && amount < 2)
+        return;
+    if (_bloodLive > (effectsLevel() == 0 ? 8 : effectsLevel() == 1 ? 20 : 40))
+        return;
     for (int i = 0; i < amount; ++i)
     {
         auto* blood = ParticleSystemQuad::create("Blood.plist");
@@ -776,6 +807,9 @@ void GameScene::spawnBlood(const game::Vec2& pos, int amount)
         }
         blood->setPosition(toAx(pos));
         blood->setAutoRemoveOnFinish(true);
+        ++_bloodLive;
+        blood->runAction(Sequence::create(DelayTime::create(blood->getLife() + blood->getLifeVar() + 0.2f),
+                                          CallFunc::create([this] { --_bloodLive; }), nullptr));
         _map->addChild(blood, MapView::kZEntities + 1);
     }
 }
