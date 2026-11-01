@@ -42,6 +42,7 @@ void putOptions(Writer& w, const HostOptions& o)
     w.u8(o.respawn);
     w.u8(o.friendlyFire ? 1 : 0);
     w.u8(o.party);
+    w.u8(o.weaponGroups);
 }
 HostOptions getOptions(Reader& r)
 {
@@ -55,6 +56,7 @@ HostOptions getOptions(Reader& r)
     o.respawn    = std::clamp<std::uint8_t>(r.u8(), 3, 15);
     o.friendlyFire = r.u8() != 0;
     o.party      = r.u8() & 0x0f;
+    o.weaponGroups = r.u8() & 0x1f;
     return o;
 }
 void putPlayers(Writer& w, const std::vector<PlayerInfo>& ps)

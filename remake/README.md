@@ -22,6 +22,7 @@ continues from the next unfinished milestone. Private project: never publish to 
 | M2 | Assets | done on `remake/m2-assets` (branched from M1): `Remake build` green; awaiting phone check and owner merge |
 | M3 | Single-device slice | **done on `remake/m3-slice` (branched from M2): playable from QUICK PLAY; awaiting green `Remake build`, phone check and owner merge** |
 | M4 | Full single-device game | **built on `remake/m4-game` (branched from M3); awaiting green `Remake build`, phone check and owner merge. dual wield, gas/proximity grenades and drones are left for M7 (see "What works (M4)")** |
+| M11 | Allowed weapons in the lobby | **on `remake/m11-weapons`: five pick-up groups the host can switch off** |
 | M10 | Final docs and handoff (assumed scope) | **on `remake/m10-final`** |
 | M9 | Hardening (assumed scope) | **on `remake/m9-hardening`: fuzz tests for the network decoder and the save parser** |
 | M8 | Release docs | **on `remake/m8-release`: TEST-CHECKLIST.md, owner merge/release steps** |
@@ -277,7 +278,7 @@ Create the key once: `keytool -genkeypair -v -keystore release.jks -alias kadiya
 Keep the file out of git (it is git-ignored); losing it means future updates cannot install over old ones.
 
 ## Known problems / not reproduced yet
-- Still missing from the spec (as of M7): allowed-weapons list and map vote in the lobby, Pro Pack dual-wield drawing and masks, gas/proximity grenades, laser-sight drawing, flame/saw visuals, Survival drones, button-placement editor, Bluetooth controller, QR joining. Each has a place in M9.
+- Still missing from the spec (as of M7): map vote in the lobby, Pro Pack dual-wield drawing and masks, gas/proximity grenades, laser-sight drawing, flame/saw visuals, Survival drones, button-placement editor, Bluetooth controller, QR joining. Each has a place in M9.
 - The authoring sandbox cannot run Gradle (no Android SDK); builds are verified by GitHub Actions. Not yet run on a phone.
 - Spoken lines have no new recordings except "cover me", "ready", "go go go" and "target
   destroyed" (CC0 Kenney voiceover). Sarge's ~40 training lines and the other taunts are silent

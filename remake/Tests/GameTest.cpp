@@ -770,3 +770,21 @@ TEST_CASE("Party options: all off by default, each one works when on")
         run(normal, idle(), 0.05f);
     }
 }
+
+TEST_CASE("Allowed weapon groups limit what spawns on the map")
+{
+    const auto data = loadMap("1outpost_new.tmx");
+    MatchOptions o;
+    o.weaponGroups = 1u << 4;  // melee only
+    Match m(*assets::findMap("outpost"), data, 0, o);
+    run(m, idle(), 120.0f);
+    int seen = 0;
+    for (const auto& it : m.items())
+    {
+        ++seen;
+        CHECK(weaponGroup(it->weapon().id()) == 4);
+    }
+    CHECK(seen > 0);
+    CHECK(weaponGroup(WeaponId::AK47) == 1);
+    CHECK(weaponGroup(WeaponId::Sniper) == 2);
+}

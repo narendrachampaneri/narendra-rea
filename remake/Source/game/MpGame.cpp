@@ -42,6 +42,7 @@ MultiplayerGame::MultiplayerGame(const assets::MapDef& def, const assets::MapDat
     mo.weaponPickups = !_options.fair;
     mo.respawnTime   = static_cast<float>(_options.respawn);
     mo.friendlyFire  = _options.friendlyFire;
+    mo.weaponGroups  = _options.weaponGroups;
     mo.party.lowGravity    = _options.party & 1;
     mo.party.unlimitedAmmo = _options.party & 2;
     mo.party.oneShotKills  = _options.party & 4;

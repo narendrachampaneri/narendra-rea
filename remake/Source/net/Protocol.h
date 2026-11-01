@@ -66,6 +66,7 @@ struct HostOptions
     // Party options (M7 extras), all off by default: bit0 low gravity, bit1 unlimited ammo,
     // bit2 one-shot kills, bit3 melee only.
     std::uint8_t party = 0;
+    std::uint8_t weaponGroups = 0x1f;  // allowed pick-up groups (game/Weapons.h weaponGroup)
     bool operator==(const HostOptions&) const = default;
 };
 struct LobbyState { HostOptions options; std::vector<PlayerInfo> players; };

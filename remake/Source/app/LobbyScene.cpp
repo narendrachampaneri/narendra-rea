@@ -54,7 +54,7 @@ bool LobbyScene::init()
     // Left: the options. The host taps a line to change it; guests just read them.
     for (int i = 0; i < kOptionRows; ++i)
     {
-        auto* label = Label::createWithTTF("", "fonts/arial.ttf", 11);
+        auto* label = Label::createWithTTF("", "fonts/arial.ttf", 10);
         label->setAnchorPoint({0, 0.5f});
         _options[i] = label;
         auto* item  = MenuItemLabel::create(label, [this, i](Object*) {
@@ -81,13 +81,18 @@ bool LobbyScene::init()
             case 4: o.fair = !o.fair; break;
             case 5: o.respawn = o.respawn >= 15 ? 3 : o.respawn + 2; break;
             case 6: o.friendlyFire = !o.friendlyFire; break;
+            case 11: case 12: case 13: case 14: case 15:
+                o.weaponGroups ^= static_cast<std::uint8_t>(1u << (i - 11));
+                if ((o.weaponGroups & 0x1f) == 0)
+                    o.weaponGroups = 0x1f;  // never an empty pool
+                break;
             case 7: case 8: case 9: case 10: o.party ^= static_cast<std::uint8_t>(1u << (i - 7)); break;
             }
             host->setOptions(o);
             refresh();
         });
         item->setAnchorPoint({0, 0.5f});
-        item->setPosition(origin.x + 14, origin.y + visible.height - 44 - i * 21);
+        item->setPosition(origin.x + 14, origin.y + visible.height - 40 - i * 17);
         menu->addChild(item);
     }
 
@@ -98,7 +103,7 @@ bool LobbyScene::init()
 
     _address = Label::createWithTTF("", "fonts/arial.ttf", 9);
     _address->setAnchorPoint({0, 0.5f});
-    _address->setPosition(origin.x + 14, origin.y + visible.height - 44 - kOptionRows * 21);
+    _address->setPosition(origin.x + 14, origin.y + visible.height - 40 - kOptionRows * 17);
     addChild(_address, 5);
 
     _chat = Label::createWithTTF("", "fonts/arial.ttf", 10);
@@ -194,6 +199,9 @@ void LobbyScene::refresh()
     _options[8]->setString(std::string("PARTY: UNLIMITED AMMO ") + onoff(o.party & 2));
     _options[9]->setString(std::string("PARTY: ONE-SHOT KILLS ") + onoff(o.party & 4));
     _options[10]->setString(std::string("PARTY: MELEE ONLY ") + onoff(o.party & 8));
+    static const char* kGroupNames[] = {"PISTOLS", "SMGS + RIFLES", "SHOTGUN + SNIPER", "HEAVY", "MELEE"};
+    for (int g = 0; g < 5; ++g)
+        _options[11 + g]->setString(std::string("PICK-UPS: ") + kGroupNames[g] + " " + onoff(o.weaponGroups & (1 << g)));
 
     std::string list = "PLAYERS\n";
     for (const auto& p : players)

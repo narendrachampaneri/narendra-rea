@@ -60,7 +60,7 @@ TEST_CASE("Lobby messages round-trip")
 
     LobbyState l;
     l.options.mode = GameMode::CoopSurvival; l.options.map = 13; l.options.minutes = 8;
-    l.options.maxPlayers = 6; l.options.killLimit = 25; l.options.fair = true; l.options.respawn = 5; l.options.friendlyFire = true; l.options.party = 5;
+    l.options.maxPlayers = 6; l.options.killLimit = 25; l.options.fair = true; l.options.respawn = 5; l.options.friendlyFire = true; l.options.party = 5; l.options.weaponGroups = 0x0b;
     l.players = {{0, "Host", 0, true, true}, {1, "Ann", 1, false, false}};
     const auto l2 = roundTrip(l);
     CHECK(l2.options == l.options);

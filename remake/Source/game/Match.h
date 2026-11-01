@@ -67,6 +67,7 @@ struct MatchOptions
     bool mirror       = false; // client mirror: no soldier logic, driven by applySnapshot()
     bool allowBoosts   = true;  // purchased upgrades count (off in Fair mode)
     bool weaponPickups = true; // weapons spawn on the map (off in Fair mode)
+    std::uint8_t weaponGroups = 0x1f;  // which pick-up groups may spawn (Weapons.h weaponGroup)
     bool friendlyFire  = false; // team mates hurt each other (never, in the original rules)
     bool respawn      = true;  // bots come back (unlimited lives, SoldierManager +0x35)
     bool playerRespawn = true; // the local player comes back

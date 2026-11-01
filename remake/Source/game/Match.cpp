@@ -280,8 +280,13 @@ void Match::updateWeaponSpawns(float dt)
     sp.item = -1;
     if (_time > 10.0f && _time >= sp.nextSpawn)
     {
-        constexpr int n  = static_cast<int>(std::size(kSpawnWeapons));
-        const WeaponId w = kSpawnWeapons[std::uniform_int_distribution<int>(0, n - 1)(_rng)];
+        std::vector<WeaponId> pool;
+        for (WeaponId c : kSpawnWeapons)
+            if (_options.weaponGroups & (1u << weaponGroup(c)))
+                pool.push_back(c);
+        if (pool.empty())
+            return;
+        const WeaponId w = pool[std::uniform_int_distribution<int>(0, static_cast<int>(pool.size()) - 1)(_rng)];
         sp.item          = dropItem(std::make_unique<Weapon>(w), sp.pos, {}, static_cast<int>(_spawnCursor));
         sp.nextSpawn     = _time + period;
     }

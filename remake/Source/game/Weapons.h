@@ -130,6 +130,23 @@ constexpr audio::SoundId fireSound(WeaponId id)
 // WeaponFactory::init (+0x14): the ammo types WeaponManager draws from at a weapon spawn,
 // as the remake's weapon ids. Grenade pick-ups (frag 2, gas 20, proximity 23) and the saw
 // blade item (24) arrive with the grenades.
+// NEW (M11): lobby "allowed weapons" groups for the map pick-ups. Bit set = may spawn.
+// bit0 pistols, bit1 SMGs and rifles, bit2 shotgun and sniper, bit3 heavy (rocket, laser,
+// flame, saw, EMP), bit4 melee.
+inline constexpr int kWeaponGroups = 5;
+inline constexpr std::uint8_t kAllWeaponGroups = 0x1f;
+constexpr int weaponGroup(WeaponId w)
+{
+    switch (w)
+    {
+    case WeaponId::Deagle: case WeaponId::GoldDeagle: case WeaponId::Magnum: return 0;
+    case WeaponId::MP5: case WeaponId::Uzi: case WeaponId::AK47: case WeaponId::M16: case WeaponId::M14: return 1;
+    case WeaponId::Shotgun: case WeaponId::Sniper: return 2;
+    case WeaponId::Machete: case WeaponId::RiotShield: return 4;
+    default: return 3;
+    }
+}
+
 inline constexpr WeaponId kSpawnWeapons[] = {
     WeaponId::Machete, WeaponId::Deagle, WeaponId::Magnum, WeaponId::MP5,        WeaponId::Uzi,
     WeaponId::AK47,    WeaponId::M16,    WeaponId::Shotgun, WeaponId::Sniper,    WeaponId::Rocket,
