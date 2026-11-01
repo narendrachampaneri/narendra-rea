@@ -23,15 +23,12 @@ Color3B tintFor(Color3B c)
 
 Node* background()
 {
-    // The original's dimmed title art behind the menus.
+    // The original's title art, darkened by tinting (plain sprites only), behind the menus.
     const auto visible = Director::getInstance()->getVisibleSize();
     const auto origin  = Director::getInstance()->getVisibleOrigin();
-    auto* root         = Node::create();
-    root->addChild(ui::titleArt("title_ret2_new.png", origin.x + visible.width / 2), 0);
-    auto* dim = LayerColor::create(Color4B(0, 0, 0, 150), visible.width, visible.height);
-    dim->setPosition(origin);
-    root->addChild(dim, 1);
-    return root;
+    auto* art          = ui::titleArt("title_ret2_new.png", origin.x + visible.width / 2, Color3B(95, 95, 105));
+    art->setTag(-99);  // popIn leaves it alone
+    return art;
 }
 
 Label* heading(const std::string& s)

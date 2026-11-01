@@ -70,10 +70,9 @@ void buildListMenu(Scene* scene, std::vector<MenuEntry> entries, bool home, std:
     const auto safe    = director->getSafeAreaRect();
 
     // The original's dimmed title art behind the menus.
-    scene->addChild(ui::titleArt("title_ret2_new.png", origin.x + visible.width / 2), 0);
-    auto* dim = LayerColor::create(Color4B(0, 0, 0, 150), visible.width, visible.height);
-    dim->setPosition(origin);
-    scene->addChild(dim, 1);
+    auto* art = ui::titleArt("title_ret2_new.png", origin.x + visible.width / 2, Color3B(95, 95, 105));
+    art->setTag(-99);
+    scene->addChild(art, 0);
 
     // The stacked column: first piece chamfered at the top, last at the bottom.
     auto* menu = Menu::create();

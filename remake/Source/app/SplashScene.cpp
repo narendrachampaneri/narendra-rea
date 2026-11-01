@@ -86,10 +86,8 @@ void SplashScene::proceed()
         return;
     _leaving = true;
     AudioSystem::get().play(audio::SoundId::Grenade1);  // the original's button sound (id 13)
-    if (SaveStore::get().data().firstLaunchDone)
-        _director->replaceScene(TransitionFade::create(0.5f, utils::createInstance<HomeScene>()));
-    else
-        _director->replaceScene(TransitionFade::create(0.5f, utils::createInstance<FirstLaunchScene>()));
+    // Straight to the main menu (the name screen is gone; the name can be changed in the options).
+    _director->replaceScene(TransitionFade::create(0.5f, utils::createInstance<HomeScene>()));
 }
 
 }  // namespace mm::app

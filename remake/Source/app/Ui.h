@@ -14,7 +14,7 @@ ax::LabelAtlas* atlasLabel(std::string_view text);
 
 // Full-screen title art: the picture fitted to the screen height, over a darkened, enlarged copy
 // that fills the rest of a wide phone screen. centerX is the picture's centre in points.
-ax::Node* titleArt(std::string_view file, float centerX);
+ax::Node* titleArt(std::string_view file, float centerX, ax::Color3B tint = ax::Color3B::WHITE);
 
 // One piece of the original blue button panel (b03_top/mid/bot.png) with a label.
 ax::MenuItemSprite* panelButton(std::string_view frame, std::string_view text, const ax::ccMenuCallback& onTap);

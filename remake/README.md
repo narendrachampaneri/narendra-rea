@@ -44,6 +44,9 @@ Where the original had nothing recoverable (drone kinds, mine numbers, gas numbe
 gamepad layout) the remake uses its own documented default; all of them are marked NEW in the
 code and in the sections below.
 
+## Start-up flow (changed after the phone test)
+TOUCH TO START goes straight to the main menu. There is no name screen any more (the name is "Player" until changed in CONFIGURE > MORE OPTIONS) and the training offer is gone (HELP > TRAINING). The first time only, one welcome pop-up appears over the menu ("WELCOME TO NOSTALGIA", OK). The menu backgrounds are the original title art tinted dark (no separate dimming layer, and the screen pop-in effect skips the background): the earlier build showed a black screen on the name and menu screens on the owner's phone.
+
 ## What works (the mod's behaviour, now the default)
 The app the owner plays is a mod; its game library has these patches (checked in the decompiled code, `source/native/Weapon.cpp`, `SoldierHostController.cpp`, each gun's `triggerPull`). They are now ON by default in the remake (`rules::gMod`, `Source/game/Rules.h`):
 - shots cost no ammo (the clip never goes down);

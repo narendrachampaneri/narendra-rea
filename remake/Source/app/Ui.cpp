@@ -14,7 +14,7 @@ LabelAtlas* atlasLabel(std::string_view text)
     return LabelAtlas::create(text, "font02_new.png", 32, 32, ' ');
 }
 
-Node* titleArt(std::string_view file, float centerX)
+Node* titleArt(std::string_view file, float centerX, Color3B tint)
 {
     auto* director     = Director::getInstance();
     const auto visible = director->getVisibleSize();
@@ -27,12 +27,13 @@ Node* titleArt(std::string_view file, float centerX)
     const float cover = std::max(visible.width / size.width, visible.height / size.height);
     fill->setScale(cover * 1.05f);
     fill->setPosition(origin + visible / 2);
-    fill->setColor(Color3B(70, 64, 96));
+    fill->setColor(Color3B(70 * tint.r / 255, 64 * tint.g / 255, 96 * tint.b / 255));
     root->addChild(fill, 0);
 
     auto* art       = Sprite::create(file);
     const float fit = std::min(visible.width / size.width, visible.height / size.height);
     art->setScale(fit);
+    art->setColor(tint);
     art->setPosition(centerX, origin.y + visible.height / 2);
     root->addChild(art, 1);
 

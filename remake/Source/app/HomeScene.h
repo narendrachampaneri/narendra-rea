@@ -11,6 +11,9 @@ class HomeScene : public ax::Scene
 public:
     bool init() override;
     void onEnter() override;
+
+private:
+    void showWelcome();
 };
 
 }  // namespace mm::app
