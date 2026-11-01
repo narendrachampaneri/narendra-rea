@@ -26,7 +26,7 @@ Positions are `f32`; velocities and angles are 16-bit fixed point (`value x scal
 | 2 | Announce | host -> asker | nonce, host name, players u8, max u8, mode u8, map u8, state u8, game port u16 |
 | 3 | Join | client -> host | name, protocol version, token u32 |
 | 4 | JoinReply | host -> client | result u8 (0 ok, 1 full, 2 started, 3 wrong version, 4 kicked), player id, token |
-| 5 | LobbyState | host -> all | options (mode, map, minutes, max, kill limit, fair), player list (id, name, team, ready/host flags) |
+| 5 | LobbyState | host -> all | options (mode, map or 254 = random, minutes, max, kill limit, fair, respawn seconds, friendly fire, party bits, allowed weapon groups), player list (id, name, team, ready/host flags) |
 | 6 | SetReady | client -> host | ready u8, team u8 |
 | 7 | StartMatch | host -> all | seed u32, options, final player list (teams settled) |
 | 8 | Input | client -> host, every step (60/s) | seq u32, buttons u8, move x/y i8 (x100), aim u16 (degrees x10) |
@@ -85,3 +85,11 @@ Let's go / Hold the line / Over here / Well played.
 - QR-code joining (needs the camera; planned with the M6 menus). Typing the IP works now.
 - Client-side prediction, lag compensation, voice chat.
 - A reconnect to a match in progress.
+
+
+## Changes after the first M5 text
+- Input button bits are 16 bits wide (bit 8 = place proximity mine).
+- HostOptions carry: respawn seconds (3-15), friendly fire, party bits (1 low gravity, 2 unlimited ammo, 4 one-shot kills, 8 melee only), allowed weapon groups (5 bits), map 254 = random (the host draws it at start and sends the real one).
+- Upgrade mask: bits 0-13 are the store upgrades, bit 14 is the Pro Pack (dual wield).
+- Event kinds 9 = Gas cloud, 10 = Mine placed.
+- QR code text: `MMJOIN1;<ipv4>;<port>`.

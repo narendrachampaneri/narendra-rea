@@ -88,6 +88,7 @@ public class AppActivity extends AxmolActivity {
     private static final int REQUEST_EXPORT = 7001, REQUEST_IMPORT = 7002;
     private String pendingExport;
 
+    private static native void nativeOnQrScanned(String text);
     private static native void nativeOnSaveImported(String text);
     private static native void nativeOnSaveExported(boolean ok);
 
@@ -107,6 +108,38 @@ public class AppActivity extends AxmolActivity {
         });
     }
 
+    /** Native: open the camera scanner (the library asks for the camera permission now, not before). */
+    public static void scanQr() {
+        final AppActivity a = sInstance;
+        if (a == null) return;
+        a.runOnUiThread(new Runnable() {
+            @Override public void run() {
+                com.google.zxing.integration.android.IntentIntegrator integrator =
+                    new com.google.zxing.integration.android.IntentIntegrator(a);
+                integrator.setDesiredBarcodeFormats(com.google.zxing.integration.android.IntentIntegrator.QR_CODE);
+                integrator.setPrompt("Scan the host's QR code");
+                integrator.setBeepEnabled(false);
+                integrator.setOrientationLocked(false);
+                integrator.initiateScan();
+            }
+        });
+    }
+
+    /** Native: the QR code for `text` as "size:" followed by size*size characters, 1 = dark. */
+    public static String qrMatrix(String text) {
+        try {
+            com.google.zxing.common.BitMatrix m = new com.google.zxing.qrcode.QRCodeWriter()
+                .encode(text, com.google.zxing.BarcodeFormat.QR_CODE, 0, 0);
+            StringBuilder sb = new StringBuilder();
+            sb.append(m.getWidth()).append(':');
+            for (int y = 0; y < m.getHeight(); y++)
+                for (int x = 0; x < m.getWidth(); x++) sb.append(m.get(x, y) ? '1' : '0');
+            return sb.toString();
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
     /** Native: let the player pick a save file to restore. The text comes back through nativeOnSaveImported. */
     public static void importSave() {
         final AppActivity a = sInstance;
@@ -124,6 +157,13 @@ public class AppActivity extends AxmolActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        com.google.zxing.integration.android.IntentResult qr =
+            com.google.zxing.integration.android.IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
+        if (qr != null) {
+            final String scanned = qr.getContents() == null ? "" : qr.getContents();
+            runOnGLThread(new Runnable() { @Override public void run() { nativeOnQrScanned(scanned); } });
+            return;
+        }
         if (requestCode == REQUEST_EXPORT) {
             boolean ok = false;
             if (resultCode == RESULT_OK && data != null && data.getData() != null && pendingExport != null) {

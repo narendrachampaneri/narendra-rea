@@ -6,6 +6,7 @@
 #include <sstream>
 
 #include "app/AudioSystem.h"
+#include "app/Platform.h"
 #include "axmol.h"
 
 #if AX_TARGET_PLATFORM == AX_PLATFORM_ANDROID
@@ -186,6 +187,15 @@ JNIEXPORT void JNICALL Java_dev_axmol_app_AppActivity_nativeOnSaveImported(JNIEn
         env->ReleaseStringUTFChars(text, chars);
     ax::Director::getInstance()->getScheduler()->runOnAxmolThread(
         [copy] { mm::app::SaveStore::get().importText(copy); });
+}
+
+JNIEXPORT void JNICALL Java_dev_axmol_app_AppActivity_nativeOnQrScanned(JNIEnv* env, jclass, jstring text)
+{
+    const char* chars = env->GetStringUTFChars(text, nullptr);
+    std::string copy  = chars ? chars : "";
+    if (chars)
+        env->ReleaseStringUTFChars(text, chars);
+    ax::Director::getInstance()->getScheduler()->runOnAxmolThread([copy] { mm::app::platform::deliverQr(copy); });
 }
 
 JNIEXPORT void JNICALL Java_dev_axmol_app_AppActivity_nativeOnSaveExported(JNIEnv*, jclass, jboolean ok)

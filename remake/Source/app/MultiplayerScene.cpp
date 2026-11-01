@@ -6,6 +6,7 @@
 #include "app/NetContext.h"
 #include "app/Platform.h"
 #include "app/Ui.h"
+#include "net/JoinCode.h"
 #include "ui/axmol-ui.h"
 
 using namespace ax;
@@ -94,6 +95,30 @@ bool MultiplayerScene::init()
             ui::toast(this, "Joining...");
         }
     });
+    auto* scan = ui::panelButton("b03_mid.png", "SCAN QR", [this](Object*) {
+        auto alive = _alive;
+        platform::scanQr([this, alive](const std::string& text) {
+            if (!*alive)
+                return;
+            if (text.empty())
+                return;
+            const auto ep = net::parseJoinCode(text);
+            if (!ep)
+            {
+                ui::toast(this, "That is not a Mini Militia join code");
+                return;
+            }
+            if (auto* c = NetContext::get().client())
+            {
+                c->join(*ep);
+                ui::toast(this, "Joining...");
+            }
+        });
+    });
+    auto* scanMenu = Menu::create(scan, nullptr);
+    scanMenu->setScale(0.7f);
+    scanMenu->setPosition(origin.x + visible.width - 70, origin.y + 70);
+    addChild(scanMenu, 5);
     auto* joinMenu = Menu::create(join, nullptr);
     joinMenu->setScale(0.7f);
     joinMenu->setPosition(origin.x + visible.width - 70, origin.y + 40);

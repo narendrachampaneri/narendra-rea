@@ -8,6 +8,7 @@
 #include "app/NetContext.h"
 #include "app/Platform.h"
 #include "app/Ui.h"
+#include "net/JoinCode.h"
 #include "assets/MapCatalog.h"
 
 using namespace ax;
@@ -112,6 +113,49 @@ bool LobbyScene::init()
     _address->setAnchorPoint({0, 0.5f});
     _address->setPosition(origin.x + 14, origin.y + visible.height - 40 - kOptionRows * 17);
     addChild(_address, 5);
+
+    if (isHost())
+    {
+        auto* qr = ui::panelButton("b03_mid.png", "SHOW QR", [this](Object*) {
+            if (_qrBox)
+            {
+                _qrBox->removeFromParent();
+                _qrBox = nullptr;
+                return;
+            }
+            const std::string ip = NetContext::get().localAddress();
+            if (ip.empty())
+            {
+                ui::toast(this, "Connect to Wi-Fi or start a hotspot first");
+                return;
+            }
+            const auto code = platform::qrMatrix(net::makeJoinCode(ip));
+            if (code.size == 0)
+            {
+                ui::toast(this, "QR code not available here");
+                return;
+            }
+            const auto vis = _director->getVisibleSize();
+            const auto org = _director->getVisibleOrigin();
+            _qrBox = ax::DrawNode::create();
+            const float cell = std::floor(std::min(vis.height - 40.0f, 200.0f) / (code.size + 4));
+            const float side = cell * (code.size + 4);
+            const Vec2 c0(org.x + vis.width / 2 - side / 2, org.y + vis.height / 2 - side / 2);
+            _qrBox->drawSolidRect(c0, c0 + Vec2(side, side), ax::Color4F::WHITE);  // quiet zone
+            for (int y = 0; y < code.size; ++y)
+                for (int x = 0; x < code.size; ++x)
+                    if (code.bits[y * code.size + x] == '1')
+                    {
+                        const Vec2 p = c0 + Vec2((x + 2) * cell, side - (y + 3) * cell);
+                        _qrBox->drawSolidRect(p, p + Vec2(cell, cell), ax::Color4F::BLACK);
+                    }
+            addChild(_qrBox, 20);
+        });
+        auto* qrMenu = Menu::create(qr, nullptr);
+        qrMenu->setScale(0.6f);
+        qrMenu->setPosition(origin.x + 70, origin.y + 24);
+        addChild(qrMenu, 5);
+    }
 
     _chat = Label::createWithTTF("", "fonts/arial.ttf", 10);
     _chat->setAnchorPoint({0, 0.5f});

@@ -1,5 +1,6 @@
 #include "doctest/doctest.h"
 
+#include "net/JoinCode.h"
 #include "assets/MapCatalog.h"
 #include "net/Protocol.h"
 
@@ -707,4 +708,20 @@ TEST_CASE("Random map: a started match runs on a real map everywhere")
     w.pump(1.0f);
     REQUIRE(a.clientState() == ClientState::Playing);
     REQUIRE(b.clientState() == ClientState::Playing);
+}
+
+TEST_CASE("QR join code: round trip, and rubbish is refused")
+{
+    using namespace mm::net;
+    const auto text = makeJoinCode("192.168.43.1");
+    CHECK(text == "MMJOIN1;192.168.43.1;9331");
+    const auto ep = parseJoinCode(text);
+    REQUIRE(ep.has_value());
+    CHECK(ep->toString() == "192.168.43.1:9331");
+    CHECK_FALSE(parseJoinCode("").has_value());
+    CHECK_FALSE(parseJoinCode("https://example.com").has_value());
+    CHECK_FALSE(parseJoinCode("MMJOIN1;300.1.1.1;9331").has_value());
+    CHECK_FALSE(parseJoinCode("MMJOIN1;192.168.0.1;99999").has_value());
+    CHECK_FALSE(parseJoinCode("MMJOIN1;192.168.0.1;abc").has_value());
+    CHECK_FALSE(parseJoinCode("MMJOIN1;192.168.0.1").has_value());
 }

@@ -20,6 +20,7 @@ private:
     bool isHost() const;
 
     ax::Label* _title = nullptr;
+    ax::DrawNode* _qrBox = nullptr;
     static constexpr int kOptionRows = 16;
     ax::Label* _options[kOptionRows] = {};
     ax::Label* _players = nullptr;

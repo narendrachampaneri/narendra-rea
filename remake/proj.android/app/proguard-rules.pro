@@ -30,6 +30,12 @@
     public static void exportSave(java.lang.String);
     public static void importSave();
     public static void vibrate(int);
+    public static void scanQr();
+    public static java.lang.String qrMatrix(java.lang.String);
+    private static native void nativeOnQrScanned(java.lang.String);
     private static native void nativeOnSaveImported(java.lang.String);
     private static native void nativeOnSaveExported(boolean);
 }
+
+-keep class com.google.zxing.** { *; }
+-keep class com.journeyapps.barcodescanner.** { *; }

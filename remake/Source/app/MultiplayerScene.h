@@ -1,6 +1,8 @@
 // Multiplayer start: host a game, or find one on this Wi-Fi / hotspot, or join by IP address.
 #pragma once
 
+#include <memory>
+
 #include "axmol.h"
 
 namespace mm::app
@@ -9,6 +11,7 @@ namespace mm::app
 class MultiplayerScene : public ax::Scene
 {
 public:
+    ~MultiplayerScene() override { *_alive = false; }
     bool init() override;
     void onEnter() override;
     void onExit() override;
@@ -27,6 +30,7 @@ private:
     std::string _ip = "192.168.";
     std::size_t _shown = 0;
     bool _leaving = false;
+    std::shared_ptr<bool> _alive = std::make_shared<bool>(true);  // read by the QR scan callback
 };
 
 }  // namespace mm::app

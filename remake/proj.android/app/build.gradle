@@ -133,4 +133,6 @@ androidComponents {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation project(':libaxmol')
+    // QR joining: the scanner screen (asks for the camera only when it is opened) and the QR encoder.
+    implementation 'com.journeyapps:zxing-android-embedded:4.3.0'
 }

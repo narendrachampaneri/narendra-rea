@@ -26,5 +26,15 @@ what you did, and open an issue.
 - [ ] A guest leaving or switching the screen off does not freeze the host.
 - [ ] Play again / back to lobby / leave all work.
 
+## Added in M11-M20
+- [ ] Gamepad: sticks move/aim, buttons work, Start pauses (up on the stick moves up).
+- [ ] Settings > Edit button placement: drag, save, buttons are there in a match.
+- [ ] Gas grenade (buy the upgrade), laser sight, Pro Pack dual wield with two handguns, Mask Pack mask on the avatar.
+- [ ] Survival wave 2-5: worms, hawks and a humanoid appear.
+- [ ] Proximity mine: place, enemy walks in, boom; you never get hurt by yours.
+- [ ] Lobby: RANDOM map, weapon groups, party options.
+- [ ] QR: host SHOW QR, other phone SCAN QR joins (camera asked only then); typed IP still works.
+- [ ] Settings > FPS STATS shows counters; Smooth quality keeps the frame rate on a 4 GB phone.
+
 ## Release
 - [ ] Tag build installs over the previous one (same signing key) and keeps the save.

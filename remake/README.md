@@ -15,29 +15,41 @@ continues from the next unfinished milestone. Private project: never publish to 
   (`remake/m1-skeleton`, `remake/m2-assets`, ...), merged to `main` by the owner.
 
 ## Milestone status
-| | Milestone | Status |
+**Feature complete (v1.0.0-rc1). Everything lives on branch `remake/complete`; it has not been run on a phone yet.**
+Each milestone is also on its own branch, each branched from the one before:
+
+| Milestone | Branch | What |
 |---|---|---|
-| M0 | Report | done, approved |
-| M1 | Skeleton + release workflow | done: `Remake build` green on `remake/m1-skeleton`; awaiting owner merge |
-| M2 | Assets | done on `remake/m2-assets` (branched from M1): `Remake build` green; awaiting phone check and owner merge |
-| M3 | Single-device slice | **done on `remake/m3-slice` (branched from M2): playable from QUICK PLAY; awaiting green `Remake build`, phone check and owner merge** |
-| M4 | Full single-device game | **built on `remake/m4-game` (branched from M3); awaiting green `Remake build`, phone check and owner merge. dual wield, gas/proximity grenades and drones are left for M7 (see "What works (M4)")** |
-| M17 | Random map in the lobby | **on `remake/m17-random-map` (from M16)** |
-| M16 | Survival hawk drones | **on `remake/m16-drones` (from M15)** |
-| M15 | Pro Pack dual wield | **on `remake/m15-dualwield` (from M14)** |
-| M14 | Laser sight, quality effect levels | **on `remake/m14-laser-prox` (from M13)** |
-| M13 | Gas grenades | **on `remake/m13-grenades` (from M12)** |
-| M12 | Controller and button placement | **on `remake/m12-controls` (from M11): Bluetooth/USB gamepad, button-placement editor** |
-| M11 | Allowed weapons in the lobby | **on `remake/m11-weapons`: five pick-up groups the host can switch off** |
-| M10 | Final docs and handoff (assumed scope) | **on `remake/m10-final`** |
-| M9 | Hardening (assumed scope) | **on `remake/m9-hardening`: fuzz tests for the network decoder and the save parser** |
-| M8 | Release docs | **on `remake/m8-release`: TEST-CHECKLIST.md, owner merge/release steps** |
-| M7 | Polish and extras | **built on `remake/m7-polish` (from M6): host options, party extras, crosshair; awaiting CI and on-device check** |
-| M6 | Menus, Coins, store, avatar, leaderboards, settings, saves | **built on `remake/m6-menus` (branched from M5); awaiting CI and an on-device check** |
-| M5 | Wi-Fi multiplayer | **built on `remake/m5-wifi` (branched from M4); protocol in `LAN-PROTOCOL.md`; awaiting CI, a two-phone test and owner merge** |
-| M6 | Menus and meta | not started |
-| M7 | Performance and polish | not started |
-| M8 | Release v1 | not started |
+| M0 | - | report, approved |
+| M1 | `remake/m1-skeleton` | project skeleton, CI, release workflow |
+| M2 | `remake/m2-assets` | original art imported, new CC0 sounds |
+| M3 | `remake/m3-slice` | playable single-device slice |
+| M4 | `remake/m4-game` | bots, modes, weapons, grenades, melee |
+| M5 | `remake/m5-wifi` | Wi-Fi multiplayer (Deathmatch, Team Deathmatch, Co-op) |
+| M6 | `remake/m6-menus` | menus, Coins, store, avatar, leaderboards, settings, saves |
+| M7 | `remake/m7-polish` | host options, party extras, crosshair |
+| M8 | `remake/m8-release` | on-device checklist, release steps |
+| M9 | `remake/m9-hardening` | fuzz tests (assumed scope) |
+| M10 | `remake/m10-final` | version label, hand-off (assumed scope) |
+| M11 | `remake/m11-weapons` | allowed pick-up groups in the lobby |
+| M12 | `remake/m12-controls` | gamepad, button-placement editor |
+| M13 | `remake/m13-grenades` | gas grenade |
+| M14 | `remake/m14-laser-prox` | laser sight, quality effect levels |
+| M15 | `remake/m15-dualwield` | Pro Pack dual wield |
+| M16 | `remake/m16-drones` | hawk drones |
+| M17 | `remake/m17-random-map` | RANDOM map |
+| M18-M20 | `remake/complete` | masks, worm/humanoid drones, FPS stats, proximity mine, QR joining |
+
+Where the original had nothing recoverable (drone kinds, mine numbers, gas numbers, mask art use,
+gamepad layout) the remake uses its own documented default; all of them are marked NEW in the
+code and in the sections below.
+
+## What works (M18-M20: the last features)
+- **Masks** (Mask Pack upgrade, needs the Pro Pack): AVATAR > MASK picks one of the original `faceType1..4` quads drawn over the head.
+- **Drones**: hawks (wave 3+), worms (wave 2+, machete, 40 health) and humanoids (wave 4+, shotgun, 150 health) in solo Survival.
+- **Proximity mine**: one per life, green button above the grenade button (gamepad: L3). Armed after 1 s, explodes when an enemy comes within 50 points; never hurts the owner or the owner's team. Other phones see it through a `Mine` event; Wi-Fi input now has a 16-bit button field (protocol bump inside v1, see `LAN-PROTOCOL.md`).
+- **FPS stats**: Settings > FPS STATS shows the engine's frame-rate and draw-call counters, for checking the 4 GB memory/performance budget on a real phone.
+- **QR joining**: host lobby > SHOW QR draws a QR code with the host's address (`MMJOIN1;ip;port`); Multiplayer > SCAN QR opens the camera scanner (zxing-android-embedded; the camera permission is asked only then) and joins. Typing the IP still works.
 
 ## What works (M17: random map)
 - Host lobby: tapping MAP cycles the maps and then **RANDOM**; the host draws the map when the match starts and tells everyone the real one. This stands in for a vote (a true vote needs guest ballots and a tally, which is not built).
@@ -310,24 +322,16 @@ Create the key once: `keytool -genkeypair -v -keystore release.jks -alias kadiya
 Keep the file out of git (it is git-ignored); losing it means future updates cannot install over old ones.
 
 ## Known problems / not reproduced yet
-- Still missing from the spec (as of M7): real map voting (the lobby has RANDOM instead), Pro Pack dual-wield drawing and masks, proximity grenades, flame/saw visuals, Survival drones, button-placement editor, Bluetooth controller, QR joining. Each has a place in M9.
-- The authoring sandbox cannot run Gradle (no Android SDK); builds are verified by GitHub Actions. Not yet run on a phone.
-- Spoken lines have no new recordings except "cover me", "ready", "go go go" and "target
-  destroyed" (CC0 Kenney voiceover). Sarge's ~40 training lines and the other taunts are silent
-  (their ids exist with an empty file). Owner's decision: leave them silent; the owner will say
-  when voice is wanted. Do not ask again.
-- The soldier's animation, the gun/muzzle position, the explosion used for a death and the
-  HUD placement are new approximations; the original values for those are only in the
-  SoldierView / HUD drawing code and will be refined with phone feedback. Shell casings, blood,
-  the zoom button and the AK47's zoom levels come in M4.
+- Nothing has been run on a phone yet; every behaviour is verified only by the 87 host test groups, a header type-check and GitHub Actions builds. Use `TEST-CHECKLIST.md`.
+- Stick axis directions and button layout of a gamepad, and the look of masks / gas cloud / mine / laser, are unverified on a screen.
+- No real map vote (the lobby has RANDOM). Pro Pack dual wield and masks of other players are not drawn on a guest's screen (the host plays them correctly).
+- Worm / humanoid / hawk drones and the mine, gas and laser numbers are new defaults, not recovered from the original.
+- Memory on 4 GB phones is not measured; effects are capped by the graphics setting and unused textures are released between screens.
+- Spoken lines have no new recordings except "cover me", "ready", "go go go" and "target destroyed". Owner's decision: leave the rest silent.
+- The authoring sandbox cannot run Gradle; builds are verified by GitHub Actions.
 - Axmol's profile asks for cmake 4.2+; `.axproj` pins CMake 3.31.6 exactly instead.
-- Do not run Axmol's own `setup.ps1`: `tools/fetch-axmol.sh` replaces it and changes nothing system-wide.
-- Axmol's CMake needs PowerShell at configure time: built into Windows and on GitHub runners;
-  on macOS/Linux install it first (`brew install powershell`).
-- Android 16+ local-network permission rules: the app declares INTERNET, ACCESS_NETWORK_STATE, ACCESS_WIFI_STATE and CHANGE_WIFI_MULTICAST_STATE and holds a multicast lock while looking for games; if Android 16 asks for or blocks local-network access, report it (the permission to add would be NEARBY_WIFI_DEVICES / ACCESS_LOCAL_NETWORK).
 
 ## Next step
-1. Wait for CI on each branch (or check the Actions tab); `remake/m10-final` contains everything (M1-M10).
-2. Build and run it, follow `TEST-CHECKLIST.md` on 2+ phones, and tell me what fails.
-3. Merge the branches in order, add the signing secrets, tag `v1.0.0` (see "Merging and releasing").
-4. Open work (see Known problems): allowed-weapons and map vote in the lobby, Pro Pack dual-wield visuals and masks, gas/proximity grenades, laser sight drawing, Survival drones, button-placement editor, Bluetooth controller, QR joining. M7-M10 were done without a phone, so on-device feedback comes first.
+1. Open the Actions tab and confirm `Remake build` is green on `remake/complete`.
+2. Build it, run `TEST-CHECKLIST.md` on 2+ phones, and report what fails.
+3. Merge `remake/complete` into `main` (it contains every milestone), add the four signing secrets, tag `v1.0.0`.
