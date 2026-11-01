@@ -44,6 +44,15 @@ Where the original had nothing recoverable (drone kinds, mine numbers, gas numbe
 gamepad layout) the remake uses its own documented default; all of them are marked NEW in the
 code and in the sections below.
 
+## What works (the mod's behaviour, now the default)
+The app the owner plays is a mod; its game library has these patches (checked in the decompiled code, `source/native/Weapon.cpp`, `SoldierHostController.cpp`, each gun's `triggerPull`). They are now ON by default in the remake (`rules::gMod`, `Source/game/Rules.h`):
+- shots cost no ammo (the clip never goes down);
+- reload takes 0 seconds;
+- every shot fires 2 bullets (for every weapon, shotgun included);
+- the primary weapon is carried in both hands (dual wield, drawn in the other hand);
+- the jetpack never runs dry.
+The host tests check the original rules, so they switch the profile off first; the mod profile has its own test. Not in the mod (and so not added): free store items or Coins; the static analysis found no such patch.
+
 ## What works (original look)
 After the phone recordings, the front-end was rebuilt to follow the original app's screens, with its own art (`b03_*` buttons, title art, rank icons, rank names): title (TOUCH TO START) -> main menu (UPGRADE greyed as in the mod, QUICK PLAY, MULTIPLAYER, SOLO PLAY, SETTINGS; INFO / NEWS / HELP on the right) -> SOLO PLAY (SURVIVAL (CO-OP), DEATHMATCH, SCORES) -> SETTINGS (STORE, AVATAR, CONFIGURE, CONTROLS). CONFIGURE has MUSIC, SOUND, BLOOD, HI-RES GFX (2X VIEW greyed) and MORE OPTIONS (my extra settings). CONTROLS has SWAP STICKS, AUTO FIRE and PLACEMENT. AVATAR is the rank screen (CUSTOMIZE, AWARDS). HELP offers TRAINING. The Store, Leaderboards, customiser and the other screens inherit the original button art. Rank thresholds (100 experience per rank, 10 per kill) are new; the original table was not recovered.
 

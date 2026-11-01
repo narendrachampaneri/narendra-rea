@@ -12,7 +12,9 @@ OUT="$(mktemp -d)"
 trap 'rm -rf "$OUT"' EXIT
 cat > "$OUT/main.cpp" <<'EOF'
 #include "doctest/doctest.h"
-int main(int argc, char** argv) { doctest::Context c; c.applyCommandLine(argc, argv); return c.run(); }
+#include "game/Rules.h"
+// The tests check the original rules; the mod profile (the app default) has its own tests.
+int main(int argc, char** argv) { mm::rules::gMod = mm::rules::ModProfile::original(); doctest::Context c; c.applyCommandLine(argc, argv); return c.run(); }
 EOF
 # Chipmunk 7 exactly as Axmol builds it (floats, no Apple CG types).
 CP="$AX/3rdparty/chipmunk"

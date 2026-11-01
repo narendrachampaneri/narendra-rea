@@ -51,7 +51,7 @@ public:
         _clipExtra = clipExtra; _reloadFaster = reloadFaster; _spreadFactor = spreadFactor;
     }
     int clipCapacity() const { return static_cast<int>(_def->clip * (1.0f + _clipExtra) + 0.5f); }
-    float reloadTime() const { return _def->reloadTime * (1.0f - _reloadFaster); }
+    float reloadTime() const { return rules::gMod.instantReload ? 0.0f : _def->reloadTime * (1.0f - _reloadFaster); }
 
     // Client mirror: take over what the host reports.
     void setNetState(int clip, int ammo, bool reloading, float reloadFraction)

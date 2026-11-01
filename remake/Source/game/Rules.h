@@ -13,6 +13,25 @@ namespace mm::rules
 // ---- Physics (PhysicsManager::init / updateStep) -------------------------------------------------
 constexpr int kSpaceIterations  = 2;      // cpSpaceSetIterations
 constexpr int kSubsteps         = 2;      // two cpSpaceStep(dt / 2) per frame
+// The behaviour of the shipped "Mini Militia mod by sahadikr.in" (the app the owner plays):
+// its native library patches these functions of the game, checked in the decompiled code:
+//   Weapon::getReloadTime        -> 0     (instant reload)
+//   Weapon::getRoundsPerFire     -> 2     (two bullets per shot, for every weapon)
+//   Weapon::isDualWield          -> 1 and isDualWieldPrimaryOnly -> 1 (the primary weapon in both hands)
+//   SoldierHostController::hasPower -> 1  (the jetpack never runs dry)
+//   every gun's triggerPull stores the round count back unchanged (shots cost nothing)
+// They are ON by default. The host tests of the original rules switch them off first.
+struct ModProfile
+{
+    bool unlimitedAmmo = true;
+    bool unlimitedFuel = true;
+    bool instantReload = true;
+    bool dualWield     = true;
+    int roundsPerFire  = 2;  // 0 = each weapon's own value
+    static ModProfile original() { return {false, false, false, false, 0}; }
+};
+inline ModProfile gMod;
+
 constexpr float kMaxFrameDt     = 0.25f;  // the original clamps its frame time
 constexpr float kPartyLowGravity = 0.35f; // NEW (M7 party option): gravity multiplier
 

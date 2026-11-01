@@ -572,7 +572,7 @@ void Match::fireShots(Fighter& f, int shots, Weapon* gun)
     const std::uint32_t layers = f.human ? rules::kHostBulletLayers : rules::kRemoteBulletLayers;
     for (int shot = 0; shot < shots; ++shot)
     {
-        for (int i = 0; i < weapon.def().roundsPerFire; ++i)
+        for (int i = 0, n = rules::gMod.roundsPerFire > 0 ? rules::gMod.roundsPerFire : weapon.def().roundsPerFire; i < n; ++i)
             _tracers.fire(muzzle, s.fireAngle() + weapon.randomFiringAngle(), s.velocity(), weapon.def(), f.id, layers);
         GameEvent e{EventType::Shot};
         e.pos     = muzzle;

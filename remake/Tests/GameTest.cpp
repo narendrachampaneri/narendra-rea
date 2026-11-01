@@ -842,3 +842,42 @@ TEST_CASE("Survival: worms from wave 2 and humanoids from wave 4")
     CHECK(worm);
     CHECK(humanoid);
 }
+
+namespace
+{
+struct ModScope  // runs a test with the mod profile on, then back to the original rules
+{
+    ModScope() { mm::rules::gMod = mm::rules::ModProfile{}; }
+    ~ModScope() { mm::rules::gMod = mm::rules::ModProfile::original(); }
+};
+}  // namespace
+
+TEST_CASE("Mod profile (the app default): shots cost nothing, reload is instant, two bullets a shot, endless jetpack")
+{
+    ModScope mod;
+    const auto data = loadMap("1outpost_new.tmx");
+    Match m(*assets::findMap("outpost"), data);
+    auto& s = m.player();
+    CHECK(s.weapon().reloadTime() == 0.0f);
+    const int clip = s.weapon().clip();
+    PadState fire = idle();
+    fire.firing = true;
+    int tracersSeen = 0;
+    for (int i = 0; i < 300; ++i)
+    {
+        m.step(kDt, fire);
+        tracersSeen = std::max<int>(tracersSeen, static_cast<int>(m.tracers().activeCount()));
+    }
+    CHECK(s.weapon().clip() == clip);  // 5 s of fire and the clip is still full
+    CHECK(s.weapon().ammo() > 0);
+    CHECK(tracersSeen >= 2);
+    // The jetpack never runs dry.
+    PadState up = idle();
+    up.moveTouched = true;
+    up.moveOffset  = {0.0f, 1.0f};
+    up.moveVector  = up.moveOffset * 40.0f;
+    for (int i = 0; i < 60 * 40; ++i)
+        m.step(kDt, up);
+    CHECK(s.isJetting());
+    CHECK(s.thrustFactor() > 0.0f);
+}

@@ -279,7 +279,7 @@ void Soldier::updateStep(float dt, const PadState& pad)
 
     // SoldierHostController::hasPower computes power > 0; the analysed APK then returns 1
     // anyway (an unlimited-jetpack mod patch). The remake keeps the genuine rule.
-    auto hasPower = [this] { return _power > 0.0f; };
+    auto hasPower = [this] { return rules::gMod.unlimitedFuel || _power > 0.0f; };
     _thrustFactor = (hasPower() && _jetting && _touching) ? std::max(0.0f, _joy.y * 0.5f + 0.5f) : 0.0f;
 
     tiltBody();

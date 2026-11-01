@@ -41,7 +41,8 @@ Weapon::Trigger Weapon::triggerPull()
             _flare = true;
             // The analysed APK subtracts 0 here in every weapon (an unlimited-ammo mod patch);
             // the original game spends one round per shot.
-            _clip -= 1;
+            if (!rules::gMod.unlimitedAmmo)  // mod: a shot costs no round
+                _clip -= 1;
             result = Trigger::Fired;
             if (_info && _info->burstInterval > 0.0f)
             {
