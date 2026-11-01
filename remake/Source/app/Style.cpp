@@ -3,6 +3,7 @@
 #include <algorithm>
 
 #include "app/AudioSystem.h"
+#include "app/Ui.h"
 
 using namespace ax;
 
@@ -11,40 +12,34 @@ namespace mm::app::style
 
 namespace
 {
-void drawPill(DrawNode* d, Size size, Color4F fill)
+// The original blue stays as it is for the default colour; other colours tint it.
+Color3B tintFor(Color3B c)
 {
-    d->clear();
-    const float r = size.height / 2;
-    d->drawSolidRect({r, 0}, {size.width - r, size.height}, fill);
-    d->drawSolidCircle({r, r}, r, 0, 24, fill);
-    d->drawSolidCircle({size.width - r, r}, r, 0, 24, fill);
-    // A lighter band on top gives the buttons some depth.
-    const Color4F hi(std::min(fill.r + 0.12f, 1.0f), std::min(fill.g + 0.12f, 1.0f), std::min(fill.b + 0.12f, 1.0f), 0.55f);
-    d->drawSolidRect({r, size.height * 0.55f}, {size.width - r, size.height * 0.92f}, hi);
+    if (c.r == 52 && c.g == 84 && c.b == 170)
+        return Color3B::WHITE;
+    return Color3B(std::min(255, 110 + c.r / 2), std::min(255, 110 + c.g / 2), std::min(255, 110 + c.b / 2));
 }
-Color4F f4(Color3B c) { return Color4F(c.r / 255.0f, c.g / 255.0f, c.b / 255.0f, 1.0f); }
 }  // namespace
 
 Node* background()
 {
+    // The original's dimmed title art behind the menus.
     const auto visible = Director::getInstance()->getVisibleSize();
     const auto origin  = Director::getInstance()->getVisibleOrigin();
-    auto* g            = LayerGradient::create(Color4B(22, 28, 54, 255), Color4B(52, 40, 86, 255), Vec2(0.3f, 1.0f));
-    g->setContentSize(visible);
-    g->setPosition(origin);
-    auto* stripes = DrawNode::create();
-    for (float x = -visible.height; x < visible.width; x += 36)
-        stripes->drawSolidRect({x, 0}, {x + 8, visible.height}, Color4F(1, 1, 1, 0.025f));
-    g->addChild(stripes);
-    return g;
+    auto* root         = Node::create();
+    root->addChild(ui::titleArt("title_ret2_new.png", origin.x + visible.width / 2), 0);
+    auto* dim = LayerColor::create(Color4B(0, 0, 0, 150), visible.width, visible.height);
+    dim->setPosition(origin);
+    root->addChild(dim, 1);
+    return root;
 }
 
 Label* heading(const std::string& s)
 {
     const auto visible = Director::getInstance()->getVisibleSize();
     const auto origin  = Director::getInstance()->getVisibleOrigin();
-    auto* l            = Label::createWithTTF(s, "fonts/arial.ttf", 22);
-    l->setColor(kAccent);
+    auto* l            = Label::createWithTTF(s, "fonts/digitalix.ttf", 20);
+    l->setColor(Color3B(190, 205, 255));
     l->enableOutline(Color4B::BLACK, 2);
     l->setPosition(origin.x + visible.width / 2, origin.y + visible.height - 24);
     return l;
@@ -52,7 +47,7 @@ Label* heading(const std::string& s)
 
 Label* text(const std::string& s, float size, Color3B colour)
 {
-    auto* l = Label::createWithTTF(s, "fonts/arial.ttf", size);
+    auto* l = Label::createWithTTF(s, "fonts/digitalix.ttf", size);
     l->setColor(colour);
     return l;
 }
@@ -62,11 +57,14 @@ Pill pillWithLabel(const std::string& labelText, Size size, std::function<void()
     auto* root = Node::create();
     root->setContentSize(size);
     root->setAnchorPoint({0.5f, 0.5f});
-    auto* d = DrawNode::create();
+    // The original's blue button (b03_mid) stretched to the size; the colour only tints it.
+    auto* d = Sprite::createWithSpriteFrameName("b03_mid.png");
     d->setName("bg");
-    drawPill(d, size, f4(colour));
+    d->setScale(size.width / d->getContentSize().width, size.height / d->getContentSize().height);
+    d->setPosition(size / 2);
+    d->setColor(tintFor(colour));
     root->addChild(d);
-    auto* l = Label::createWithTTF(labelText, "fonts/arial.ttf", std::min(15.0f, size.height * 0.5f));
+    auto* l = Label::createWithTTF(labelText, "fonts/digitalix.ttf", std::min(13.0f, size.height * 0.46f));
     l->enableOutline(Color4B(0, 0, 0, 160), 1);
     l->setPosition(size / 2);
     l->setMaxLineWidth(size.width - size.height * 0.6f);
@@ -113,8 +111,8 @@ Node* pill(const std::string& label, Size size, std::function<void()> onTap, Col
 
 void setPillColour(Node* pill, Color3B colour)
 {
-    if (auto* d = dynamic_cast<DrawNode*>(pill->getChildByName("bg")))
-        drawPill(d, pill->getContentSize(), f4(colour));
+    if (auto* d = dynamic_cast<Sprite*>(pill->getChildByName("bg")))
+        d->setColor(tintFor(colour));
 }
 
 Node* slider(Size size, int min, int max, int value, std::function<void(int)> onChange)

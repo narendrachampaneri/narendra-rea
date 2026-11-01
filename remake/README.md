@@ -44,6 +44,9 @@ Where the original had nothing recoverable (drone kinds, mine numbers, gas numbe
 gamepad layout) the remake uses its own documented default; all of them are marked NEW in the
 code and in the sections below.
 
+## What works (original look)
+After the phone recordings, the front-end was rebuilt to follow the original app's screens, with its own art (`b03_*` buttons, title art, rank icons, rank names): title (TOUCH TO START) -> main menu (UPGRADE greyed as in the mod, QUICK PLAY, MULTIPLAYER, SOLO PLAY, SETTINGS; INFO / NEWS / HELP on the right) -> SOLO PLAY (SURVIVAL (CO-OP), DEATHMATCH, SCORES) -> SETTINGS (STORE, AVATAR, CONFIGURE, CONTROLS). CONFIGURE has MUSIC, SOUND, BLOOD, HI-RES GFX (2X VIEW greyed) and MORE OPTIONS (my extra settings). CONTROLS has SWAP STICKS, AUTO FIRE and PLACEMENT. AVATAR is the rank screen (CUSTOMIZE, AWARDS). HELP offers TRAINING. The Store, Leaderboards, customiser and the other screens inherit the original button art. Rank thresholds (100 experience per rank, 10 per kill) are new; the original table was not recovered.
+
 ## What works (M18-M20: the last features)
 - **Masks** (Mask Pack upgrade, needs the Pro Pack): AVATAR > MASK picks one of the original `faceType1..4` quads drawn over the head.
 - **Drones**: hawks (wave 3+), worms (wave 2+, machete, 40 health) and humanoids (wave 4+, shotgun, 150 health) in solo Survival.
