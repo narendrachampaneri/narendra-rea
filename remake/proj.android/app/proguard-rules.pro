@@ -28,6 +28,7 @@
     public static void setGameHandlesBack(boolean);
     public static void setMulticastLock(boolean);
     public static void exportSave(java.lang.String);
+    public static void exportDebugLog();
     public static void importSave();
     public static void vibrate(int);
     public static void scanQr();

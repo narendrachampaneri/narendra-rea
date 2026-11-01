@@ -511,6 +511,9 @@ bool SettingsScene::init()
     addChild(editBtn, 5);
     yl -= 30;
     addToggle(left, yl, "FPS STATS", cfg.showStats);
+    auto* dbg = style::pill("EXPORT DEBUG LOG", {colW - 6, 24}, [] { platform::exportDebugLog(); }, Color3B(90, 90, 160));
+    dbg->setPosition(left, yl);
+    addChild(dbg, 5);
 
     auto* exp = style::pill("EXPORT SAVE", {colW / 2 - 3, 24}, [] { SaveStore::get().exportToFile(); }, Color3B(90, 90, 160));
     exp->setPosition(right - colW / 4 - 1.5f, yr);

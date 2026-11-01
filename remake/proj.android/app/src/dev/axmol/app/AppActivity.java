@@ -54,6 +54,17 @@ public class AppActivity extends AxmolActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.setEnableVirtualButton(false);
+        // Keep the last Java crash so it can go into the debug report.
+        final Thread.UncaughtExceptionHandler previous = Thread.getDefaultUncaughtExceptionHandler();
+        Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+            @Override public void uncaughtException(Thread t, Throwable e) {
+                try (java.io.PrintWriter w = new java.io.PrintWriter(new java.io.File(getFilesDir(), "last-crash.txt"))) {
+                    w.println("Thread: " + t.getName());
+                    e.printStackTrace(w);
+                } catch (Exception ignored) { }
+                if (previous != null) previous.uncaughtException(t, e);
+            }
+        });
         super.onCreate(savedInstanceState);
         // Workaround in https://stackoverflow.com/questions/16283079/re-launch-of-activity-on-home-button-but-only-the-first-time/16447508
         if (!isTaskRoot()) {
@@ -94,18 +105,62 @@ public class AppActivity extends AxmolActivity {
 
     /** Native: let the player pick where to store the save file (Storage Access Framework, no permission). */
     public static void exportSave(final String text) {
+        exportText(text, "minimilitia-save.mmsave", false);
+    }
+
+    private boolean pendingIsLog;
+
+    private static void exportText(final String text, final String title, final boolean isLog) {
         final AppActivity a = sInstance;
         if (a == null) return;
         a.runOnUiThread(new Runnable() {
             @Override public void run() {
                 a.pendingExport = text;
+                a.pendingIsLog = isLog;
                 Intent i = new Intent(Intent.ACTION_CREATE_DOCUMENT);
                 i.addCategory(Intent.CATEGORY_OPENABLE);
                 i.setType("text/plain");
-                i.putExtra(Intent.EXTRA_TITLE, "minimilitia-save.mmsave");
+                i.putExtra(Intent.EXTRA_TITLE, title);
                 a.startActivityForResult(i, REQUEST_EXPORT);
             }
         });
+    }
+
+    /** Native: save a debug report (device, last crash, this app's recent log) through the file picker. */
+    public static void exportDebugLog() {
+        new Thread(new Runnable() {
+            @Override public void run() {
+                StringBuilder sb = new StringBuilder();
+                sb.append("Mini Militia by Kadiyafali debug report\n");
+                sb.append("Device: ").append(android.os.Build.MANUFACTURER).append(' ').append(android.os.Build.MODEL).append('\n');
+                sb.append("Android: ").append(android.os.Build.VERSION.RELEASE).append(" (SDK ").append(android.os.Build.VERSION.SDK_INT).append(")\n");
+                sb.append("ABIs: ").append(java.util.Arrays.toString(android.os.Build.SUPPORTED_ABIS)).append("\n\n");
+                AppActivity a = sInstance;
+                if (a != null) {
+                    java.io.File f = new java.io.File(a.getFilesDir(), "last-crash.txt");
+                    if (f.exists()) {
+                        sb.append("--- last Java crash ---\n");
+                        try (InputStream in = new java.io.FileInputStream(f)) {
+                            ByteArrayOutputStream buf = new ByteArrayOutputStream();
+                            byte[] chunk = new byte[4096];
+                            int n;
+                            while ((n = in.read(chunk)) > 0 && buf.size() < 32 * 1024) buf.write(chunk, 0, n);
+                            sb.append(new String(buf.toByteArray(), StandardCharsets.UTF_8)).append('\n');
+                        } catch (Exception ignored) { }
+                    }
+                }
+                sb.append("--- recent log of this app ---\n");
+                try {
+                    Process p = Runtime.getRuntime().exec(new String[] {"logcat", "-d", "-v", "time", "-t", "3000"});
+                    java.io.BufferedReader r = new java.io.BufferedReader(new java.io.InputStreamReader(p.getInputStream(), StandardCharsets.UTF_8));
+                    String line;
+                    while ((line = r.readLine()) != null && sb.length() < 400 * 1024) sb.append(line).append('\n');
+                } catch (Exception e) {
+                    sb.append("(could not read the log: ").append(e).append(")\n");
+                }
+                exportText(sb.toString(), "minimilitia-debug.txt", true);
+            }
+        }).start();
     }
 
     /** Native: open the camera scanner (the library asks for the camera permission now, not before). */
@@ -175,7 +230,11 @@ public class AppActivity extends AxmolActivity {
             }
             pendingExport = null;
             final boolean result = ok;
-            runOnGLThread(new Runnable() { @Override public void run() { nativeOnSaveExported(result); } });
+            if (pendingIsLog) {
+                pendingIsLog = false;  // a debug log is not a save: no "save exported" message
+            } else {
+                runOnGLThread(new Runnable() { @Override public void run() { nativeOnSaveExported(result); } });
+            }
         } else if (requestCode == REQUEST_IMPORT) {
             String text = "";
             if (resultCode == RESULT_OK && data != null && data.getData() != null) {

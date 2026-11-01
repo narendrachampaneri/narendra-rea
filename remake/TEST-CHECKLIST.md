@@ -36,5 +36,8 @@ what you did, and open an issue.
 - [ ] QR: host SHOW QR, other phone SCAN QR joins (camera asked only then); typed IP still works.
 - [ ] Settings > FPS STATS shows counters; Smooth quality keeps the frame rate on a 4 GB phone.
 
+## If something goes wrong
+- Settings > EXPORT DEBUG LOG saves a text file (device, last Java crash, the app\'s recent log) through the file picker. Send me that file together with what you were doing.
+
 ## Release
 - [ ] Tag build installs over the previous one (same signing key) and keeps the save.

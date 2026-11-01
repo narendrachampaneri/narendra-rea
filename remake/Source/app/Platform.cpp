@@ -65,6 +65,13 @@ void deliverQr(const std::string& text)
         cb(text);
 }
 
+void exportDebugLog()
+{
+#if AX_TARGET_PLATFORM == AX_PLATFORM_ANDROID
+    ax::JniHelper::callStaticVoidMethod("dev/axmol/app/AppActivity", "exportDebugLog");
+#endif
+}
+
 void vibrate(int milliseconds)
 {
 #if AX_TARGET_PLATFORM == AX_PLATFORM_ANDROID

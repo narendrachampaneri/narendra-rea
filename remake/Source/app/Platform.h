@@ -23,6 +23,9 @@ QrCode qrMatrix(const std::string& text);
 
 void deliverQr(const std::string& text);  // called by the JNI callback
 
+// Android: save a debug report (device, last crash, recent log) through the file picker.
+void exportDebugLog();
+
 // A short buzz (hits taken), if vibration is on in the settings.
 void vibrate(int milliseconds);
 
