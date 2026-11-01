@@ -2,6 +2,8 @@
 // (The home screen is HomeScene.) All use app/Style for their look.
 #pragma once
 
+#include <array>
+
 #include "axmol.h"
 
 namespace mm::app
@@ -30,6 +32,17 @@ private:
     ax::Node* _buy = nullptr;
     ax::Label* _buyLabel = nullptr;
     std::vector<std::pair<ax::Node*, ax::Label*>> _cells;
+};
+
+// Drag the round in-game buttons where the thumbs reach them (saved as offsets).
+class ButtonEditorScene : public ax::Scene
+{
+public:
+    bool init() override;
+
+private:
+    std::array<ax::Sprite*, 5> _buttons{};
+    std::array<int, 5> _touch{};
 };
 
 class AvatarScene : public ax::Scene

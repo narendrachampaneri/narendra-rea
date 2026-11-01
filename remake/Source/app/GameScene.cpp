@@ -14,6 +14,7 @@
 #include "app/Platform.h"
 #include "app/SoldierView.h"
 #include "app/Ui.h"
+#include "app/HudLayout.h"
 #include "game/Rules.h"
 
 using namespace ax;
@@ -210,6 +211,14 @@ void GameScene::onEnter()
     Scene::onEnter();
     platform::setGameHandlesBack(true);
     AudioSystem::get().stopMusic();
+    if (!_controllerAttached)
+    {
+        _controllerAttached = true;
+        _controller.attach(this, [this] {
+            if (!_networked && !_ended)
+                setPaused(!_paused);
+        });
+    }
 }
 
 void GameScene::onExit()
@@ -264,12 +273,12 @@ void GameScene::buildHud()
     // Melee at PUNCH_POS (width - 185, 35), zoom at ZOOM_POS (34, height - 34), scale 0.8.
     _melee = Sprite::createWithSpriteFrameName("meleeBtn.png");
     _melee->setScale(0.8f);
-    _melee->setPosition(visible.width - 185, 35);
+    _melee->setPosition(hud::pos(hud::kMelee, visible, SaveStore::get().data().settings));
     _hud->addChild(_melee, 1);
     // Grenade at GRENADE_POS, above the melee button.
     _grenadeBtn = Sprite::createWithSpriteFrameName("grenadeBtn.png");
     _grenadeBtn->setScale(0.8f);
-    _grenadeBtn->setPosition(visible.width - 120, 70);
+    _grenadeBtn->setPosition(hud::pos(hud::kGrenade, visible, SaveStore::get().data().settings));
     _hud->addChild(_grenadeBtn, 1);
     _grenadeCount = Label::createWithTTF("2", "fonts/arial.ttf", 11);
     _grenadeCount->setPosition(_grenadeBtn->getContentSize().width - 8, 8);
@@ -283,12 +292,12 @@ void GameScene::buildHud()
     }
     _zoom = Sprite::createWithSpriteFrameName("zoomBtn.png");
     _zoom->setScale(0.8f);
-    _zoom->setPosition(34, visible.height - 34);
+    _zoom->setPosition(hud::pos(hud::kZoom, visible, SaveStore::get().data().settings));
     _hud->addChild(_zoom, 1);
     // NEW placement: the weapon within reach, tap to take it (the original showed it on a
     // pop-up button next to the soldier).
     _pickUp = Sprite::createWithSpriteFrameName("wepChangeBtn.png");
-    _pickUp->setPosition(visible.width - 120, 130);
+    _pickUp->setPosition(hud::pos(hud::kPickUp, visible, SaveStore::get().data().settings));
     _pickUp->setVisible(false);
     if (auto* icon = Sprite::createWithSpriteFrameName("ak47.png"))
     {
@@ -320,7 +329,7 @@ void GameScene::buildHud()
 
     _reload = Sprite::createWithSpriteFrameName("ammoBtn.png");
     _reload->setScale(0.8f);  // defaultReloadScl on phones
-    _reload->setPosition(visible.width - 34, visible.height - 34);
+    _reload->setPosition(hud::pos(hud::kReload, visible, SaveStore::get().data().settings));
     _hud->addChild(_reload, 1);
     if (auto* ring = Sprite::createWithSpriteFrameName("ammoBtn.png"))
     {
@@ -476,6 +485,7 @@ void GameScene::update(float dt)
         in.switchWeapon = std::exchange(_pressed.switchWeapon, false);
         in.pickUp       = std::exchange(_pressed.pickUp, false);
         in.grenade      = std::exchange(_pressed.grenade, false);
+        _controller.apply(in);
         _driver->step(_stepper.step(), in);
         // Camera smoothing runs per step like Stage::updateView did per frame at 60 fps.
         const float zoom = _match->player().weapon().zoom();  // Weapon::getZoomScale

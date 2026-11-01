@@ -42,6 +42,9 @@ struct Settings
     Quality quality = Quality::Medium;  // used when qualityAuto is off: Smooth sd, Medium hd, High / Extreme hdr
     int crosshair = 0;           // NEW (M7 extra): 0 none (original look), 1 dot, 2 cross, 3 ring
     int frameRate = 60;          // 30, 60, 90, 120
+    // NEW (M12): button-placement editor. Offsets in points from the default place of
+    // melee, grenade, zoom, reload, pick-up (x then y each); 0 = original placement.
+    std::array<int, 10> buttonOffset{};
     bool operator==(const Settings&) const = default;
 };
 constexpr std::array<std::array<std::uint8_t, 3>, 5> kBloodColours{{{200, 20, 20}, {40, 200, 60}, {60, 120, 255}, {240, 200, 40}, {255, 255, 255}}};

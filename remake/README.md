@@ -22,6 +22,7 @@ continues from the next unfinished milestone. Private project: never publish to 
 | M2 | Assets | done on `remake/m2-assets` (branched from M1): `Remake build` green; awaiting phone check and owner merge |
 | M3 | Single-device slice | **done on `remake/m3-slice` (branched from M2): playable from QUICK PLAY; awaiting green `Remake build`, phone check and owner merge** |
 | M4 | Full single-device game | **built on `remake/m4-game` (branched from M3); awaiting green `Remake build`, phone check and owner merge. dual wield, gas/proximity grenades and drones are left for M7 (see "What works (M4)")** |
+| M12 | Controller and button placement | **on `remake/m12-controls` (from M11): Bluetooth/USB gamepad, button-placement editor** |
 | M11 | Allowed weapons in the lobby | **on `remake/m11-weapons`: five pick-up groups the host can switch off** |
 | M10 | Final docs and handoff (assumed scope) | **on `remake/m10-final`** |
 | M9 | Hardening (assumed scope) | **on `remake/m9-hardening`: fuzz tests for the network decoder and the save parser** |
@@ -33,11 +34,18 @@ continues from the next unfinished milestone. Private project: never publish to 
 | M7 | Performance and polish | not started |
 | M8 | Release v1 | not started |
 
+## What works (M12: controls)
+- Gamepad (Bluetooth or USB): left stick moves, right stick aims and fires when pushed far, R2/R1 fire, X reload, Y switch weapon, B melee, A pick up, L1 grenade, R3 zoom, Start pauses. The touch pads keep working at the same time. Stick directions are unverified on a real pad.
+- Settings > EDIT BUTTON PLACEMENT: drag melee, grenade, zoom, reload and pick-up buttons; SAVE stores the offsets (part of the save file), RESET restores the original places.
+
+### On-device check for M12
+1. Pair a controller, start Quick Play: the stick directions are right (up = up) and the buttons do what is listed. 2. Move the buttons, SAVE, start a match: they are where you put them and still respond to touch.
+
 ## What works (M7: host options and extras)
 - Lobby (host taps a line): respawn time 3-15 s, friendly fire, and four **party options**, all OFF by default: low gravity, unlimited ammo, one-shot kills, melee only. With all off the match plays by the original rules. They travel in the lobby/start messages (`LAN-PROTOCOL.md` HostOptions: respawn, friendlyFire, party bits) and are applied by the host's simulation.
 - Settings: crosshair style (off / dot / cross / ring), off by default.
 - Records and totals are on the Leaderboards screen.
-- Not done yet (listed in "Known problems"): allowed-weapons list, map vote, dual wield / Pro Pack items drawing, button-placement editor, Bluetooth controller, QR joining.
+- Not done yet (listed in "Known problems"): allowed-weapons list, map vote, dual wield / Pro Pack items drawing, QR joining.
 
 ### On-device check for M7
 1. Host a game, switch each party option on, start: gravity is lower / ammo never ends / one hit kills / fire stick punches. 2. Settings > Crosshair shows a sight in the aim direction. 3. With all options off nothing differs from M6.

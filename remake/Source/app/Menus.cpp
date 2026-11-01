@@ -1,4 +1,5 @@
 #include "app/Menus.h"
+#include "app/HudLayout.h"
 
 #include "app/AudioSystem.h"
 #include "app/GameScene.h"
@@ -489,6 +490,12 @@ bool SettingsScene::init()
     addChild(field, 5);
     yr -= 24;
 
+    auto* editBtn = style::pill("EDIT BUTTON PLACEMENT", {colW - 6, 24}, [] {
+        Director::getInstance()->pushScene(TransitionFade::create(0.2f, utils::createInstance<ButtonEditorScene>()));
+    }, Color3B(90, 90, 160));
+    editBtn->setPosition(left, yl - 6);
+    addChild(editBtn, 5);
+
     auto* exp = style::pill("EXPORT SAVE", {colW / 2 - 3, 24}, [] { SaveStore::get().exportToFile(); }, Color3B(90, 90, 160));
     exp->setPosition(right - colW / 4 - 1.5f, yr);
     addChild(exp, 5);
@@ -516,6 +523,90 @@ void SettingsScene::onExit()
     Scene::onExit();
     SaveStore::get().onTransfer = nullptr;
     SaveStore::get().commit();
+}
+
+// ============================== Button placement editor ============================================
+
+bool ButtonEditorScene::init()
+{
+    if (!Scene::init())
+        return false;
+    addChild(style::background(), -10);
+    auto* title = style::text("DRAG THE BUTTONS WHERE YOUR THUMBS REACH", 12, style::kAccent);
+    title->setPosition(origin().x + screen().width / 2, origin().y + screen().height - 16);
+    addChild(title, 5);
+    static const char* frames[5] = {"meleeBtn.png", "grenadeBtn.png", "zoomBtn.png", "ammoBtn.png", "wepChangeBtn.png"};
+    static const float scales[5] = {0.8f, 0.8f, 0.8f, 0.8f, 1.0f};
+    const auto& cfg = SaveStore::get().data().settings;
+    _touch.fill(-1);
+    for (int i = 0; i < 5; ++i)
+    {
+        auto* s = Sprite::createWithSpriteFrameName(frames[i]);
+        if (!s)
+            s = Sprite::create();
+        s->setScale(scales[i]);
+        s->setPosition(origin() + hud::pos(i, screen(), cfg));
+        addChild(s, 2);
+        _buttons[i] = s;
+    }
+    // A hint of the two sticks so the layout can be judged.
+    for (float x : {75.0f, screen().width - 75.0f})
+    {
+        auto* ring = DrawNode::create();
+        ring->drawCircle(Vec2(origin().x + x, origin().y + 75), 40, 0, 24, false, Color4F(1, 1, 1, 0.35f));
+        addChild(ring, 1);
+    }
+    auto* l = EventListenerTouchAllAtOnce::create();
+    l->onTouchesBegan = [this](const std::vector<Touch*>& ts, Event*) {
+        for (auto* t : ts)
+            for (int i = 0; i < 5; ++i)
+                if (_touch[i] < 0 && _buttons[i]->getPosition().distance(t->getLocation()) < 34)
+                {
+                    _touch[i] = t->getID();
+                    break;
+                }
+    };
+    l->onTouchesMoved = [this](const std::vector<Touch*>& ts, Event*) {
+        for (auto* t : ts)
+            for (int i = 0; i < 5; ++i)
+                if (_touch[i] == t->getID())
+                {
+                    auto p = t->getLocation();
+                    p.x = std::clamp(p.x, origin().x + 20, origin().x + screen().width - 20);
+                    p.y = std::clamp(p.y, origin().y + 20, origin().y + screen().height - 20);
+                    _buttons[i]->setPosition(p);
+                }
+    };
+    l->onTouchesEnded = [this](const std::vector<Touch*>& ts, Event*) {
+        for (auto* t : ts)
+            for (int i = 0; i < 5; ++i)
+                if (_touch[i] == t->getID())
+                    _touch[i] = -1;
+    };
+    l->onTouchesCancelled = l->onTouchesEnded;
+    _eventDispatcher->addEventListenerWithSceneGraphPriority(l, this);
+
+    auto reset = style::pill("RESET", {110, 28}, [this] {
+        for (int i = 0; i < 5; ++i)
+            _buttons[i]->setPosition(origin() + hud::defaultPos(i, screen()));
+    }, Color3B(160, 90, 70));
+    reset->setPosition(origin().x + screen().width / 2 - 62, origin().y + 26);
+    addChild(reset, 5);
+    auto done = style::pill("SAVE", {110, 28}, [this] {
+        auto& cfg = SaveStore::get().data().settings;
+        for (int i = 0; i < 5; ++i)
+        {
+            const Vec2 d = _buttons[i]->getPosition() - origin() - hud::defaultPos(i, screen());
+            cfg.buttonOffset[i * 2]     = static_cast<int>(std::lround(d.x));
+            cfg.buttonOffset[i * 2 + 1] = static_cast<int>(std::lround(d.y));
+        }
+        SaveStore::get().commit();
+        Director::getInstance()->popScene();
+    }, style::kGood);
+    done->setPosition(origin().x + screen().width / 2 + 62, origin().y + 26);
+    addChild(done, 5);
+    style::onBack(this, [] { Director::getInstance()->popScene(); });
+    return true;
 }
 
 // ============================== What's new / About ===================================================

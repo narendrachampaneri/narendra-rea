@@ -14,6 +14,7 @@
 #include "game/Match.h"
 #include "game/Driver.h"
 #include "game/Modes.h"
+#include "app/ControllerInput.h"
 
 namespace mm::app
 {
@@ -73,6 +74,7 @@ private:
     int _coinsEarned = 0;
     void record();
     game::Joypad _pad;
+    ControllerInput _controller;
     FixedStepper _stepper{1.0f / 60.0f, 5};
 
     ax::Node* _scaleLayer   = nullptr;  // the original's scaleLayer: centred, zoomed
@@ -120,6 +122,7 @@ private:
 
     bool _paused        = false;
     bool _leaving       = false;
+    bool _controllerAttached = false;
 };
 
 }  // namespace mm::app
