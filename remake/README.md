@@ -22,6 +22,7 @@ continues from the next unfinished milestone. Private project: never publish to 
 | M2 | Assets | done on `remake/m2-assets` (branched from M1): `Remake build` green; awaiting phone check and owner merge |
 | M3 | Single-device slice | **done on `remake/m3-slice` (branched from M2): playable from QUICK PLAY; awaiting green `Remake build`, phone check and owner merge** |
 | M4 | Full single-device game | **built on `remake/m4-game` (branched from M3); awaiting green `Remake build`, phone check and owner merge. dual wield, gas/proximity grenades and drones are left for M7 (see "What works (M4)")** |
+| M16 | Survival hawk drones | **on `remake/m16-drones` (from M15)** |
 | M15 | Pro Pack dual wield | **on `remake/m15-dualwield` (from M14)** |
 | M14 | Laser sight, quality effect levels | **on `remake/m14-laser-prox` (from M13)** |
 | M13 | Gas grenades | **on `remake/m13-grenades` (from M12)** |
@@ -37,6 +38,9 @@ continues from the next unfinished milestone. Private project: never publish to 
 | M7 | Performance and polish | not started |
 | M8 | Release v1 | not started |
 
+## What works (M16: Survival drones)
+- Solo Survival: from wave 3, 1 hawk drone per two waves (up to 4) joins each wave: 50 health, an Uzi, hovers about 90 points above its target on the jetpack and swoops when its tank is dry. The original's three drone kinds (hawk, worm, humanoid) were not recovered, so this is one new "hawk" only. Worm and humanoid drones are not built.
+
 ## What works (M15: Pro Pack dual wield)
 - Owning the Pro Pack (3,000 Coins) lets you carry two handguns that fire together: hold a handgun (Desert Eagle, Magnum, ...) with another handgun as the second weapon (the Golden Eagle upgrade supplies one, or pick one up). Each gun spends its own ammo; RELOAD reloads both; the second gun is drawn in the other hand.
 - The Pro Pack travels as bit 14 of the Wi-Fi upgrade mask, so the host simulates it for guests too. Other phones do not yet draw a guest's second gun (the snapshot does not carry it).
@@ -45,7 +49,7 @@ continues from the next unfinished milestone. Private project: never publish to 
 ## What works (M14: laser sight and effect levels)
 - Laser Sight upgrade: a thin red beam from the muzzle to the first wall for the weapons that support it (AK47, M16, shotgun, Golden Eagle, sniper). The beam is drawn in a new style.
 - Graphics quality now also scales effects: Smooth drops small blood bursts and shrapnel and keeps at most 8 blood bursts alive; Medium (and Auto) 20; High / Extreme 40.
-- Still open: proximity grenades (no grenade pick-ups exist yet), masks, Survival drones, map vote, QR joining, an actual 4 GB memory measurement.
+- Still open: proximity grenades (no grenade pick-ups exist yet), masks, map vote, QR joining, an actual 4 GB memory measurement.
 
 ## What works (M13: gas grenade)
 - Buying the Gas Grenade upgrade turns every grenade you throw into a gas grenade: a green cloud (80 points wide, 6 s, 14 damage a second) that hurts everyone inside except you and your team mates. Cloud size and damage are NEW values (the original only has the upgrade flag). Other phones see the cloud through a new `Gas` event (LAN-PROTOCOL.md event kind 9).

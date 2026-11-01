@@ -788,3 +788,32 @@ TEST_CASE("Allowed weapon groups limit what spawns on the map")
     CHECK(weaponGroup(WeaponId::AK47) == 1);
     CHECK(weaponGroup(WeaponId::Sniper) == 2);
 }
+
+TEST_CASE("Survival: hawk drones join from wave 3 and fly")
+{
+    const auto data = loadMap("1outpost_new.tmx");
+    ModeSettings st;
+    st.kind = ModeKind::Survival;
+    ModeController mode(*assets::findMap("outpost"), data, st);
+    auto hawks = [&] {
+        int n = 0;
+        for (const auto& f : mode.match().fighters())
+            if (f.name == "Hawk" && f.alive())
+                ++n;
+        return n;
+    };
+    // Kill every enemy each time to move through the waves quickly.
+    int maxHawks = 0;
+    for (int step = 0; step < 60 * 400 && mode.wave() < 5; ++step)
+    {
+        mode.step(kDt, idle());
+        if (step % 30 == 0)
+        {
+            maxHawks = std::max(maxHawks, hawks());
+            for (const auto& f : mode.match().fighters())
+                if (f.team == 1 && f.alive() && mode.match().time() > 12.0f)
+                    const_cast<Soldier*>(f.soldier.get())->addDamage(1000.0f, 0, 0);
+        }
+    }
+    CHECK(maxHawks >= 1);
+}

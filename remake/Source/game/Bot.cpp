@@ -128,4 +128,37 @@ Brain makeBotBrain(BotSkill skill, std::uint32_t seed)
     };
 }
 
+Brain makeDroneBrain(std::uint32_t seed)
+{
+    auto base = makeBotBrain(BotSkill{10.0f, 0.5f, 500.0f}, seed);
+    return [base](const Match& m, const Fighter& me) -> PadState {
+        PadState pad = base(m, me);
+        if (!me.alive())
+            return pad;
+        const Soldier& self = *me.soldier;
+        const Fighter* best = nullptr;
+        float bestDist      = 1e9f;
+        for (const auto& f : m.fighters())
+        {
+            if (f.id == me.id || !f.alive() || (me.team != 0 && f.team == me.team))
+                continue;
+            const float d = (f.soldier->position() - self.position()).length();
+            if (d < bestDist)
+            {
+                bestDist = d;
+                best     = &f;
+            }
+        }
+        if (!best)
+            return pad;
+        const Vec2 d = best->soldier->position() - self.position();
+        float moveX  = std::fabs(d.x) > 140.0f ? (d.x > 0 ? 1.0f : -1.0f) : 0.0f;
+        const bool up = d.y + 90.0f > 0.0f && self.power() >= 5.0f;  // below the hover height
+        pad.moveOffset  = {moveX, up ? 1.0f : 0.0f};
+        pad.moveVector  = pad.moveOffset * rules::kPadRadius;
+        pad.moveTouched = moveX != 0.0f || up;
+        return pad;
+    };
+}
+
 }  // namespace mm::game

@@ -20,4 +20,9 @@ struct BotSkill
 // Returns a brain for Match::addBot. Each call makes an independent bot.
 Brain makeBotBrain(BotSkill skill, std::uint32_t seed);
 
+// NEW (M16): the Survival "hawk" drone. The original's drones (hawk, worm, humanoid) are not
+// recovered; this one is a bot that hovers about 90 points above its target on the jetpack,
+// swooping when the tank runs dry, and shoots with a wide aim error.
+Brain makeDroneBrain(std::uint32_t seed);
+
 }  // namespace mm::game

@@ -80,6 +80,15 @@ void ModeController::spawnWave()
     _bannerTime = 2.5f;
     for (int i = 0; i < waveSize(_wave); ++i)
         _match->addBot("Enemy", makeBotBrain(skillFor(_settings.difficulty, _wave), _settings.seed * 17 + _ids++), 1);
+    // NEW (M16): from wave 3 on, hawk drones join the wave: weaker, armed with an Uzi, hovering.
+    const int drones = std::min(4, std::max(0, (_wave - 1) / 2));
+    for (int i = 0; i < drones; ++i)
+    {
+        const int id = _match->addBot("Hawk", makeDroneBrain(_settings.seed * 29 + _ids++), 1);
+        _match->giveWeapon(id, WeaponId::Uzi);
+        if (Fighter* f = _match->fighter(id); f && f->soldier)
+            f->soldier->setHealth(50.0f);
+    }
     _enemyBase = static_cast<int>(_match->fighters().size());
 }
 
