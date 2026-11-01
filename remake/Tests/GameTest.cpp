@@ -817,3 +817,28 @@ TEST_CASE("Survival: hawk drones join from wave 3 and fly")
     }
     CHECK(maxHawks >= 1);
 }
+
+TEST_CASE("Survival: worms from wave 2 and humanoids from wave 4")
+{
+    const auto data = loadMap("1outpost_new.tmx");
+    ModeSettings st;
+    st.kind = ModeKind::Survival;
+    ModeController mode(*assets::findMap("outpost"), data, st);
+    bool worm = false, humanoid = false;
+    for (int step = 0; step < 60 * 600 && mode.wave() < 6; ++step)
+    {
+        mode.step(kDt, idle());
+        if (step % 30 == 0)
+        {
+            for (const auto& f : mode.match().fighters())
+            {
+                worm |= f.name == "Worm";
+                humanoid |= f.name == "Humanoid";
+                if (f.team == 1 && f.alive() && mode.match().time() > 12.0f)
+                    const_cast<Soldier*>(f.soldier.get())->addDamage(1000.0f, 0, 0);
+            }
+        }
+    }
+    CHECK(worm);
+    CHECK(humanoid);
+}

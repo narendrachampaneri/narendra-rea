@@ -80,6 +80,8 @@ bool SoldierView::init(const save::Avatar& avatar)
     _head = Node::create();
     _head->setPosition(0, 27);
     _head->addChild(part("head" + std::to_string(avatar.head) + ".png", {0.5f, 0.2f}));
+    if (avatar.mask > 0)  // Mask Pack: one of the original faceType quads over the face
+        _head->addChild(part("faceType" + std::to_string(avatar.mask) + ".png", {0.5f, 0.2f}), 1);
     _root->addChild(_head, 4);
 
     _weaponArm = Node::create();

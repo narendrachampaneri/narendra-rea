@@ -236,29 +236,34 @@ bool AvatarScene::init()
     addChild(style::heading("AVATAR"), 5);
     addBack(this);
 
-    const char* names[4] = {"HEAD", "BODY", "ARMS", "LEGS"};
-    const int counts[4]  = {save::kHeads, save::kBodies, save::kArms, save::kLegs};
+    const char* names[5] = {"HEAD", "BODY", "ARMS", "LEGS", "MASK"};
+    const int counts[5]  = {save::kHeads, save::kBodies, save::kArms, save::kLegs, save::kMasks};
     auto part = [](int row) -> int& {
         auto& a = SaveStore::get().data().avatar;
-        return row == 0 ? a.head : row == 1 ? a.body : row == 2 ? a.arm : a.leg;
+        return row == 0 ? a.head : row == 1 ? a.body : row == 2 ? a.arm : row == 3 ? a.leg : a.mask;
     };
-    for (int row = 0; row < 4; ++row)
+    for (int row = 0; row < 5; ++row)
     {
-        const float y = origin().y + screen().height - 80 - row * 44;
+        const float y = origin().y + screen().height - 76 - row * 38;
         const float x = origin().x + screen().width * 0.68f;
         auto lbl = style::text(names[row], 12, style::kAccent);
         lbl->setPosition(x, y + 16);
         addChild(lbl, 5);
         auto prev = style::pill("<", {40, 28}, [this, row, part, counts] {
+            if (row == 4 && !maskUnlocked())
+                return;
             int& v = part(row);
-            v = v == 1 ? counts[row] : v - 1;
+            const int lo = row == 4 ? 0 : 1;
+            v = v == lo ? counts[row] : v - 1;
             rebuildPreview();
         });
         prev->setPosition(x - 62, y - 6);
         addChild(prev, 5);
         auto next = style::pill(">", {40, 28}, [this, row, part, counts] {
+            if (row == 4 && !maskUnlocked())
+                return;
             int& v = part(row);
-            v = v == counts[row] ? 1 : v + 1;
+            v = v == counts[row] ? (row == 4 ? 0 : 1) : v + 1;
             rebuildPreview();
         });
         next->setPosition(x + 62, y - 6);
@@ -273,6 +278,7 @@ bool AvatarScene::init()
         a.body  = random(1, save::kBodies);
         a.arm   = random(1, save::kArms);
         a.leg   = random(1, save::kLegs);
+        a.mask  = maskUnlocked() ? random(0, save::kMasks) : 0;
         rebuildPreview();
     }, Color3B(90, 90, 160));
     randomBtn->setPosition(origin().x + screen().width * 0.68f - 66, origin().y + 40);
@@ -297,6 +303,12 @@ void AvatarScene::onEnter()
     platform::setGameHandlesBack(true);
 }
 
+bool AvatarScene::maskUnlocked()
+{
+    const auto& d = SaveStore::get().data();
+    return d.proPack && ((d.upgrades >> economy::MaskPack1) & 1);  // Mask Pack needs the Pro Pack
+}
+
 void AvatarScene::rebuildPreview()
 {
     if (_preview)
@@ -311,6 +323,8 @@ void AvatarScene::rebuildPreview()
     _rows[1]->setString(std::to_string(a.body) + " / " + std::to_string(save::kBodies));
     _rows[2]->setString(std::to_string(a.arm) + " / " + std::to_string(save::kArms));
     _rows[3]->setString(std::to_string(a.leg) + " / " + std::to_string(save::kLegs));
+    _rows[4]->setString(!maskUnlocked() ? "LOCKED (store: Mask Pack)"
+                                        : (a.mask == 0 ? std::string("NONE") : std::to_string(a.mask) + " / " + std::to_string(save::kMasks)));
 }
 
 // ============================== leaderboards ========================================================
@@ -495,6 +509,8 @@ bool SettingsScene::init()
     }, Color3B(90, 90, 160));
     editBtn->setPosition(left, yl - 6);
     addChild(editBtn, 5);
+    yl -= 30;
+    addToggle(left, yl, "FPS STATS", cfg.showStats);
 
     auto* exp = style::pill("EXPORT SAVE", {colW / 2 - 3, 24}, [] { SaveStore::get().exportToFile(); }, Color3B(90, 90, 160));
     exp->setPosition(right - colW / 4 - 1.5f, yr);

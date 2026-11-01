@@ -29,7 +29,7 @@ TEST_CASE("Save text round-trips every field")
     d.settings.centredCamera = true; d.settings.leftHanded = true; d.settings.autoFire = true; d.settings.vibration = false;
     d.settings.sensitivity = 130; d.settings.quickMessages = false; d.settings.quality = Quality::Extreme; d.settings.frameRate = 120; d.settings.qualityAuto = false;
     d.stats = {120, 80, 14, 7, 5600, 4, 22, 123456};
-    d.settings.crosshair = 2; d.settings.buttonOffset = {-20, 15, 0, 0, 40, -30, 5, 5, -400, 400};
+    d.avatar.mask = 3; d.settings.showStats = true; d.settings.crosshair = 2; d.settings.buttonOffset = {-20, 15, 0, 0, 40, -30, 5, 5, -400, 400};
     d.friends["Ann"] = {10, 4, 3};
     d.friends["Bo Jr"] = {1, 9, 1};
     d.lastSeenVersion = "0.6.0";

@@ -75,7 +75,10 @@ void SaveStore::applySettings()
     AudioSystem::get().setEffectsVolume(s.soundVolume / 100.0f);
     AudioSystem::get().setMusicVolume(s.musicVolume / 100.0f);
     if (auto* director = ax::Director::getInstance(); director && director->getRenderView())
+    {
         director->setAnimationInterval(1.0f / static_cast<float>(s.frameRate));
+        director->setStatsDisplay(s.showStats);
+    }
 }
 
 SaveStore::MatchSummary SaveStore::recordMatch(economy::MatchKind kind, game::GameDriver& driver, float seconds, int wave, int score)

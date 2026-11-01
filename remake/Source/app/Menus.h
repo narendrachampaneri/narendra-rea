@@ -54,7 +54,8 @@ public:
 private:
     void rebuildPreview();
     ax::Node* _preview = nullptr;
-    ax::Label* _rows[4] = {};
+    ax::Label* _rows[5] = {};
+    static bool maskUnlocked();
 };
 
 class LeaderboardsScene : public ax::Scene

@@ -45,14 +45,14 @@ std::string toText(const SaveData& d)
     o << "coins " << d.coins << "\n";
     o << "upgrades " << d.upgrades << "\n";
     o << "pro " << d.proPack << "\n";
-    o << "avatar " << d.avatar.head << ' ' << d.avatar.body << ' ' << d.avatar.arm << ' ' << d.avatar.leg << "\n";
+    o << "avatar " << d.avatar.head << ' ' << d.avatar.body << ' ' << d.avatar.arm << ' ' << d.avatar.leg << ' ' << d.avatar.mask << "\n";
     const Settings& s = d.settings;
     o << "settings " << s.soundVolume << ' ' << s.musicVolume << ' ' << s.blood << ' ' << s.bloodColour << ' '
       << s.centredCamera << ' ' << s.leftHanded << ' ' << s.autoFire << ' ' << s.vibration << ' ' << s.sensitivity
       << ' ' << s.quickMessages << ' ' << static_cast<int>(s.quality) << ' ' << s.frameRate << ' ' << s.qualityAuto << ' ' << s.crosshair;
     for (int off : s.buttonOffset)
         o << ' ' << off;
-    o << "\n";
+    o << ' ' << s.showStats << "\n";
     const Stats& t = d.stats;
     o << "stats " << t.kills << ' ' << t.deaths << ' ' << t.matches << ' ' << t.bestSurvivalWave << ' '
       << t.bestSurvivalScore << ' ' << t.bestCoopWave << ' ' << t.bestDeathmatchKills << ' ' << t.playSeconds << "\n";
@@ -105,6 +105,9 @@ std::optional<SaveData> fromText(std::string_view text)
             d.avatar.body = std::clamp(d.avatar.body, 1, kBodies);
             d.avatar.arm  = std::clamp(d.avatar.arm, 1, kArms);
             d.avatar.leg  = std::clamp(d.avatar.leg, 1, kLegs);
+            if (!(v >> d.avatar.mask))
+                d.avatar.mask = 0;
+            d.avatar.mask = std::clamp(d.avatar.mask, 0, kMasks);
         }
         else if (key == "settings")
         {
@@ -124,6 +127,9 @@ std::optional<SaveData> fromText(std::string_view text)
                     o = 0;
                 o = std::clamp(o, -400, 400);
             }
+            int stats = 0;
+            if (v >> stats)
+                s.showStats = stats != 0;
             s.blood = blood; s.centredCamera = centred; s.leftHanded = left; s.autoFire = auto_;
             s.vibration = vib; s.quickMessages = qm;
             s.soundVolume = std::clamp(s.soundVolume, 0, 100);

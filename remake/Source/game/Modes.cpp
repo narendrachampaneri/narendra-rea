@@ -89,6 +89,23 @@ void ModeController::spawnWave()
         if (Fighter* f = _match->fighter(id); f && f->soldier)
             f->soldier->setHealth(50.0f);
     }
+    // NEW (M18) defaults for the original's other two drone kinds, which were not recovered:
+    // "Worm" (wave 2+): fast ground crawler with a machete, 40 health;
+    // "Humanoid" (wave 4+): armoured soldier with a shotgun, 150 health.
+    for (int i = 0; i < std::min(3, _wave / 2); ++i)
+    {
+        const int id = _match->addBot("Worm", makeBotBrain(BotSkill{14.0f, 0.2f, 70.0f}, _settings.seed * 37 + _ids++), 1);
+        _match->giveWeapon(id, WeaponId::Machete);
+        if (Fighter* f = _match->fighter(id); f && f->soldier)
+            f->soldier->setHealth(40.0f);
+    }
+    for (int i = 0; i < std::min(2, _wave / 4); ++i)
+    {
+        const int id = _match->addBot("Humanoid", makeBotBrain(skillFor(_settings.difficulty, _wave), _settings.seed * 41 + _ids++), 1);
+        _match->giveWeapon(id, WeaponId::Shotgun);
+        if (Fighter* f = _match->fighter(id); f && f->soldier)
+            f->soldier->setHealth(150.0f);
+    }
     _enemyBase = static_cast<int>(_match->fighters().size());
 }
 

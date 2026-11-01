@@ -20,8 +20,10 @@ struct Avatar
 {
     // Indices into the original menuTexture skin quads (head1..16, body1..17, arm1..17, leg1..16).
     int head = 1, body = 1, arm = 1, leg = 1;
+    int mask = 0;  // NEW (M18): 0 none, 1..4 = faceType1..4 (Mask Pack upgrade)
     bool operator==(const Avatar&) const = default;
 };
+constexpr int kMasks = 4;
 constexpr int kHeads = 16, kBodies = 17, kArms = 17, kLegs = 16;
 
 enum class Quality : std::uint8_t { Smooth, Medium, High, Extreme };
@@ -45,6 +47,7 @@ struct Settings
     // NEW (M12): button-placement editor. Offsets in points from the default place of
     // melee, grenade, zoom, reload, pick-up (x then y each); 0 = original placement.
     std::array<int, 10> buttonOffset{};
+    bool showStats = false;  // NEW (M18): FPS / draw-call counters on screen (for the 4 GB phone checks)
     bool operator==(const Settings&) const = default;
 };
 constexpr std::array<std::array<std::uint8_t, 3>, 5> kBloodColours{{{200, 20, 20}, {40, 200, 60}, {60, 120, 255}, {240, 200, 40}, {255, 255, 255}}};
