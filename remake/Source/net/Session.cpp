@@ -24,6 +24,7 @@ PadState padFromInput(const Input& in)
     p.switchWeapon = in.bits & kSwitch;
     p.pickUp      = in.bits & kPickUp;
     p.zoom        = in.bits & kZoom;
+    p.mine        = in.bits & kMine;
     return p;
 }
 
@@ -33,7 +34,7 @@ Input inputFromPad(const PadState& p, std::uint32_t seq)
     in.seq   = seq;
     in.bits  = (p.firing ? kFire : 0) | (p.moveTouched ? kTouched : 0) | (p.melee ? kMelee : 0) |
                (p.grenade ? kGrenade : 0) | (p.reload ? kReload : 0) | (p.switchWeapon ? kSwitch : 0) |
-               (p.pickUp ? kPickUp : 0) | (p.zoom ? kZoom : 0);
+               (p.pickUp ? kPickUp : 0) | (p.zoom ? kZoom : 0) | (p.mine ? kMine : 0);
     in.moveX = static_cast<std::int8_t>(std::clamp(std::lround(p.moveOffset.x * 100.0f), -100L, 100L));
     in.moveY = static_cast<std::int8_t>(std::clamp(std::lround(p.moveOffset.y * 100.0f), -100L, 100L));
     float a  = std::fmod(p.aimAngle, 360.0f);
@@ -56,6 +57,7 @@ Event toNet(const GameEvent& g)
     case EventType::Blood: e.kind = EventKind::Blood; break;
     case EventType::Throw: e.kind = EventKind::Throw; break;
     case EventType::Gas: e.kind = EventKind::Gas; break;
+    case EventType::Mine: e.kind = EventKind::Mine; break;
     }
     e.sound   = static_cast<std::uint8_t>(g.sound);
     e.fighter = g.fighter < 0 ? 255 : static_cast<std::uint8_t>(g.fighter);
@@ -77,6 +79,7 @@ GameEvent fromNet(const Event& e)
     case EventKind::Blood: g.type = EventType::Blood; break;
     case EventKind::Throw: g.type = EventType::Throw; break;
     case EventKind::Gas: g.type = EventType::Gas; break;
+    case EventKind::Mine: g.type = EventType::Mine; break;
     default: g.type = EventType::Sound; break;
     }
     g.sound   = static_cast<audio::SoundId>(std::min<int>(e.sound, 97));

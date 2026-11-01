@@ -295,6 +295,16 @@ void GameScene::buildHud()
     _grenadeCount->setPosition(_grenadeBtn->getContentSize().width - 8, 8);
     _grenadeCount->enableOutline(Color4B::BLACK, 1);
     _grenadeBtn->addChild(_grenadeCount);
+    // Proximity mine button (NEW, M18): a green-tinted grenade button.
+    _mineBtn = Sprite::createWithSpriteFrameName("grenadeBtn.png");
+    _mineBtn->setScale(0.8f);
+    _mineBtn->setColor(Color3B(120, 255, 120));
+    _mineBtn->setPosition(hud::pos(hud::kMine, visible, SaveStore::get().data().settings));
+    _hud->addChild(_mineBtn, 1);
+    _mineCount = Label::createWithTTF("1", "fonts/arial.ttf", 11);
+    _mineCount->setPosition(_mineBtn->getContentSize().width - 8, 8);
+    _mineCount->enableOutline(Color4B::BLACK, 1);
+    _mineBtn->addChild(_mineCount);
     if (_networked && SaveStore::get().data().settings.quickMessages)
     {
         _chatBtn = Sprite::createWithSpriteFrameName("msg.png");
@@ -398,6 +408,7 @@ std::vector<std::pair<int, Vec2>> GameScene::buttonsAt() const
                                           {kReload, _reload->getPosition()},
                                           {kMelee, _melee->getPosition()},
                                           {kGrenade, _grenadeBtn->getPosition()},
+                                          {kMine, _mineBtn->getPosition()},
                                           {kZoom, _zoom->getPosition()},
                                           {kSwitch, _ammoFrame->getPosition() + Vec2(_ammoFrame->getContentSize().width / 2,
                                                                                     -_ammoFrame->getContentSize().height / 2)}};
@@ -437,6 +448,7 @@ void GameScene::onTouchesEnded(const std::vector<Touch*>& touches, Event*)
             case kSwitch: _pressed.switchWeapon = true; break;
             case kPickUp: _pressed.pickUp = true; break;
             case kGrenade: _pressed.grenade = true; break;
+            case kMine: _pressed.mine = true; break;
             case kChat:
                 addChild(ui::quickChatGrid([](int m) { NetContext::get().sendChat(m); }), kZPause);
                 break;
@@ -496,6 +508,7 @@ void GameScene::update(float dt)
         in.switchWeapon = std::exchange(_pressed.switchWeapon, false);
         in.pickUp       = std::exchange(_pressed.pickUp, false);
         in.grenade      = std::exchange(_pressed.grenade, false);
+        in.mine         = std::exchange(_pressed.mine, false);
         _controller.apply(in);
         _driver->step(_stepper.step(), in);
         // Camera smoothing runs per step like Stage::updateView did per frame at 60 fps.
@@ -736,6 +749,20 @@ void GameScene::handleEvents()
         case game::EventType::Explosion:
             spawnExplosion(e.pos);
             break;
+        case game::EventType::Mine:
+        {
+            // A small blinking mine on the ground; it goes when an explosion happens at its spot.
+            auto* mine = Sprite::createWithSpriteFrameName("grenadeBtn.png");
+            if (!mine)
+                mine = Sprite::create();
+            mine->setScale(0.35f);
+            mine->setColor(Color3B(120, 255, 120));
+            mine->setPosition(toAx(e.pos));
+            mine->runAction(RepeatForever::create(Sequence::create(FadeTo::create(0.4f, 120), FadeTo::create(0.4f, 255), nullptr)));
+            _map->addChild(mine, MapView::kZEntities);
+            _mineViews.push_back(mine);
+            break;
+        }
         case game::EventType::Gas:
         {
             // NEW (M13): a green cloud that swells, then fades over its lifetime.
@@ -882,6 +909,14 @@ void GameScene::syncRagdolls()
 
 void GameScene::spawnExplosion(const game::Vec2& pos)
 {
+    for (auto it = _mineViews.begin(); it != _mineViews.end();)
+        if ((*it)->getPosition().distance(toAx(pos)) < 6.0f)
+        {
+            (*it)->removeFromParent();
+            it = _mineViews.erase(it);
+        }
+        else
+            ++it;
     auto* e = ExplosionEffect::create();
     e->setPosition(toAx(pos));
     _map->addChild(e, MapView::kZFrontDecor);
@@ -910,6 +945,7 @@ void GameScene::updateHud()
             if (auto* frame = SpriteFrameCache::getInstance()->findFrame(item->weapon().def().sprite))
                 icon->setSpriteFrame(frame);
     _grenadeCount->setString(std::to_string(_match->player().grenades()));
+    _mineCount->setString(_match->player().isMirror() ? "" : std::to_string(_match->player().mines()));
     // Grenades and rockets in flight.
     auto sync = [this](std::vector<Sprite*>& views, const char* frame, std::size_t n, auto&& place) {
         while (views.size() < n)

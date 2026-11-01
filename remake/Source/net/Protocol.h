@@ -74,14 +74,14 @@ struct SetReady { bool ready = false; std::uint8_t team = 0; };
 struct StartMatch { std::uint32_t seed = 0; HostOptions options; std::vector<PlayerInfo> players; };
 
 // --- In the match --------------------------------------------------------------------------
-enum InputBits : std::uint8_t
+enum InputBits : std::uint16_t
 {
-    kFire = 1, kTouched = 2, kMelee = 4, kGrenade = 8, kReload = 16, kSwitch = 32, kPickUp = 64, kZoom = 128,
+    kFire = 1, kTouched = 2, kMelee = 4, kGrenade = 8, kReload = 16, kSwitch = 32, kPickUp = 64, kZoom = 128, kMine = 256,
 };
 struct Input
 {
     std::uint32_t seq = 0;
-    std::uint8_t bits = 0;
+    std::uint16_t bits = 0;
     std::int8_t moveX = 0, moveY = 0;  // stick offset * 100
     std::uint16_t aim = 0;             // clockwise degrees * 10 (0..3599)
 };
@@ -117,7 +117,7 @@ struct Snapshot
 struct ItemState { std::uint16_t uid = 0; std::uint8_t weapon = 0; float x = 0, y = 0; float angle = 0; };
 struct ItemList { std::vector<ItemState> items; };
 
-enum class EventKind : std::uint8_t { Sound = 1, Shot, Spark, Explosion, Death, Blood, Throw, Respawn, Gas };
+enum class EventKind : std::uint8_t { Sound = 1, Shot, Spark, Explosion, Death, Blood, Throw, Respawn, Gas, Mine };
 struct Event
 {
     EventKind kind = EventKind::Sound;

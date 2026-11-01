@@ -51,6 +51,7 @@ void ControllerInput::press(int key)
     case Controller::BUTTON_A: _edge.pickUp = true; break;
     case Controller::BUTTON_LEFT_SHOULDER: _edge.grenade = true; break;
     case Controller::BUTTON_RIGHT_THUMBSTICK: _edge.zoom = true; break;
+    case Controller::BUTTON_LEFT_THUMBSTICK: _edge.mine = true; break;
     case Controller::BUTTON_RIGHT_SHOULDER: _r1 = true; break;
     case Controller::BUTTON_START:
     case Controller::BUTTON_PAUSE:
@@ -81,6 +82,7 @@ void ControllerInput::apply(game::PadState& in)
     in.pickUp |= std::exchange(_edge.pickUp, false);
     in.grenade |= std::exchange(_edge.grenade, false);
     in.zoom |= std::exchange(_edge.zoom, false);
+    in.mine |= std::exchange(_edge.mine, false);
 }
 
 }  // namespace mm::app

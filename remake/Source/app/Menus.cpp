@@ -551,11 +551,11 @@ bool ButtonEditorScene::init()
     auto* title = style::text("DRAG THE BUTTONS WHERE YOUR THUMBS REACH", 12, style::kAccent);
     title->setPosition(origin().x + screen().width / 2, origin().y + screen().height - 16);
     addChild(title, 5);
-    static const char* frames[5] = {"meleeBtn.png", "grenadeBtn.png", "zoomBtn.png", "ammoBtn.png", "wepChangeBtn.png"};
-    static const float scales[5] = {0.8f, 0.8f, 0.8f, 0.8f, 1.0f};
+    static const char* frames[6] = {"meleeBtn.png", "grenadeBtn.png", "zoomBtn.png", "ammoBtn.png", "wepChangeBtn.png", "grenadeBtn.png"};
+    static const float scales[6] = {0.8f, 0.8f, 0.8f, 0.8f, 1.0f, 0.8f};
     const auto& cfg = SaveStore::get().data().settings;
     _touch.fill(-1);
-    for (int i = 0; i < 5; ++i)
+    for (int i = 0; i < 6; ++i)
     {
         auto* s = Sprite::createWithSpriteFrameName(frames[i]);
         if (!s)
@@ -575,7 +575,7 @@ bool ButtonEditorScene::init()
     auto* l = EventListenerTouchAllAtOnce::create();
     l->onTouchesBegan = [this](const std::vector<Touch*>& ts, Event*) {
         for (auto* t : ts)
-            for (int i = 0; i < 5; ++i)
+            for (int i = 0; i < 6; ++i)
                 if (_touch[i] < 0 && _buttons[i]->getPosition().distance(t->getLocation()) < 34)
                 {
                     _touch[i] = t->getID();
@@ -584,7 +584,7 @@ bool ButtonEditorScene::init()
     };
     l->onTouchesMoved = [this](const std::vector<Touch*>& ts, Event*) {
         for (auto* t : ts)
-            for (int i = 0; i < 5; ++i)
+            for (int i = 0; i < 6; ++i)
                 if (_touch[i] == t->getID())
                 {
                     auto p = t->getLocation();
@@ -595,7 +595,7 @@ bool ButtonEditorScene::init()
     };
     l->onTouchesEnded = [this](const std::vector<Touch*>& ts, Event*) {
         for (auto* t : ts)
-            for (int i = 0; i < 5; ++i)
+            for (int i = 0; i < 6; ++i)
                 if (_touch[i] == t->getID())
                     _touch[i] = -1;
     };
@@ -603,14 +603,14 @@ bool ButtonEditorScene::init()
     _eventDispatcher->addEventListenerWithSceneGraphPriority(l, this);
 
     auto reset = style::pill("RESET", {110, 28}, [this] {
-        for (int i = 0; i < 5; ++i)
+        for (int i = 0; i < 6; ++i)
             _buttons[i]->setPosition(origin() + hud::defaultPos(i, screen()));
     }, Color3B(160, 90, 70));
     reset->setPosition(origin().x + screen().width / 2 - 62, origin().y + 26);
     addChild(reset, 5);
     auto done = style::pill("SAVE", {110, 28}, [this] {
         auto& cfg = SaveStore::get().data().settings;
-        for (int i = 0; i < 5; ++i)
+        for (int i = 0; i < 6; ++i)
         {
             const Vec2 d = _buttons[i]->getPosition() - origin() - hud::defaultPos(i, screen());
             cfg.buttonOffset[i * 2]     = static_cast<int>(std::lround(d.x));

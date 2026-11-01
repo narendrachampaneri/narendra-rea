@@ -18,7 +18,7 @@ struct PadState
     float aimAngle = 0.0f;     // Joypad::getFireAngle, clockwise degrees
     bool firing = false;       // Joypad::fire
     // HUD buttons pressed this step (one step each).
-    bool melee = false, switchWeapon = false, pickUp = false, reload = false, zoom = false, grenade = false;
+    bool melee = false, switchWeapon = false, pickUp = false, reload = false, zoom = false, grenade = false, mine = false;
 };
 
 class Joypad

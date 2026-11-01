@@ -19,6 +19,7 @@ enum class EventType
     Blood,      // a bullet hit a soldier at `pos`, flying along `dir`
     Throw,      // a grenade left a hand
     Gas,        // a gas cloud opened at `pos` (NEW, M13)
+    Mine,       // a proximity mine was placed at `pos` (NEW, M18)
 };
 
 struct GameEvent

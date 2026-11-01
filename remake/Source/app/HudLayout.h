@@ -9,7 +9,7 @@
 namespace mm::app::hud
 {
 
-enum ButtonIndex { kMelee = 0, kGrenade, kZoom, kReload, kPickUp, kCount };
+enum ButtonIndex { kMelee = 0, kGrenade, kZoom, kReload, kPickUp, kMine, kCount };
 
 inline ax::Vec2 defaultPos(int index, ax::Size visible)
 {
@@ -19,6 +19,7 @@ inline ax::Vec2 defaultPos(int index, ax::Size visible)
     case kGrenade: return {visible.width - 120, 70};
     case kZoom: return {34, visible.height - 34};
     case kReload: return {visible.width - 34, visible.height - 34};
+    case kMine: return {visible.width - 55, 105};
     default: return {visible.width - 120, 130};
     }
 }

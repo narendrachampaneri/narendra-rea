@@ -125,6 +125,8 @@ public:
     };
     struct GasCloud { Vec2 pos; float life = rules::kGasLife; int owner = -1; };
     const std::vector<GasCloud>& gasClouds() const { return _gas; }
+    struct Mine { Vec2 pos; float age = 0.0f; int owner = -1; };
+    const std::vector<Mine>& mines() const { return _mines; }
     struct Rocket
     {
         Vec2 pos, prev, velocity;
@@ -183,6 +185,8 @@ private:
     std::vector<std::unique_ptr<Grenade>> _grenades;
     std::vector<Rocket> _rockets;
     std::vector<GasCloud> _gas;
+    std::vector<Mine> _mines;
+    void placeMine(Fighter& f);
     std::vector<GrenadeView> _netGrenades;  // mirror only
     void throwGrenade(Fighter& f);
     void launchRocket(Fighter& f);

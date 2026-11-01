@@ -29,7 +29,7 @@ TEST_CASE("Save text round-trips every field")
     d.settings.centredCamera = true; d.settings.leftHanded = true; d.settings.autoFire = true; d.settings.vibration = false;
     d.settings.sensitivity = 130; d.settings.quickMessages = false; d.settings.quality = Quality::Extreme; d.settings.frameRate = 120; d.settings.qualityAuto = false;
     d.stats = {120, 80, 14, 7, 5600, 4, 22, 123456};
-    d.avatar.mask = 3; d.settings.showStats = true; d.settings.crosshair = 2; d.settings.buttonOffset = {-20, 15, 0, 0, 40, -30, 5, 5, -400, 400};
+    d.avatar.mask = 3; d.settings.showStats = true; d.settings.crosshair = 2; d.settings.buttonOffset = {-20, 15, 0, 0, 40, -30, 5, 5, -400, 400, 7, -7};
     d.friends["Ann"] = {10, 4, 3};
     d.friends["Bo Jr"] = {1, 9, 1};
     d.lastSeenVersion = "0.6.0";
@@ -288,4 +288,33 @@ TEST_CASE("Pro Pack dual wield: two handguns fire together, one does not")
             CHECK(s.secondary()->clip() == clip2);
     }
     CHECK(mm::economy::networkMask(mm::save::SaveData{}) == 0);
+}
+
+TEST_CASE("Proximity mine: arms after a second, hurts an enemy that walks in, never the owner")
+{
+    using namespace mm::game;
+    const auto data = loadOutpost();
+    Match m(*mm::assets::findMap("outpost"), data);
+    const int bot = m.addBot("Bot");
+    m.spawnFighter(bot);
+    for (int i = 0; i < 120; ++i)
+        m.step(1.0f / 60.0f, {});
+    PadState place;
+    place.mine = true;
+    m.step(1.0f / 60.0f, place);
+    REQUIRE(m.mines().size() == 1);
+    CHECK(m.player().mines() == 0);
+    m.step(1.0f / 60.0f, place);  // no second mine
+    CHECK(m.mines().size() == 1);
+    // The owner standing on it does not trigger it.
+    for (int i = 0; i < 120; ++i)
+        m.step(1.0f / 60.0f, {});
+    CHECK(m.mines().size() == 1);
+    CHECK(m.player().health() >= 99.0f);
+    // Put the bot on the mine: it goes off.
+    auto* b = m.fighter(bot)->soldier.get();
+    cpBodySetPosition(b->body(), cpv(m.mines()[0].pos.x, m.mines()[0].pos.y + 5));
+    for (int i = 0; i < 10; ++i)
+        m.step(1.0f / 60.0f, {});
+    CHECK(m.mines().empty());
 }

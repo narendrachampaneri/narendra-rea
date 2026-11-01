@@ -487,6 +487,30 @@ void Match::updateExplosives(float dt)
                                    }),
                     _grenades.end());
 
+    for (auto& mine : _mines)
+    {
+        mine.age += dt;
+        if (mine.age < rules::kMineArm && mine.age < rules::kMineLife)
+            continue;
+        bool boom = mine.age >= rules::kMineLife;
+        for (auto& f : _fighters)
+        {
+            if (!f.alive() || f.id == mine.owner)
+                continue;
+            if (!_options.friendlyFire && f.team != 0)
+                if (const Fighter* owner = fighter(mine.owner); owner && owner->team == f.team)
+                    continue;
+            if ((f.soldier->position() - mine.pos).length() < rules::kMineRadius)
+                boom = true;
+        }
+        if (boom)
+        {
+            explode(mine.pos, mine.owner, 2);
+            mine.age = -1000.0f;  // removed below
+        }
+    }
+    _mines.erase(std::remove_if(_mines.begin(), _mines.end(), [](const Mine& m) { return m.age < -999.0f; }), _mines.end());
+
     for (auto& c : _gas)
     {
         c.life -= dt;
@@ -563,6 +587,23 @@ float Match::gravityFactor() const
     return _def.gravityFactor * (_options.party.lowGravity ? rules::kPartyLowGravity : 1.0f);
 }
 
+void Match::placeMine(Fighter& f)
+{
+    Soldier& s = *f.soldier;
+    if (!s.takeMine())
+        return;
+    // Drops to the ground below the soldier.
+    const Vec2 p   = s.position();
+    const auto hit = _physics.segmentQuery(p, p + Vec2{0, -80}, rules::kTracerMapLayers);
+    Mine m;
+    m.pos   = hit ? hit.point + Vec2{0, 3} : p;
+    m.owner = f.id;
+    _mines.push_back(m);
+    GameEvent e{EventType::Mine};
+    e.pos = m.pos;
+    _events.push_back(e);
+}
+
 void Match::step(float dt, const PadState& pad)
 {
     dt = std::min(dt, rules::kMaxFrameDt);
@@ -606,6 +647,8 @@ void Match::step(float dt, const PadState& pad)
             s.switchWeapons();
         if (in.grenade)
             throwGrenade(f);
+        if (in.mine)
+            placeMine(f);
         if (in.zoom)
             s.weapon().nextZoom();
         if (in.melee || (in.firing && s.weapon().info() && s.weapon().info()->melee))

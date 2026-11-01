@@ -45,8 +45,8 @@ struct Settings
     int crosshair = 0;           // NEW (M7 extra): 0 none (original look), 1 dot, 2 cross, 3 ring
     int frameRate = 60;          // 30, 60, 90, 120
     // NEW (M12): button-placement editor. Offsets in points from the default place of
-    // melee, grenade, zoom, reload, pick-up (x then y each); 0 = original placement.
-    std::array<int, 10> buttonOffset{};
+    // melee, grenade, zoom, reload, pick-up, mine (x then y each); 0 = original placement.
+    std::array<int, 12> buttonOffset{};
     bool showStats = false;  // NEW (M18): FPS / draw-call counters on screen (for the 4 GB phone checks)
     bool operator==(const Settings&) const = default;
 };

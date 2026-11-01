@@ -104,6 +104,14 @@ public:
         --_grenades;
         return true;
     }
+    int mines() const { return _mines; }
+    bool takeMine()
+    {
+        if (_mines <= 0 || _dead)
+            return false;
+        --_mines;
+        return true;
+    }
     void applyKnockback(Vec2 impulse);
 
     // Multiplayer. A mirror soldier on a client does no simulation of its own: its body is
@@ -157,6 +165,7 @@ private:
     float _meleeTime    = 0.0f;          // +0x178
     float _meleeCharge  = 0.0f;          // +0x1e4
     int _grenades       = rules::kStartGrenades;
+    int _mines          = rules::kStartMines;
 
     Vec2 _joy;                   // +0x114: last pad offset
     float _fireAngle = 0.0f;     // +0x118 of the weapon / getFireAngle

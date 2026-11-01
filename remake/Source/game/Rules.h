@@ -143,6 +143,13 @@ constexpr float kExplosionLifetime  = 5.0f;
 // ---- Explosives (FRAGNADE, Explosion::applyDamage, ProjectileManager) -------------------
 constexpr float kGrenadeFuse      = 1.75f;    // FRAGNADE::updateItemStep
 constexpr float kGrenadeGravity   = -250.0f;  // FRAGNADE::initBody
+// Proximity mine (NEW in M18; the original has a proximity grenade pick-up, id 23, whose
+// numbers were not recovered): one per life, armed after 1 s, goes off when an enemy
+// comes within 50 points.
+constexpr int kStartMines      = 1;
+constexpr float kMineArm       = 1.0f;
+constexpr float kMineRadius    = 50.0f;
+constexpr float kMineLife      = 90.0f;
 constexpr int kStartGrenades      = 2;        // FRAGNADE +0x1e8 starting count
 constexpr float kExplosionRadius  = 125.0f;   // Explosion::applyDamage: soldiers closer than this
 constexpr float kExplosionDamage  = 100.0f;   // damage = max(10, 100 - 0.8 * distance)

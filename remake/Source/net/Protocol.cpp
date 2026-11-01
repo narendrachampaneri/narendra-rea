@@ -111,7 +111,7 @@ void put(Writer& w, const StartMatch& m) { w.u32(m.seed); putOptions(w, m.option
 void put(Writer& w, const Input& m)
 {
     w.u32(m.seq);
-    w.u8(m.bits);
+    w.u16(m.bits);
     w.u8(static_cast<std::uint8_t>(m.moveX));
     w.u8(static_cast<std::uint8_t>(m.moveY));
     w.u16(m.aim);
@@ -281,7 +281,7 @@ Message get(Reader& r, MsgType t, bool& ok)
     {
         Input m;
         m.seq   = r.u32();
-        m.bits  = r.u8();
+        m.bits  = r.u16();
         m.moveX = static_cast<std::int8_t>(r.u8());
         m.moveY = static_cast<std::int8_t>(r.u8());
         m.aim   = r.u16();

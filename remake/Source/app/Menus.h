@@ -41,8 +41,8 @@ public:
     bool init() override;
 
 private:
-    std::array<ax::Sprite*, 5> _buttons{};
-    std::array<int, 5> _touch{};
+    std::array<ax::Sprite*, 6> _buttons{};
+    std::array<int, 6> _touch{};
 };
 
 class AvatarScene : public ax::Scene
