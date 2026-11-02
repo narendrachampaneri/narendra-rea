@@ -326,7 +326,6 @@ bool ConfigureScene::init()
     auto save   = [] { SaveStore::get().commit(); SaveStore::get().applySettings(); };
     auto& cfg   = store.data().settings;
     MenuEntry twoX = button("2X VIEW", nullptr, false);
-    MenuEntry more = button("MORE OPTIONS", [] { go(utils::createInstance<SettingsScene>()); });
     buildListMenu(this,
                   {toggle("MUSIC", [&cfg] { return cfg.musicVolume > 0; },
                           [&cfg, save] { cfg.musicVolume = cfg.musicVolume > 0 ? 0 : 60; save(); }),
@@ -345,8 +344,14 @@ bool ConfigureScene::init()
                               save();
                               ui::toast(this, "Graphics change after you restart the game");
                           }),
-                   twoX, more},
+                   twoX},
                   false, goSettings);
+    // My extra options (volumes, frame rate, name, save export ...) as a small button, bottom right.
+    auto* more     = ui::panelButton("b03_sml.png", "OPTIONS", [](Object*) { go(utils::createInstance<SettingsScene>()); });
+    auto* moreMenu = Menu::create(more, nullptr);
+    const auto safe = Director::getInstance()->getSafeAreaRect();
+    moreMenu->setPosition(safe.getMaxX() - 12 - more->getContentSize().width / 2, safe.getMinY() + 12 + more->getContentSize().height / 2);
+    addChild(moreMenu, 6);
     return true;
 }
 void ConfigureScene::onEnter()
@@ -425,7 +430,7 @@ bool RankScene::init()
         icon->setPosition(cx - 120, origin.y + visible.height - 28);
         addChild(icon, 6);
     }
-    // Name box (the name is changed in MORE OPTIONS on the configure screen).
+    // Name box (the name is changed in OPTIONS on the configure screen).
     auto* nameBox = Sprite::createWithSpriteFrameName("b03_big.png");
     nameBox->setScale(0.8f);
     nameBox->setPosition(cx, origin.y + visible.height - 70);

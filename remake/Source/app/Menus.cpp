@@ -116,15 +116,14 @@ const char* kUpgradeInfo[] = {
     "Melee hits 10% harder.",
     "Handgun clips hold 25% more rounds.",
     "Rifle clips hold 25% more rounds.",
-    "Laser sight on supported weapons. COMING SOON: the aiming line is not drawn yet.",
-    "Gas grenade as your second grenade. COMING SOON: gas grenades are not in the game yet.",
+    "A red laser line from your gun on supported weapons.",
+    "Your grenades are gas grenades: a poison cloud.",
     "Handguns reload 30% faster.",
     "Rifles reload 30% faster.",
-    "Mask pack for your avatar (needs the Pro Pack). COMING SOON.",
+    "Mask pack for your avatar (needs the Pro Pack).",
 };
 constexpr int kProIndex = 14;
-// Items that are bought but do nothing yet are not sold: laser sight, gas grenade, mask pack, Pro Pack.
-bool onSale(int i) { return i != economy::LaserSight && i != economy::GasNade && i != economy::MaskPack1 && i != kProIndex; }
+bool onSale(int) { return true; }  // everything in the store works now
 }  // namespace
 
 bool StoreScene::init()
@@ -140,14 +139,14 @@ bool StoreScene::init()
     _coins->setPosition(origin().x + screen().width - 14, origin().y + screen().height - 22);
     addChild(_coins, 10);
 
-    const float colW = std::min(210.0f, (screen().width - 40) / 2), rowH = 29;
-    const float left = origin().x + screen().width / 2 - colW / 2 - 6, right = origin().x + screen().width / 2 + colW / 2 + 6;
-    const float top  = origin().y + screen().height - 62;
+    const float colW = std::min(230.0f, (screen().width - 30) / 2), rowH = 26;
+    const float left = origin().x + screen().width / 2 - colW / 2 - 4, right = origin().x + screen().width / 2 + colW / 2 + 4;
+    const float top  = origin().y + screen().height - 58;
     for (int i = 0; i < 15; ++i)
     {
         const bool pro = i == kProIndex;
         const std::string name = pro ? "PRO PACK" : config::kUpgrades[i].name;
-        auto cell = style::pillWithLabel(name, {colW, rowH - 4}, [this, i] { select(i); });
+        auto cell = style::pillWithLabel(name, {colW, rowH - 3}, [this, i] { select(i); });
         const int col = pro ? 0 : i / 7;
         const int row = pro ? 7 : i % 7;
         cell.node->setPosition(col == 0 ? left : right, top - row * rowH);
@@ -157,7 +156,7 @@ bool StoreScene::init()
     _info = style::text("", 11);
     _info->setAnchorPoint({0, 1});
     _info->setMaxLineWidth(screen().width - 150);
-    _info->setPosition(origin().x + 14, origin().y + 50);
+    _info->setPosition(origin().x + 14, origin().y + 44);
     addChild(_info, 5);
     auto buy = style::pillWithLabel("BUY", {110, 30}, [this] {
         if (_selected < 0 || !onSale(_selected))
@@ -219,7 +218,7 @@ void StoreScene::refresh()
         return;
     }
     const bool pro = _selected == kProIndex;
-    _info->setString(pro ? "Pro Pack: dual weapons and the Pro avatar items. COMING SOON: neither is in the game yet."
+    _info->setString(pro ? "Pro Pack: two handguns fire together, and the Pro avatar items (masks)."
                          : kUpgradeInfo[_selected]);
     const bool owned = pro ? save.proPack : economy::owns(save, _selected);
     _buy->setVisible(onSale(_selected) && !owned);

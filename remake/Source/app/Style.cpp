@@ -64,7 +64,10 @@ Pill pillWithLabel(const std::string& labelText, Size size, std::function<void()
     auto* l = Label::createWithTTF(labelText, "fonts/digitalix.ttf", std::min(13.0f, size.height * 0.46f));
     l->enableOutline(Color4B(0, 0, 0, 160), 1);
     l->setPosition(size / 2);
-    l->setMaxLineWidth(size.width - size.height * 0.6f);
+    // One line, shrunk to fit the button (long names must not wrap into the next row).
+    l->enableWrap(false);
+    l->setOverflow(Label::Overflow::SHRINK);
+    l->setDimensions(size.width - 10.0f, size.height);
     root->addChild(l, 1);
 
     auto* touch = EventListenerTouchOneByOne::create();
