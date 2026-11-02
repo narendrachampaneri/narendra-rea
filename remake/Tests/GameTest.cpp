@@ -881,3 +881,13 @@ TEST_CASE("Mod profile (the app default): shots cost nothing, reload is instant,
     CHECK(s.isJetting());
     CHECK(s.thrustFactor() > 0.0f);
 }
+
+TEST_CASE("HUD default button positions (AppDelegate @ 0x2e8468)")
+{
+    CHECK(rules::kGrenadeX == 185.0f);
+    CHECK(rules::kGrenadeY == 35.0f);
+    CHECK(rules::kPunchFromRight == 185.0f);
+    CHECK(rules::kPunchY == 35.0f);
+    CHECK(rules::kReloadInset == 34.0f);
+    CHECK(rules::kZoomInset == 34.0f);
+}

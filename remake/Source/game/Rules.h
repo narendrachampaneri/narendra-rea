@@ -117,6 +117,13 @@ constexpr float kPadRadius      = 40.0f;  // FIRE_PAD_SCL / MOVE_PAD_SCL (1.0 on
 constexpr float kPadTouchRadius = 90.0f;  // a touch within 90 points of a pad takes it
 constexpr float kPadInset       = 75.0f;  // LEFT_PAD (75, 75), RIGHT_PAD (width - 75, 75)
 constexpr float kKnobReturn     = 0.8f;   // released move knob: knob = 0.8 knob + 0.2 centre, per frame
+// Default HUD button centres on phones, y up (AppDelegate::initializePlatformStartupVariables
+// @ 0x2e8468 file offset, asm 0x2e84c2..0x2e85da; literals at 0x2e85f8/fc/600). W and H are the
+// visible width and height. Scale of the four round buttons: 0.8 (0x3f4ccccd).
+constexpr float kGrenadeX = 185.0f, kGrenadeY = 35.0f;  // defaultGrenadePos = (185, 35), left side
+constexpr float kPunchFromRight = 185.0f, kPunchY = 35.0f;      // defaultPunchPos = (W - 185, 35)
+constexpr float kReloadInset = 34.0f;  // defaultReloadPos = (W - 34, H - 34)
+constexpr float kZoomInset   = 34.0f;  // defaultZoomPos = (34, H - 34)
 
 // ---- Camera (SoldierHostController::getViewScale, ApplicationInterface) ---------------------------
 constexpr float kViewScaleSmoothing = 0.7f;     // scale = 0.7 scale + 0.3 weapon zoom
