@@ -259,34 +259,61 @@ void GameScene::buildHud()
         _hud->addChild(s, 1);
     layoutPads();
 
-    // Health and jetpack frame (healthBar.png) and the weapon frame (ammoBar.png), side by
-    // side at the top centre; the reload button in the top right corner (RELOAD_POS).
-    const float top = visible.height - 4;
-    _healthFrame    = Sprite::createWithSpriteFrameName("healthBar.png");
-    _healthFrame->setAnchorPoint(Vec2::ANCHOR_TOP_RIGHT);
-    _healthFrame->setPosition(visible.width / 2 - 2, top);
+    // HeartMeter (healthBar.png with the health and jetpack bars) and AmmoMeter (ammoBar.png), at
+    // (W/2 - 100, H - 25) and (W/2 + 110, H - 25); children as HeartMeter::init and AmmoMeter::init
+    // build them (values in Rules.h, read from the original).
+    const float meterY = visible.height - rules::kMeterFromTop;
+    _healthFrame       = Sprite::createWithSpriteFrameName("healthBar.png");
+    _healthFrame->setPosition(visible.width / 2 + rules::kHeartMeterDx, meterY);
     _hud->addChild(_healthFrame, 1);
-    _bars = DrawNode::create();
-    _healthFrame->addChild(_bars, -1);
-    const auto frame = _healthFrame->getContentSize();
-    _pauseButton     = Vec2(visible.width / 2 - 2 - frame.width, top - frame.height) + Vec2(108, 28.5f);
+    const Vec2 heartMid = _healthFrame->getContentSize() / 2;
+    auto bar = [&](float y, const std::array<std::uint8_t, 3>& c) {
+        auto* b = Sprite::createWithSpriteFrameName("bar.png");
+        b->setAnchorPoint({0, 0.5f});
+        b->setPosition(heartMid + Vec2(rules::kHpBarX, y));
+        b->setColor(Color3B(c[0], c[1], c[2]));
+        b->setScaleY(rules::kBarScaleY);
+        _healthFrame->addChild(b);
+        return b;
+    };
+    _hpBar           = bar(rules::kHpBarY, rules::kHpBarColor);
+    _fuelBar         = bar(rules::kFuelBarY, rules::kFuelBarColor);
+    _pauseButton     = _healthFrame->getPosition();  // the original's menu button (wepSwitchArea) sits on the meter
 
     auto* ammoFrame = Sprite::createWithSpriteFrameName("ammoBar.png");
-    ammoFrame->setAnchorPoint(Vec2::ANCHOR_TOP_LEFT);
-    ammoFrame->setPosition(visible.width / 2 + 2, top);
+    ammoFrame->setPosition(visible.width / 2 + rules::kAmmoMeterDx, meterY);
     _hud->addChild(ammoFrame, 1);
-    _ammoFrame = ammoFrame;  // tapping it switches weapons (wepSwitchArea)
+    _ammoFrame = ammoFrame;  // the weapon switch tap area is wepSwitchArea at (W/2 + 95, H - 25)
+    const Vec2 ammoMid = ammoFrame->getContentSize() / 2;
     _hudWeapon = Sprite::createWithSpriteFrameName("ak47.png");
-    _hudWeapon->setScale(0.42f);
-    _hudWeapon->setPosition(42, ammoFrame->getContentSize().height / 2 + 2);
+    _hudWeapon->setScale(rules::kAmmoIconScale);
+    _hudWeapon->setPosition(ammoMid + Vec2(rules::kAmmoWeaponX, rules::kAmmoWeaponY));
     ammoFrame->addChild(_hudWeapon);
+    _ammoGrenade = Sprite::createWithSpriteFrameName("grenade.png");
+    _ammoGrenade->setScale(rules::kAmmoIconScale);
+    _ammoGrenade->setPosition(ammoMid + Vec2(rules::kAmmoGrenadeX, rules::kAmmoGrenadeY));
+    ammoFrame->addChild(_ammoGrenade);
+    auto digits = [&](float x) {
+        auto* l = LabelAtlas::create("000", "ammoText_new.png", 14, 15, '0');
+        l->setScale(rules::kDigitsScale);
+        l->setAnchorPoint({0.5f, 0.5f});
+        l->setPosition(ammoMid + Vec2(x, rules::kDigitsY));
+        ammoFrame->addChild(l);
+        return l;
+    };
+    _clipDigits = digits(rules::kClipDigitsX);
+    _ammoDigits = digits(rules::kAmmoDigitsX);
+    _ammoState  = ui::atlasLabel("");
+    _ammoState->setScale(rules::kAmmoStateScale);
+    _ammoState->setAnchorPoint({0.5f, 0.5f});
+    ammoFrame->addChild(_ammoState);
 
     // Melee at PUNCH_POS (width - 185, 35), zoom at ZOOM_POS (34, height - 34), scale 0.8.
     _melee = Sprite::createWithSpriteFrameName("meleeBtn.png");
     _melee->setScale(0.8f);
     _melee->setPosition(hud::pos(hud::kMelee, visible, SaveStore::get().data().settings));
     _hud->addChild(_melee, 1);
-    // Grenade at GRENADE_POS, above the melee button.
+    // Grenade at GRENADE_POS (185, 35), left of the centre.
     _grenadeBtn = Sprite::createWithSpriteFrameName("grenadeBtn.png");
     _grenadeBtn->setScale(0.8f);
     _grenadeBtn->setPosition(hud::pos(hud::kGrenade, visible, SaveStore::get().data().settings));
@@ -343,10 +370,6 @@ void GameScene::buildHud()
     _sarge  = text(12, {visible.width / 2, 22}, TextHAlignment::CENTER);
     _sarge->setMaxLineWidth(visible.width - 120);
     _chatLine = text(11, {visible.width / 2, visible.height * 0.5f}, TextHAlignment::CENTER);
-    _ammo = Label::createWithTTF("", "fonts/arial.ttf", 12);
-    _ammo->setPosition(ammoFrame->getContentSize().width - 24, ammoFrame->getContentSize().height / 2 + 2);
-    _ammo->enableOutline(Color4B::BLACK, 1);
-    ammoFrame->addChild(_ammo);
 
     _reload = Sprite::createWithSpriteFrameName("ammoBtn.png");
     _reload->setScale(0.8f);  // defaultReloadScl on phones
@@ -390,7 +413,10 @@ void GameScene::onTouchesBegan(const std::vector<Touch*>& touches, Event*)
         bool button = false;
         for (const auto& [id, centre] : buttonsAt())
         {
-            if (p.distance(centre) < (id == kPause ? 18.0f : 28.0f))
+            // wepSwitchArea (100x33) taps for the menu and the weapon switch; round buttons elsewhere.
+            const bool area = id == kPause || id == kSwitch;
+            if (area ? (std::abs(p.x - centre.x) <= rules::kSwitchAreaW / 2 && std::abs(p.y - centre.y) <= rules::kSwitchAreaH / 2)
+                     : p.distance(centre) < 28.0f)
             {
                 _buttonTouches[t->getID()] = id;
                 button                     = true;
@@ -410,8 +436,8 @@ std::vector<std::pair<int, Vec2>> GameScene::buttonsAt() const
                                           {kGrenade, _grenadeBtn->getPosition()},
                                           {kMine, _mineBtn->getPosition()},
                                           {kZoom, _zoom->getPosition()},
-                                          {kSwitch, _ammoFrame->getPosition() + Vec2(_ammoFrame->getContentSize().width / 2,
-                                                                                    -_ammoFrame->getContentSize().height / 2)}};
+                                          {kSwitch, {_ammoFrame->getPositionX() + rules::kWeaponSwitchDx - rules::kAmmoMeterDx,
+                                                     _ammoFrame->getPositionY()}}};
     if (_pickUp->isVisible())
         out.push_back({kPickUp, _pickUp->getPosition()});
     if (_chatBtn)
@@ -553,7 +579,7 @@ void GameScene::update(float dt)
     _firePad->setColor(_pad.fire() ? Color3B(255, 150, 150) : Color3B::WHITE);
     updateCamera(dt);
     updateCrosshair();
-    updateHud();
+    updateHud(dt);
     updateModeHud();
 }
 
@@ -932,7 +958,7 @@ void GameScene::updateCamera(float)
     _map->setPosition(-focus.x, -focus.y);
 }
 
-void GameScene::updateHud()
+void GameScene::updateHud(float dt)
 {
     const auto& w0 = _match->player().weapon();
     if (auto* frame = SpriteFrameCache::getInstance()->findFrame(w0.def().sprite); frame && _hudWeapon->getSpriteFrame() != frame)
@@ -1003,17 +1029,45 @@ void GameScene::updateHud()
     _itemViews.swap(seen);
 
     const auto& p = _match->player();
-    // Bar slots inside healthBar.png (health on the heart row, jetpack fuel on the rocket row).
-    _bars->clear();
-    const float x0 = 23, x1 = 96;
-    const float hp   = std::clamp(p.health() / rules::kMaxHealth, 0.0f, 1.0f);
-    const float fuel = std::clamp(p.power() / rules::kMaxPower, 0.0f, 1.0f);
-    const Color4F hpColor = hp > 0.3f ? Color4F(0.35f, 0.85f, 0.25f, 1) : Color4F(0.95f, 0.25f, 0.2f, 1);
-    _bars->drawSolidRect({x0, 26}, {x0 + (x1 - x0) * hp, 32}, hpColor);
-    _bars->drawSolidRect({x0, 11}, {x0 + (x1 - x0) * fuel, 17}, Color4F(0.25f, 0.6f, 1.0f, 1));
+    // HeartMeter::setMeters: scaleX = percent * 0.73 (percent clamped to 0..100).
+    _hpBar->setScaleX(std::clamp(p.health() / rules::kMaxHealth, 0.0f, 1.0f) * 100.0f * rules::kBarPerPercent);
+    _fuelBar->setScaleX(std::clamp(p.power() / rules::kMaxPower, 0.0f, 1.0f) * 100.0f * rules::kBarPerPercent);
 
+    // AmmoMeter::updateStep (0x2f4630): "%d%d%d" of the clip and the ammo; "000" without a weapon,
+    // empty for a melee weapon; the state text blinks (on while the timer is below 0.25 s).
     const auto& w = p.weapon();
-    _ammo->setString(w.isReloading() ? "RELOAD" : fmt::format("{} / {}", w.clip(), w.ammo()));
+    _ammoBlink += dt;
+    const bool alive = _match->playerAlive();
+    const bool melee = game::weaponInfo(w.id()).melee;
+    auto three = [](int v) { return fmt::format("{}{}{}", v / 100 % 10, v / 10 % 10, v % 10); };
+    _clipDigits->setString(!alive ? "000" : melee ? "" : three(w.clip()));
+    _ammoDigits->setString(!alive ? "000" : melee ? "" : three(w.ammo()));
+    bool stateOn = false;
+    if (alive && _ammoBlink < rules::kAmmoBlinkOn)
+    {
+        const char* text = nullptr;
+        Color3B col;
+        float x = rules::kAmmoStateBaseX;
+        if (w.isReloading())
+            text = "RELOADING", col = Color3B(255, 255, 255);
+        else if (w.ammo() == 0)
+        {
+            if (w.clip() == 0)
+                text = "NO AMMO", col = Color3B(245, 0, 0), x += rules::kAmmoStateNoAmmoX;
+            else
+                text = "LOW AMMO", col = Color3B(245, 245, 0), x += rules::kAmmoStateLowAmmoX;
+        }
+        if (text)
+        {
+            _ammoState->setString(text);
+            _ammoState->setColor(col);
+            _ammoState->setPosition(_ammoFrame->getContentSize() / 2 + Vec2(x, rules::kAmmoStateReloadingY));
+            stateOn = true;
+        }
+    }
+    _ammoState->setVisible(stateOn);
+    if (_ammoBlink > rules::kAmmoBlinkPeriod)
+        _ammoBlink = 0.0f;
     if (_reloadRing)
         _reloadRing->setPercentage(w.reloadProgress() * 100.0f);
 }

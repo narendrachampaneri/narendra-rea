@@ -125,6 +125,25 @@ constexpr float kPunchFromRight = 185.0f, kPunchY = 35.0f;      // defaultPunchP
 constexpr float kReloadInset = 34.0f;  // defaultReloadPos = (W - 34, H - 34)
 constexpr float kZoomInset   = 34.0f;  // defaultZoomPos = (34, H - 34)
 
+// ---- HUD meters (HUD::init @ 0x34a29c, HeartMeter::init @ 0x34263c, AmmoMeter::init @ 0x2e3eb0) ---
+// Read from the original by running those functions in an emulator (tools/fidelity/armtrace.py).
+// Screen 480x320, y up, positions relative to the screen; child positions relative to the meter.
+constexpr float kHeartMeterDx = -100.0f, kAmmoMeterDx = 110.0f, kMeterFromTop = 25.0f;  // (W/2 + dx, H - 25)
+constexpr float kHpBarX = -38.0f, kHpBarY = 9.0f, kFuelBarY = -6.0f;  // bar.png, anchor (0, 0.5)
+constexpr float kBarScaleY = 2.0f;           // bar.png is 1x3 points: 6 points tall
+constexpr float kBarPerPercent = 0.73f;      // HeartMeter::setMeters: scaleX = percent * 0.73 (73 at 100)
+constexpr std::array<std::uint8_t, 3> kHpBarColor{200, 0, 200}, kFuelBarColor{0, 0, 255};
+constexpr float kAmmoWeaponX = -8.0f, kAmmoWeaponY = 1.0f, kAmmoIconScale = 0.6f;  // weapon icon (blank.png, later the gun)
+constexpr float kAmmoGrenadeX = 54.0f, kAmmoGrenadeY = 4.0f;                      // grenade.png, same scale
+constexpr float kClipDigitsX = -35.0f, kAmmoDigitsX = 22.0f, kDigitsY = -10.0f, kDigitsScale = 0.5f;  // ammoText_new.png "%03d"
+constexpr float kAmmoStateScale = 0.4f;      // font02_new.png state text, base position (-15, 0)
+constexpr float kAmmoStateBaseX = -15.0f;    // + (0, 8) RELOADING, (-2, 8) NO AMMO, (-1, 8) LOW AMMO (AmmoMeter::setWeaponState @ 0x2f43c8)
+constexpr float kAmmoStateReloadingY = 8.0f, kAmmoStateNoAmmoX = -2.0f, kAmmoStateLowAmmoX = -1.0f;
+constexpr float kAmmoBlinkOn = 0.25f, kAmmoBlinkPeriod = 0.4f;  // AmmoMeter::updateStep @ 0x2f4630: shown while t < 0.25, t resets above 0.4
+// Tap areas (MenuItemSprites made from wepSwitchArea.png 100x33 and nadeSwitchArea.png 40x33).
+constexpr float kMenuAreaDx = -100.0f, kWeaponSwitchDx = 95.0f, kGrenadeSwitchDx = 165.0f;  // (W/2 + dx, H - 25)
+constexpr float kSwitchAreaW = 100.0f, kSwitchAreaH = 33.0f;
+
 // ---- Camera (SoldierHostController::getViewScale, ApplicationInterface) ---------------------------
 constexpr float kViewScaleSmoothing = 0.7f;     // scale = 0.7 scale + 0.3 weapon zoom
 constexpr float kReferenceAspect    = 16.0f / 9.0f;  // aspectCorrection = (w / h) / 1.7777778

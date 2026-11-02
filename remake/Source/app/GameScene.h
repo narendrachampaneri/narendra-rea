@@ -41,7 +41,7 @@ private:
     void layoutPads();
     void handleEvents();
     void updateCamera(float dt);
-    void updateHud();
+    void updateHud(float dt);
     void updateCrosshair();
     ax::DrawNode* _cross = nullptr;
     int _bloodLive = 0;
@@ -99,8 +99,13 @@ private:
     ax::Sprite* _firePad      = nullptr;
     ax::Sprite* _fireStick    = nullptr;
     ax::Sprite* _healthFrame  = nullptr;
-    ax::DrawNode* _bars       = nullptr;
-    ax::Label* _ammo          = nullptr;
+    ax::Sprite* _hpBar        = nullptr;  // HeartMeter bars
+    ax::Sprite* _fuelBar      = nullptr;
+    ax::LabelAtlas* _clipDigits = nullptr;  // AmmoMeter: "%03d" of the clip, of the ammo, and the state text
+    ax::LabelAtlas* _ammoDigits = nullptr;
+    ax::LabelAtlas* _ammoState  = nullptr;
+    float _ammoBlink          = 0.0f;
+    ax::Sprite* _ammoGrenade  = nullptr;
     ax::Sprite* _reload       = nullptr;
     ax::ProgressTimer* _reloadRing = nullptr;
     ax::Node* _pauseMenu      = nullptr;

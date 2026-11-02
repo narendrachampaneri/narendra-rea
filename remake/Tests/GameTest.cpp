@@ -891,3 +891,17 @@ TEST_CASE("HUD default button positions (AppDelegate @ 0x2e8468)")
     CHECK(rules::kReloadInset == 34.0f);
     CHECK(rules::kZoomInset == 34.0f);
 }
+
+TEST_CASE("HUD meters (HeartMeter::init, AmmoMeter::init, setWeaponState, read with armtrace.py)")
+{
+    CHECK(rules::kHeartMeterDx == -100.0f);
+    CHECK(rules::kAmmoMeterDx == 110.0f);
+    CHECK(rules::kMeterFromTop == 25.0f);
+    CHECK(rules::kHpBarY == 9.0f);
+    CHECK(rules::kFuelBarY == -6.0f);
+    CHECK(rules::kBarPerPercent * 100.0f == doctest::Approx(73.0f));
+    CHECK(rules::kHpBarColor[0] == 200);
+    CHECK(rules::kFuelBarColor[2] == 255);
+    CHECK(rules::kAmmoStateBaseX + rules::kAmmoStateNoAmmoX == -17.0f);
+    CHECK(rules::kAmmoStateBaseX + rules::kAmmoStateLowAmmoX == -16.0f);
+}
