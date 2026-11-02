@@ -44,6 +44,9 @@ Where the original had nothing recoverable (drone kinds, mine numbers, gas numbe
 gamepad layout) the remake uses its own documented default; all of them are marked NEW in the
 code and in the sections below.
 
+## Multiplayer screens (rc3, as in the original recording)
+MULTIPLAYER -> SIGNING IN and QUICK PLAY (greyed: no online service) / LAN WIFI -> LOCAL GAME ("FOUND n GAMES:", arrows to pick a game, JOIN, HOST top right, BACK; plus small IP and QR boxes at the bottom, which the original did not have) -> HOST -> SELECT MAP (map between arrows, PLAY, BACK) -> lobby (players with READY / NOT READY, "WAITING FOR PLAYERS TO JOIN...", START / gear / EXIT, chat bubble; the gear opens TEAM / GAME STATS / DONE, and GAME STATS shows the match options and the host's address). Solo DEATHMATCH also goes through SELECT MAP.
+
 ## Start-up flow (changed after the phone test)
 TOUCH TO START goes straight to the main menu. There is no name screen any more (the name is "Player" until changed in CONFIGURE > MORE OPTIONS) and the training offer is gone (HELP > TRAINING). The first time only, one welcome pop-up appears over the menu ("WELCOME TO NOSTALGIA", OK). The menu backgrounds are the original title art tinted dark (no separate dimming layer, and the screen pop-in effect skips the background): the earlier build showed a black screen on the name and menu screens on the owner's phone.
 

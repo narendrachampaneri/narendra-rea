@@ -69,6 +69,33 @@ public:
     void onEnter() override;
 };
 
+// MULTIPLAYER: SIGNING IN (greyed: no online service), QUICK PLAY (greyed), LAN WIFI.
+class MultiplayerMenuScene : public ax::Scene
+{
+public:
+    bool init() override;
+    void onEnter() override;
+};
+
+// "SELECT MAP": the map name between two arrows, PLAY, BACK. Used by solo DEATHMATCH and by HOST.
+class SelectMapScene : public ax::Scene
+{
+public:
+    enum class Purpose { SoloDeathmatch, HostWifi };
+    static SelectMapScene* create(Purpose purpose);
+    bool init() override { return false; }
+    void onEnter() override;
+
+private:
+    bool initMap(Purpose purpose);
+    void showMap();
+    void play();
+    Purpose _purpose = Purpose::SoloDeathmatch;
+    std::vector<int> _maps;
+    int _index = 0;
+    ax::LabelAtlas* _name = nullptr;
+};
+
 // "PRIVATE" ... "COMMANDER IN CHIEF" (the 21 rank names of the original) from the experience points.
 const char* rankName(int rank);   // rank 1..21
 int rankFromExperience(int exp);  // NEW mapping, see OriginalMenu.cpp

@@ -44,7 +44,7 @@ bool HomeScene::init()
         if (auto* scene = GameScene::create(*pool[settings.seed % pool.size()], settings))
             go(scene);
     });
-    add("MULTIPLAYER", [go] { go(utils::createInstance<MultiplayerScene>()); });
+    add("MULTIPLAYER", [go] { go(utils::createInstance<MultiplayerMenuScene>()); });
     add("SOLO PLAY", [go] { go(utils::createInstance<SoloMenuScene>()); });
     add("SETTINGS", [go] { go(utils::createInstance<SettingsMenuScene>()); });
     buildListMenu(this, std::move(entries), true, nullptr);

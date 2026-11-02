@@ -21,6 +21,11 @@ private:
 
     ax::Label* _title = nullptr;
     ax::DrawNode* _qrBox = nullptr;
+    ax::Menu* _optionsMenu = nullptr;
+    ax::Menu* _mainColumn = nullptr;
+    ax::Menu* _gearColumn = nullptr;
+    ax::Menu* _chatMenu = nullptr;
+    ax::Label* _waiting = nullptr;
     static constexpr int kOptionRows = 16;
     ax::Label* _options[kOptionRows] = {};
     ax::Label* _players = nullptr;

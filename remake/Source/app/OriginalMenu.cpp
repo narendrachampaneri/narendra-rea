@@ -1,13 +1,16 @@
 #include "app/OriginalMenu.h"
 
 #include <algorithm>
+#include <cctype>
 #include <random>
 
 #include "app/AudioSystem.h"
 #include "app/GameScene.h"
 #include "app/HomeScene.h"
 #include "app/Menus.h"
+#include "app/LobbyScene.h"
 #include "app/MultiplayerScene.h"
+#include "app/NetContext.h"
 #include "app/Platform.h"
 #include "app/PlayScene.h"
 #include "app/SaveStore.h"
@@ -139,6 +142,139 @@ void buildListMenu(Scene* scene, std::vector<MenuEntry> entries, bool home, std:
 }
 
 // ---------------------------------------------------------------------------------------------
+bool MultiplayerMenuScene::init()
+{
+    if (!Scene::init())
+        return false;
+    buildListMenu(this,
+                  {button("SIGNING IN", nullptr, false), button("QUICK PLAY", nullptr, false),
+                   button("LAN WIFI", [] { go(utils::createInstance<MultiplayerScene>()); })},
+                  false, goHome);
+    return true;
+}
+void MultiplayerMenuScene::onEnter()
+{
+    Scene::onEnter();
+    platform::setGameHandlesBack(true);
+}
+
+// ---------------------------------------------------------------------------------------------
+SelectMapScene* SelectMapScene::create(Purpose purpose)
+{
+    auto* s = new SelectMapScene();
+    if (s->Scene::init() && s->initMap(purpose))
+    {
+        s->autorelease();
+        return s;
+    }
+    delete s;
+    return nullptr;
+}
+
+bool SelectMapScene::initMap(Purpose purpose)
+{
+    _purpose = purpose;
+    _maps    = assets::wifiMaps(false);
+    if (_maps.empty())
+        return false;
+    auto* director     = Director::getInstance();
+    const auto visible = director->getVisibleSize();
+    const auto origin  = director->getVisibleOrigin();
+    const auto safe    = director->getSafeAreaRect();
+    auto back          = [purpose] {
+        if (purpose == Purpose::HostWifi)
+        {
+            NetContext::get().close();
+            go(utils::createInstance<MultiplayerScene>());
+        }
+        else
+            goSolo();
+    };
+    buildListMenu(this, {}, false, back);
+
+    auto* title = ui::atlasLabel("SELECT MAP");
+    title->setScale(0.6f);
+    title->setAnchorPoint(Vec2::ANCHOR_MIDDLE);
+    title->setPosition(origin.x + visible.width / 2, origin.y + visible.height - 44);
+    addChild(title, 6);
+
+    // [<]  MAP NAME  [>]
+    auto* left  = ui::panelButton("b03_left.png", " ", [this](Object*) {
+        _index = (_index + static_cast<int>(_maps.size()) - 1) % static_cast<int>(_maps.size());
+        showMap();
+    });
+    auto* right = ui::panelButton("b03_right.png", " ", [this](Object*) {
+        _index = (_index + 1) % static_cast<int>(_maps.size());
+        showMap();
+    });
+    auto* box   = Sprite::createWithSpriteFrameName("b03_big.png");
+    _name       = ui::atlasLabel("");
+    _name->setAnchorPoint(Vec2::ANCHOR_MIDDLE);
+    box->addChild(_name);
+    box->setPosition(origin.x + visible.width / 2, origin.y + visible.height / 2);
+    addChild(box, 6);
+    auto* arrows = Menu::create(left, right, nullptr);
+    arrows->setPosition(Vec2::ZERO);
+    left->setPosition(box->getPositionX() - box->getContentSize().width / 2 - 30, box->getPositionY());
+    right->setPosition(box->getPositionX() + box->getContentSize().width / 2 + 30, box->getPositionY());
+    addChild(arrows, 6);
+    _name->setPosition(box->getContentSize() / 2);
+
+    auto* playBtn  = ui::panelButton("b03_sml.png", "PLAY", [this](Object*) {
+        AudioSystem::get().play(audio::SoundId::Grenade1);
+        play();
+    });
+    auto* playMenu = Menu::create(playBtn, nullptr);
+    playMenu->setPosition(safe.getMaxX() - 12 - playBtn->getContentSize().width / 2, safe.getMinY() + 12 + playBtn->getContentSize().height / 2);
+    addChild(playMenu, 6);
+    showMap();
+    return true;
+}
+
+void SelectMapScene::showMap()
+{
+    std::string name(assets::kMaps[_maps[_index]].name);
+    std::transform(name.begin(), name.end(), name.begin(), [](unsigned char c) { return std::toupper(c); });
+    _name->setString(name);
+    const float w = _name->getContentSize().width;
+    _name->setScale(std::min(0.42f, 190.0f / std::max(w, 1.0f)));
+}
+
+void SelectMapScene::onEnter()
+{
+    Scene::onEnter();
+    platform::setGameHandlesBack(true);
+}
+
+void SelectMapScene::play()
+{
+    const auto& def = assets::kMaps[_maps[_index]];
+    if (_purpose == Purpose::SoloDeathmatch)
+    {
+        game::ModeSettings st;
+        st.kind = game::ModeKind::QuickPlay;
+        std::random_device rd;
+        st.seed = rd();
+        if (auto* s = GameScene::create(def, st))
+            go(s);
+        return;
+    }
+    auto& ctx = NetContext::get();
+    if (!ctx.startHosting())
+    {
+        ui::toast(this, "Could not open the game port. Close other copies of the game.");
+        return;
+    }
+    if (auto* host = ctx.host())
+    {
+        auto o = host->options();
+        o.mode = net::GameMode::Deathmatch;
+        o.map  = static_cast<std::uint8_t>(_maps[_index]);
+        host->setOptions(o);
+    }
+    go(utils::createInstance<LobbyScene>());
+}
+
 bool SoloMenuScene::init()
 {
     if (!Scene::init())
@@ -153,7 +289,7 @@ bool SoloMenuScene::init()
                               if (auto* s = GameScene::create(*assets::findMap("survival"), st))
                                   go(s);
                           }),
-                   button("DEATHMATCH", [] { go(utils::createInstance<PlayScene>()); }),
+                   button("DEATHMATCH", [] { go(SelectMapScene::create(SelectMapScene::Purpose::SoloDeathmatch)); }),
                    button("SCORES", [] { go(utils::createInstance<LeaderboardsScene>()); })},
                   false, goHome);
     return true;

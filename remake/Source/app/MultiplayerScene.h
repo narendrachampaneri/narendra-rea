@@ -25,6 +25,10 @@ private:
 
     ax::Menu* _list = nullptr;
     ax::Label* _status = nullptr;
+    ax::LabelAtlas* _foundLabel = nullptr;
+    ax::LabelAtlas* _gameLabel = nullptr;
+    int _sel = 0;
+    int _count = 0;
     ax::Label* _nameLabel = nullptr;
     ax::Node* _ipBox = nullptr;
     std::string _ip = "192.168.";

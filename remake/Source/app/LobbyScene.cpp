@@ -44,13 +44,18 @@ bool LobbyScene::init()
     const auto visible = _director->getVisibleSize();
     const auto origin  = _director->getVisibleOrigin();
 
-    _title = Label::createWithTTF(isHost() ? "YOUR GAME" : "LOBBY", "fonts/arial.ttf", 18);
-    _title->setPosition(origin.x + visible.width / 2, origin.y + visible.height - 18);
+    // The original's lobby: the dimmed title art, the players on the left, "WAITING FOR PLAYERS
+    // TO JOIN...", and START / gear / EXIT at the bottom right. The match options sit behind the
+    // gear (GAME STATS), for the host to change and for guests to read.
+    addChild(ui::titleArt("title_ret2_new.png", origin.x + visible.width / 2, Color3B(95, 95, 105)), 0);
+    _title = Label::createWithTTF("", "fonts/arial.ttf", 18);
     addChild(_title, 5);
 
     auto* menu = Menu::create();
     menu->setPosition(Vec2::ZERO);
-    addChild(menu, 5);
+    menu->setVisible(false);
+    _optionsMenu = menu;
+    addChild(menu, 7);
 
     // Left: the options. The host taps a line to change it; guests just read them.
     for (int i = 0; i < kOptionRows; ++i)
@@ -106,7 +111,7 @@ bool LobbyScene::init()
 
     _players = Label::createWithTTF("", "fonts/arial.ttf", 11);
     _players->setAnchorPoint({0, 1});
-    _players->setPosition(origin.x + visible.width * 0.52f, origin.y + visible.height - 40);
+    _players->setPosition(origin.x + 20, origin.y + visible.height - 24);
     addChild(_players, 5);
 
     _address = Label::createWithTTF("", "fonts/arial.ttf", 9);
@@ -161,8 +166,14 @@ bool LobbyScene::init()
     _chat->setAnchorPoint({0, 0.5f});
     _chat->setPosition(origin.x + 14, origin.y + 70);
     addChild(_chat, 5);
+    _address->setVisible(false);
 
-    // Bottom row: ready / start, quick messages, leave.
+    _waiting = Label::createWithTTF("", "fonts/arial.ttf", 9);
+    _waiting->setAnchorPoint({0.5f, 0.5f});
+    _waiting->setPosition(origin.x + visible.width / 2, origin.y + 12);
+    addChild(_waiting, 5);
+
+    // Bottom right: START (READY for guests), the gear, EXIT, and a chat bubble.
     auto* action = ui::panelButton("b03_top.png", isHost() ? "START" : "READY", [this](Object*) {
         AudioSystem::get().play(audio::SoundId::Grenade1);
         if (auto* host = NetContext::get().host())
@@ -177,10 +188,38 @@ bool LobbyScene::init()
             refresh();
         }
     });
-    auto* msg = ui::panelButton("b03_mid.png", "MESSAGES", [this](Object*) {
+    auto* gear = ui::panelButton("b03_mid.png", " ", [this](Object*) {
+        AudioSystem::get().play(audio::SoundId::Grenade1);
+        _mainColumn->setVisible(false);
+        _gearColumn->setVisible(true);
+    });
+    if (auto* cog = Sprite::createWithSpriteFrameName("cog.png"))
+    {
+        cog->setPosition(gear->getContentSize() / 2);
+        gear->addChild(cog);
+    }
+    auto* exitBtn = ui::panelButton("b03_bot.png", "EXIT", [this](Object*) { leave(); });
+    _mainColumn   = Menu::create(action, gear, exitBtn, nullptr);
+    _mainColumn->alignItemsVerticallyWithPadding(0);
+    const auto safe = _director->getSafeAreaRect();
+    _mainColumn->setPosition(safe.getMaxX() - 12 - action->getContentSize().width / 2,
+                             safe.getMinY() + 12 + 1.5f * action->getContentSize().height);
+    addChild(_mainColumn, 5);
+    auto* chat     = ui::panelButton("b03_left.png", " ", [this](Object*) {
         addChild(ui::quickChatGrid([](int m) { NetContext::get().sendChat(m); }), 20);
     });
-    auto* team = ui::panelButton("b03_mid.png", "TEAM", [this](Object*) {
+    if (auto* bubble = Sprite::createWithSpriteFrameName("msg.png"))
+    {
+        bubble->setPosition(chat->getContentSize() / 2);
+        chat->addChild(bubble);
+    }
+    _chatMenu = Menu::create(chat, nullptr);
+    _chatMenu->setPosition(_mainColumn->getPositionX() - action->getContentSize().width / 2 - chat->getContentSize().width / 2 - 4,
+                           safe.getMinY() + 12 + chat->getContentSize().height / 2);
+    addChild(_chatMenu, 5);
+
+    // The gear's panel: TEAM, GAME STATS (the options), DONE.
+    auto* teamBtn = ui::panelButton("b03_top.png", "TEAM", [this](Object*) {
         _team = (_team + 1) % 3;
         if (auto* host = NetContext::get().host())
             host->setHostTeam(_team);
@@ -188,12 +227,21 @@ bool LobbyScene::init()
             client->setReady(_ready, _team);
         refresh();
     });
-    auto* back = ui::panelButton("b03_bot.png", "LEAVE", [this](Object*) { leave(); });
-    auto* bottom = Menu::create(action, msg, team, back, nullptr);
-    bottom->alignItemsHorizontallyWithPadding(-6);
-    bottom->setScale(std::min(1.0f, visible.width / (bottom->getContentSize().width + 40)));
-    bottom->setPosition(origin.x + visible.width / 2, origin.y + 30);
-    addChild(bottom, 5);
+    auto* statsBtn = ui::panelButton("b03_mid.png", "GAME STATS", [this](Object*) {
+        _optionsMenu->setVisible(!_optionsMenu->isVisible());
+        _address->setVisible(_optionsMenu->isVisible());
+    });
+    auto* doneBtn = ui::panelButton("b03_bot.png", "DONE", [this](Object*) {
+        _optionsMenu->setVisible(false);
+        _address->setVisible(false);
+        _gearColumn->setVisible(false);
+        _mainColumn->setVisible(true);
+    });
+    _gearColumn = Menu::create(teamBtn, statsBtn, doneBtn, nullptr);
+    _gearColumn->alignItemsVerticallyWithPadding(0);
+    _gearColumn->setPosition(_mainColumn->getPosition());
+    _gearColumn->setVisible(false);
+    addChild(_gearColumn, 5);
 
     auto* keys          = EventListenerKeyboard::create();
     keys->onKeyReleased = [this](EventKeyboard::KeyCode code, ax::Event*) {
@@ -255,13 +303,15 @@ void LobbyScene::refresh()
     for (int g = 0; g < 5; ++g)
         _options[11 + g]->setString(std::string("PICK-UPS: ") + kGroupNames[g] + " " + onoff(o.weaponGroups & (1 << g)));
 
-    std::string list = "PLAYERS\n";
+    std::string list;
     for (const auto& p : players)
     {
-        list += fmt::format("{}{}{}{}\n", p.host ? "* " : "  ", p.name, p.team ? fmt::format("   [team {}]", p.team) : "",
-                            p.ready ? "   READY" : "");
+        list += fmt::format("{}{}{}   {}\n", p.host ? "* " : "", p.name, p.team ? fmt::format("   [team {}]", p.team) : "",
+                            (p.ready || p.host) ? "READY" : "NOT READY");
     }
     _players->setString(list);
+    _waiting->setString(isHost() ? (players.size() < 2 ? "WAITING FOR PLAYERS TO JOIN..." : "")
+                                 : "WAITING FOR THE HOST TO START...");
     const auto address = ctx.localAddress();
     _address->setString(isHost() && !address.empty() ? "Others can join by IP: " + address : "");
 }
