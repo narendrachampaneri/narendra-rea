@@ -48,7 +48,7 @@ bool FirstLaunchScene::init()
 {
     if (!Scene::init())
         return false;
-    addChild(style::background(), -10);
+    addChild(style::background(), 0);  // z 0 like the screens that render; -10 showed black on the phone
     auto* title = style::heading("WELCOME, SOLDIER");
     addChild(title, 5);
 
@@ -130,7 +130,7 @@ bool StoreScene::init()
 {
     if (!Scene::init())
         return false;
-    addChild(style::background(), -10);
+    addChild(style::background(), 0);  // z 0 like the screens that render; -10 showed black on the phone
     addChild(style::heading("STORE"), 5);
     addBack(this);
 
@@ -231,7 +231,7 @@ bool AvatarScene::init()
 {
     if (!Scene::init())
         return false;
-    addChild(style::background(), -10);
+    addChild(style::background(), 0);  // z 0 like the screens that render; -10 showed black on the phone
     addChild(style::heading("AVATAR"), 5);
     addBack(this);
 
@@ -332,7 +332,7 @@ bool LeaderboardsScene::init()
 {
     if (!Scene::init())
         return false;
-    addChild(style::background(), -10);
+    addChild(style::background(), 0);  // z 0 like the screens that render; -10 showed black on the phone
     addChild(style::heading("LEADERBOARDS"), 5);
     addBack(this);
     auto mine = style::pill("MY RECORDS", {140, 28}, [this] { show(0); });
@@ -406,7 +406,7 @@ bool SettingsScene::init()
 {
     if (!Scene::init())
         return false;
-    addChild(style::background(), -10);
+    addChild(style::background(), 0);  // z 0 like the screens that render; -10 showed black on the phone
     addChild(style::heading("SETTINGS"), 5);
     addBack(this);
     auto& store = SaveStore::get();
@@ -549,7 +549,7 @@ bool ButtonEditorScene::init()
 {
     if (!Scene::init())
         return false;
-    addChild(style::background(), -10);
+    addChild(style::background(), 0);  // z 0 like the screens that render; -10 showed black on the phone
     auto* title = style::text("DRAG THE BUTTONS WHERE YOUR THUMBS REACH", 12, style::kAccent);
     title->setPosition(origin().x + screen().width / 2, origin().y + screen().height - 16);
     addChild(title, 5);
@@ -677,7 +677,7 @@ const char* kAbout =
 
 bool TextPageScene::initPage(Page page)
 {
-    addChild(style::background(), -10);
+    addChild(style::background(), 0);  // z 0 like the screens that render; -10 showed black on the phone
     addChild(style::heading(page == Page::WhatsNew ? "WHAT'S NEW" : "ABOUT"), 5);
     if (page == Page::WhatsNew)
     {
