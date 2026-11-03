@@ -544,85 +544,139 @@ void SettingsScene::onExit()
 }
 
 // ============================== Button placement editor ============================================
+// The original's CONTROLS > PLACEMENT screen: the real HUD controls on a light jungle backdrop,
+// drag them where you want, [+] / [-] scale the chosen one, DEFAULT resets, DONE saves.
 
 bool ButtonEditorScene::init()
 {
     if (!Scene::init())
         return false;
-    addChild(style::background(), 0);  // z 0 like the screens that render; -10 showed black on the phone
-    auto* title = style::text("DRAG THE BUTTONS WHERE YOUR THUMBS REACH", 12, style::kAccent);
-    title->setPosition(origin().x + screen().width / 2, origin().y + screen().height - 16);
-    addChild(title, 5);
-    static const char* frames[6] = {"meleeBtn.png", "grenadeBtn.png", "zoomBtn.png", "ammoBtn.png", "wepChangeBtn.png", "grenadeBtn.png"};
-    static const float scales[6] = {0.8f, 0.8f, 0.8f, 0.8f, 1.0f, 0.8f};
+    const auto vis = screen();
+    // Backdrop drawn with plain shapes: pale sky, two hills, green bushes.
+    auto* bg = DrawNode::create();
+    const Color4F sky(0.78f, 0.86f, 0.88f, 1), hill(0.70f, 0.77f, 0.78f, 1), bush(0.58f, 0.70f, 0.45f, 1), ground(0.52f, 0.62f, 0.40f, 1);
+    bg->drawSolidRect(origin(), origin() + vis, sky);
+    bg->drawSolidRect(origin(), origin() + Vec2(vis.width, vis.height * 0.42f), ground);
+    Vec2 h1[] = {{0, 0.42f}, {0.22f, 0.66f}, {0.45f, 0.42f}}, h2[] = {{0.55f, 0.42f}, {0.72f, 0.58f}, {1.0f, 0.42f}};
+    for (auto* h : {h1, h2})
+    {
+        Vec2 pts[3];
+        for (int i = 0; i < 3; ++i)
+            pts[i] = origin() + Vec2(h[i].x * vis.width, h[i].y * vis.height);
+        bg->drawSolidPoly(pts, 3, hill);
+    }
+    for (float x = -10; x < vis.width + 30; x += 38)
+        bg->drawSolidCircle(origin() + Vec2(x, vis.height * 0.43f + 12 * std::sin(x * 0.07f)), 24, 0, 12, bush);
+    addChild(bg, 0);
+
+    struct Spec { int index; const char* frame; float base; };
+    static const Spec specs[6] = {{hud::kMovePad, "movePad.png", 1.0f}, {hud::kAimPad, "firePad.png", 1.0f},
+                                  {hud::kGrenade, "grenadeBtn.png", 0.8f}, {hud::kMelee, "meleeBtn.png", 0.8f},
+                                  {hud::kReload, "ammoBtn.png", 0.8f}, {hud::kZoom, "zoomBtn.png", 0.8f}};
     const auto& cfg = SaveStore::get().data().settings;
-    _touch.fill(-1);
     for (int i = 0; i < 6; ++i)
     {
-        auto* s = Sprite::createWithSpriteFrameName(frames[i]);
-        if (!s)
-            s = Sprite::create();
-        s->setScale(scales[i]);
-        s->setPosition(origin() + hud::pos(i, screen(), cfg));
-        addChild(s, 2);
-        _buttons[i] = s;
+        auto* sp = Sprite::createWithSpriteFrameName(specs[i].frame);
+        if (!sp)
+            sp = Sprite::create();
+        sp->setOpacity(210);
+        sp->setScale(specs[i].base * hud::scale(specs[i].index, cfg));
+        sp->setPosition(origin() + hud::pos(specs[i].index, vis, cfg));
+        addChild(sp, 2);
+        _items[i]  = sp;
+        _index[i]  = specs[i].index;
+        _base[i]   = specs[i].base;
+        _scale[i]  = cfg.hudScale[specs[i].index];
     }
-    // A hint of the two sticks so the layout can be judged.
-    for (float x : {75.0f, screen().width - 75.0f})
-    {
-        auto* ring = DrawNode::create();
-        ring->drawCircle(Vec2(origin().x + x, origin().y + 75), 40, 0, 24, false, Color4F(1, 1, 1, 0.35f));
-        addChild(ring, 1);
-    }
-    auto* l = EventListenerTouchAllAtOnce::create();
-    l->onTouchesBegan = [this](const std::vector<Touch*>& ts, Event*) {
-        for (auto* t : ts)
-            for (int i = 0; i < 6; ++i)
-                if (_touch[i] < 0 && _buttons[i]->getPosition().distance(t->getLocation()) < 34)
-                {
-                    _touch[i] = t->getID();
-                    break;
-                }
-    };
-    l->onTouchesMoved = [this](const std::vector<Touch*>& ts, Event*) {
-        for (auto* t : ts)
-            for (int i = 0; i < 6; ++i)
-                if (_touch[i] == t->getID())
-                {
-                    auto p = t->getLocation();
-                    p.x = std::clamp(p.x, origin().x + 20, origin().x + screen().width - 20);
-                    p.y = std::clamp(p.y, origin().y + 20, origin().y + screen().height - 20);
-                    _buttons[i]->setPosition(p);
-                }
-    };
-    l->onTouchesEnded = [this](const std::vector<Touch*>& ts, Event*) {
-        for (auto* t : ts)
-            for (int i = 0; i < 6; ++i)
-                if (_touch[i] == t->getID())
-                    _touch[i] = -1;
-    };
-    l->onTouchesCancelled = l->onTouchesEnded;
-    _eventDispatcher->addEventListenerWithSceneGraphPriority(l, this);
+    _touch = -1;
+    _chosen = -1;
 
-    auto reset = style::pill("RESET", {110, 28}, [this] {
+    auto* hint = ui::atlasLabel("DRAG CONTROLS TO MOVE   USE [+/-] TO SCALE");
+    hint->setScale(0.22f);
+    hint->setAnchorPoint(Vec2::ANCHOR_MIDDLE);
+    hint->setPosition(origin().x + vis.width / 2, origin().y + vis.height - 12);
+    addChild(hint, 5);
+
+    auto highlight = [this] {
         for (int i = 0; i < 6; ++i)
-            _buttons[i]->setPosition(origin() + hud::defaultPos(i, screen()));
-    }, Color3B(160, 90, 70));
-    reset->setPosition(origin().x + screen().width / 2 - 62, origin().y + 26);
-    addChild(reset, 5);
-    auto done = style::pill("SAVE", {110, 28}, [this] {
-        auto& cfg = SaveStore::get().data().settings;
+            _items[i]->setColor(i == _chosen ? Color3B(255, 240, 160) : Color3B::WHITE);
+    };
+    auto rescale = [this, highlight](int delta) {
+        if (_chosen < 0)
+            return;
+        _scale[_chosen] = std::clamp(_scale[_chosen] + delta, 50, 200);
+        _items[_chosen]->setScale(_base[_chosen] * _scale[_chosen] / 100.0f);
+        highlight();
+    };
+    auto* minus = ui::panelButton("b03_left.png", "-", [rescale](Object*) { rescale(-10); });
+    auto* plus  = ui::panelButton("b03_right.png", "+", [rescale](Object*) { rescale(10); });
+    auto* def   = ui::panelButton("b03_mid.png", "DEFAULT", [this, highlight](Object*) {
         for (int i = 0; i < 6; ++i)
         {
-            const Vec2 d = _buttons[i]->getPosition() - origin() - hud::defaultPos(i, screen());
-            cfg.buttonOffset[i * 2]     = static_cast<int>(std::lround(d.x));
-            cfg.buttonOffset[i * 2 + 1] = static_cast<int>(std::lround(d.y));
+            _items[i]->setPosition(origin() + hud::defaultPos(_index[i], screen()));
+            _scale[i] = 100;
+            _items[i]->setScale(_base[i]);
+        }
+        _chosen = -1;
+        highlight();
+    });
+    auto* done = ui::panelButton("b03_mid.png", "DONE", [this](Object*) {
+        auto& c = SaveStore::get().data().settings;
+        for (int i = 0; i < 6; ++i)
+        {
+            const Vec2 d = _items[i]->getPosition() - origin() - hud::defaultPos(_index[i], screen());
+            c.buttonOffset[_index[i] * 2]     = static_cast<int>(std::lround(d.x));
+            c.buttonOffset[_index[i] * 2 + 1] = static_cast<int>(std::lround(d.y));
+            c.hudScale[_index[i]]             = _scale[i];
         }
         SaveStore::get().commit();
         Director::getInstance()->popScene();
-    }, style::kGood);
-    done->setPosition(origin().x + screen().width / 2 + 62, origin().y + 26);
-    addChild(done, 5);
+    });
+    auto* menu = Menu::create(minus, plus, def, done, nullptr);
+    menu->setPosition(Vec2::ZERO);
+    const float cx = origin().x + vis.width / 2, cy = origin().y + vis.height / 2;
+    minus->setPosition(cx - 32, cy + 32);
+    plus->setPosition(cx + 32, cy + 32);
+    def->setPosition(cx, cy - 4);
+    done->setPosition(cx, cy - 40);
+    addChild(menu, 6);
+
+    auto* l = EventListenerTouchAllAtOnce::create();
+    l->onTouchesBegan = [this, highlight](const std::vector<Touch*>& ts, Event*) {
+        for (auto* t : ts)
+        {
+            if (_touch >= 0)
+                break;
+            for (int i = 0; i < 6; ++i)
+            {
+                const float r = 24.0f + 18.0f * _items[i]->getScale();
+                if (_items[i]->getPosition().distance(t->getLocation()) < r)
+                {
+                    _touch  = t->getID();
+                    _chosen = i;
+                    highlight();
+                    break;
+                }
+            }
+        }
+    };
+    l->onTouchesMoved = [this](const std::vector<Touch*>& ts, Event*) {
+        for (auto* t : ts)
+            if (_touch == t->getID() && _chosen >= 0)
+            {
+                auto p = t->getLocation();
+                p.x = std::clamp(p.x, origin().x + 16, origin().x + screen().width - 16);
+                p.y = std::clamp(p.y, origin().y + 16, origin().y + screen().height - 16);
+                _items[_chosen]->setPosition(p);
+            }
+    };
+    l->onTouchesEnded = [this](const std::vector<Touch*>& ts, Event*) {
+        for (auto* t : ts)
+            if (_touch == t->getID())
+                _touch = -1;
+    };
+    l->onTouchesCancelled = l->onTouchesEnded;
+    _eventDispatcher->addEventListenerWithSceneGraphPriority(l, this);
     style::onBack(this, [] { Director::getInstance()->popScene(); });
     return true;
 }

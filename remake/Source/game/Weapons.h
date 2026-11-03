@@ -11,6 +11,7 @@
 #pragma once
 
 #include <array>
+#include <iterator>
 #include <string_view>
 
 #include "audio/SoundBank.h"
@@ -130,6 +131,25 @@ constexpr audio::SoundId fireSound(WeaponId id)
 // WeaponFactory::init (+0x14): the ammo types WeaponManager draws from at a weapon spawn,
 // as the remake's weapon ids. Grenade pick-ups (frag 2, gas 20, proximity 23) and the saw
 // blade item (24) arrive with the grenades.
+// The zoom labels the original HUD shows beside the zoom button (Weapon::getZoomLabel returns
+// the string at the current zoom level; the strings were read from the library data at the
+// addresses used by each gun's init): "1X", "2X", "4X" ...
+inline const char* zoomLabel(WeaponId w, int level)
+{
+    static constexpr const char* kLabels[][4] = {
+        /* AK47 */ {"1X", "2X", "4X", ""},  /* Deagle */ {"1X", "2X", "", ""},  /* GoldDeagle */ {"1X", "3X", "", ""},
+        /* Magnum */ {"1X", "3X", "", ""},  /* Uzi */ {"1X", "3X", "", ""},      /* MP5 */ {"1X", "3X", "", ""},
+        /* M16 */ {"1X", "3X", "5X", ""},   /* M14 */ {"1X", "4X", "6X", ""},    /* Sniper */ {"1X", "3X", "5X", "7X"},
+        /* Shotgun */ {"1X", "2X", "", ""}, /* Rocket */ {"1X", "4X", "6X", ""}, /* Phasr */ {"1X", "3X", "5X", ""},
+        /* Flamethrower */ {"1X", "2X", "", ""}, /* SawGun */ {"1X", "2X", "4X", ""}, /* EMP */ {"1X", "2X", "4X", ""},
+        /* Machete */ {"1X", "", "", ""},   /* RiotShield */ {"1X", "", "", ""},
+    };
+    const int i = static_cast<int>(w);
+    if (i < 0 || i >= static_cast<int>(std::size(kLabels)) || level < 0 || level > 3 || !kLabels[i][level][0])
+        return "1X";
+    return kLabels[i][level];
+}
+
 // NEW (M11): lobby "allowed weapons" groups for the map pick-ups. Bit set = may spawn.
 // bit0 pistols, bit1 SMGs and rifles, bit2 shotgun and sniper, bit3 heavy (rocket, laser,
 // flame, saw, EMP), bit4 melee.

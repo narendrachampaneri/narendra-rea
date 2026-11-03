@@ -170,7 +170,7 @@ private:
     void hitSoldier(Fighter& victim, cpShape* shape, float damage, bool network, int attacker, int ammoType,
                     Vec2 point, Vec2 dir);
     void updateWeaponSpawns(float dt);
-    void updatePickUps(Fighter& f, bool pickUpPressed);
+    void updatePickUps(Fighter& f, bool pickUpPressed, bool pickUpDualPressed);
     void updateMelee(Fighter& f);
     void fireShots(Fighter& f, int shots, Weapon* gun = nullptr);
 

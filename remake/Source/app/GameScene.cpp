@@ -283,28 +283,19 @@ void GameScene::buildHud()
 
     // Melee at PUNCH_POS (width - 185, 35), zoom at ZOOM_POS (34, height - 34), scale 0.8.
     _melee = Sprite::createWithSpriteFrameName("meleeBtn.png");
-    _melee->setScale(0.8f);
-    _melee->setPosition(hud::pos(hud::kMelee, visible, SaveStore::get().data().settings));
+    const auto& hudCfg = SaveStore::get().data().settings;
+    _melee->setScale(0.8f * hud::scale(hud::kMelee, hudCfg));
+    _melee->setPosition(hud::pos(hud::kMelee, visible, hudCfg));
     _hud->addChild(_melee, 1);
     // Grenade at GRENADE_POS, above the melee button.
     _grenadeBtn = Sprite::createWithSpriteFrameName("grenadeBtn.png");
-    _grenadeBtn->setScale(0.8f);
-    _grenadeBtn->setPosition(hud::pos(hud::kGrenade, visible, SaveStore::get().data().settings));
+    _grenadeBtn->setScale(0.8f * hud::scale(hud::kGrenade, hudCfg));
+    _grenadeBtn->setPosition(hud::pos(hud::kGrenade, visible, hudCfg));
     _hud->addChild(_grenadeBtn, 1);
     _grenadeCount = Label::createWithTTF("2", "fonts/arial.ttf", 11);
     _grenadeCount->setPosition(_grenadeBtn->getContentSize().width - 8, 8);
     _grenadeCount->enableOutline(Color4B::BLACK, 1);
     _grenadeBtn->addChild(_grenadeCount);
-    // Proximity mine button (NEW, M18): a green-tinted grenade button.
-    _mineBtn = Sprite::createWithSpriteFrameName("grenadeBtn.png");
-    _mineBtn->setScale(0.8f);
-    _mineBtn->setColor(Color3B(120, 255, 120));
-    _mineBtn->setPosition(hud::pos(hud::kMine, visible, SaveStore::get().data().settings));
-    _hud->addChild(_mineBtn, 1);
-    _mineCount = Label::createWithTTF("1", "fonts/arial.ttf", 11);
-    _mineCount->setPosition(_mineBtn->getContentSize().width - 8, 8);
-    _mineCount->enableOutline(Color4B::BLACK, 1);
-    _mineBtn->addChild(_mineCount);
     if (_networked && SaveStore::get().data().settings.quickMessages)
     {
         _chatBtn = Sprite::createWithSpriteFrameName("msg.png");
@@ -312,14 +303,25 @@ void GameScene::buildHud()
         _hud->addChild(_chatBtn, 1);
     }
     _zoom = Sprite::createWithSpriteFrameName("zoomBtn.png");
-    _zoom->setScale(0.8f);
-    _zoom->setPosition(hud::pos(hud::kZoom, visible, SaveStore::get().data().settings));
+    _zoom->setScale(0.8f * hud::scale(hud::kZoom, hudCfg));
+    _zoom->setPosition(hud::pos(hud::kZoom, visible, hudCfg));
     _hud->addChild(_zoom, 1);
+    // The zoom level of the weapon in the digits the original shows ("1X", "2X", "4X" ...).
+    _zoomLabel = Label::createWithTTF("1X", "fonts/arial.ttf", 13);
+    _zoomLabel->setAnchorPoint({0, 0.5f});
+    _zoomLabel->setPosition(_zoom->getPositionX() + 30 * hud::scale(hud::kZoom, hudCfg), _zoom->getPositionY());
+    _zoomLabel->enableOutline(Color4B::BLACK, 2);
+    _hud->addChild(_zoomLabel, 1);
     // NEW placement: the weapon within reach, tap to take it (the original showed it on a
     // pop-up button next to the soldier).
     _pickUp = Sprite::createWithSpriteFrameName("wepChangeBtn.png");
-    _pickUp->setPosition(hud::pos(hud::kPickUp, visible, SaveStore::get().data().settings));
+    _pickUp->setPosition(hud::pos(hud::kPickUp, visible, hudCfg));
     _pickUp->setVisible(false);
+    // The original's second pick-up button: take the weapon into the other hand (two guns).
+    _pickUpDual = Sprite::createWithSpriteFrameName("dualBtn.png");
+    _pickUpDual->setPosition(_pickUp->getPosition() + Vec2(60, 0));
+    _pickUpDual->setVisible(false);
+    _hud->addChild(_pickUpDual, 1);
     if (auto* icon = Sprite::createWithSpriteFrameName("ak47.png"))
     {
         icon->setName("icon");
@@ -349,8 +351,8 @@ void GameScene::buildHud()
     ammoFrame->addChild(_ammo);
 
     _reload = Sprite::createWithSpriteFrameName("ammoBtn.png");
-    _reload->setScale(0.8f);  // defaultReloadScl on phones
-    _reload->setPosition(hud::pos(hud::kReload, visible, SaveStore::get().data().settings));
+    _reload->setScale(0.8f * hud::scale(hud::kReload, hudCfg));  // defaultReloadScl on phones
+    _reload->setPosition(hud::pos(hud::kReload, visible, hudCfg));
     _hud->addChild(_reload, 1);
     if (auto* ring = Sprite::createWithSpriteFrameName("ammoBtn.png"))
     {
@@ -368,11 +370,47 @@ void GameScene::layoutPads()
     const auto visible = _director->getVisibleSize();
     const auto& cfg    = SaveStore::get().data().settings;
     _pad.setSwapped(cfg.leftHanded);
+    // The placement screen's choices: where each stick sits and how big it is.
+    const float moveScale = hud::scale(hud::kMovePad, cfg), aimScale = hud::scale(hud::kAimPad, cfg);
+    const auto moveAt     = hud::pos(hud::kMovePad, visible, cfg);
+    const auto aimAt      = hud::pos(hud::kAimPad, visible, cfg);
     // Sensitivity: a bigger stick travel needs more finger movement for the same push.
-    _pad.setLayout({rules::kPadInset, rules::kPadInset}, {visible.width - rules::kPadInset, rules::kPadInset},
-                   rules::kPadRadius * 100.0f / static_cast<float>(cfg.sensitivity));
+    _pad.setLayout({moveAt.x, moveAt.y}, {aimAt.x, aimAt.y},
+                   rules::kPadRadius * 100.0f / static_cast<float>(cfg.sensitivity) * 0.5f * (moveScale + aimScale));
+    _movePad->setScale(moveScale);
+    _firePad->setScale(aimScale);
+    _moveStick->setScale(moveScale);
+    _fireStick->setScale(aimScale);
     _movePad->setPosition(toAx(_pad.moveCentre()));
     _firePad->setPosition(toAx(_pad.aimCentre()));
+}
+
+// CONTROLS > INVERT: flips the stick axes (the original's per-stick X / Y / X and Y choices).
+void GameScene::applyInverts(game::PadState& in) const
+{
+    const auto& cfg = SaveStore::get().data().settings;
+    if (cfg.invertMove & 1)
+    {
+        in.moveOffset.x = -in.moveOffset.x;
+        in.moveVector.x = -in.moveVector.x;
+    }
+    if (cfg.invertMove & 2)
+    {
+        in.moveOffset.y = -in.moveOffset.y;
+        in.moveVector.y = -in.moveVector.y;
+    }
+    if (cfg.invertAim)
+    {
+        float a = in.aimAngle;  // clockwise degrees, 0 = right
+        if (cfg.invertAim & 1)
+            a = 180.0f - a;
+        if (cfg.invertAim & 2)
+            a = -a;
+        a = std::fmod(a, 360.0f);
+        if (a < 0.0f)
+            a += 360.0f;
+        in.aimAngle = a;
+    }
 }
 
 Vec2 GameScene::hudPoint(const Touch* touch) const
@@ -408,12 +446,13 @@ std::vector<std::pair<int, Vec2>> GameScene::buttonsAt() const
                                           {kReload, _reload->getPosition()},
                                           {kMelee, _melee->getPosition()},
                                           {kGrenade, _grenadeBtn->getPosition()},
-                                          {kMine, _mineBtn->getPosition()},
                                           {kZoom, _zoom->getPosition()},
                                           {kSwitch, _ammoFrame->getPosition() + Vec2(_ammoFrame->getContentSize().width / 2,
                                                                                     -_ammoFrame->getContentSize().height / 2)}};
     if (_pickUp->isVisible())
         out.push_back({kPickUp, _pickUp->getPosition()});
+    if (_pickUpDual->isVisible())
+        out.push_back({kPickUpDual, _pickUpDual->getPosition()});
     if (_chatBtn)
         out.push_back({kChat, _chatBtn->getPosition()});
     return out;
@@ -448,7 +487,7 @@ void GameScene::onTouchesEnded(const std::vector<Touch*>& touches, Event*)
             case kSwitch: _pressed.switchWeapon = true; break;
             case kPickUp: _pressed.pickUp = true; break;
             case kGrenade: _pressed.grenade = true; break;
-            case kMine: _pressed.mine = true; break;
+            case kPickUpDual: _pressed.pickUpDual = true; break;
             case kChat:
                 addChild(ui::quickChatGrid([](int m) { NetContext::get().sendChat(m); }), kZPause);
                 break;
@@ -508,14 +547,15 @@ void GameScene::update(float dt)
         in.switchWeapon = std::exchange(_pressed.switchWeapon, false);
         in.pickUp       = std::exchange(_pressed.pickUp, false);
         in.grenade      = std::exchange(_pressed.grenade, false);
-        in.mine         = std::exchange(_pressed.mine, false);
+        in.pickUpDual   = std::exchange(_pressed.pickUpDual, false);
+        applyInverts(in);
         _controller.apply(in);
         _driver->step(_stepper.step(), in);
         // Camera smoothing runs per step like Stage::updateView did per frame at 60 fps.
-        const float zoom = _match->player().weapon().zoom();  // Weapon::getZoomScale
+        const float zoom = _match->player().scopeWeapon().zoom();  // Weapon::getZoomScale (two guns: the stronger scope)
         _viewScale       = _viewScale * rules::kViewScaleSmoothing + (1.0f - rules::kViewScaleSmoothing) * zoom;
         // getViewOffset: one point per step towards the weapon's offset * (2 - zoom).
-        const int target = static_cast<int>(_match->player().weapon().def().viewOffset * (2.0f - zoom));
+        const int target = static_cast<int>(_match->player().scopeWeapon().def().viewOffset * (2.0f - zoom));
         if (_viewOffset - target < -1)
             ++_viewOffset;
         else if (_viewOffset - target > 1)
@@ -940,12 +980,14 @@ void GameScene::updateHud()
     const int near = _match->playerFighter().nearItem;
     const auto* item = near >= 0 ? _match->item(near) : nullptr;
     _pickUp->setVisible(item && !item->taken() && _match->playerAlive());
+    _pickUpDual->setVisible(_pickUp->isVisible() && !(item->weapon().info() && item->weapon().info()->melee));
     if (_pickUp->isVisible())
         if (auto* icon = static_cast<Sprite*>(_pickUp->getChildByName("icon")))
             if (auto* frame = SpriteFrameCache::getInstance()->findFrame(item->weapon().def().sprite))
                 icon->setSpriteFrame(frame);
     _grenadeCount->setString(std::to_string(_match->player().grenades()));
-    _mineCount->setString(_match->player().isMirror() ? "" : std::to_string(_match->player().mines()));
+    const auto& scope = _match->player().scopeWeapon();
+    _zoomLabel->setString(game::zoomLabel(scope.id(), scope.zoomIndex()));
     // Grenades and rockets in flight.
     auto sync = [this](std::vector<Sprite*>& views, const char* frame, std::size_t n, auto&& place) {
         while (views.size() < n)

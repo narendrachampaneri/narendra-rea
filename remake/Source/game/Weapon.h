@@ -63,6 +63,8 @@ public:
     // Zoom (Weapon::changeZoomLevel): cycles the weapon's zoom levels.
     void nextZoom();
     float zoom() const { return _info ? _info->zooms[_zoom] : 1.0f; }
+    int zoomIndex() const { return _zoom; }
+    float maxZoomScale() const;  // the smallest view scale this weapon can reach (strongest scope)
 
     // Weapon::getRandomFiringAngle: a fixed pseudo-random sequence, in degrees.
     float randomFiringAngle();

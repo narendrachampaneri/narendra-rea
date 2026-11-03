@@ -124,10 +124,10 @@ void SoldierView::sync(const game::Soldier& s, float dt)
     setVisible(!s.isDead());
     // Pro Pack dual wield: draw the second handgun in the other hand.
     // The mod puts the primary weapon in both hands (isDualWield / isDualWieldPrimaryOnly).
-    const bool both = rules::gMod.dualWield;
-    _weapon2->setVisible(both || s.dualActive());
-    const auto* second = both ? &s.weapon() : s.secondary();
-    if ((both || s.dualActive()) && second)
+    const bool both = false;
+    _weapon2->setVisible(s.dualActive());
+    const auto* second = s.secondary();
+    if (s.dualActive() && second)
         if (auto* f2 = SpriteFrameCache::getInstance()->findFrame(second->def().sprite);
             f2 && _weapon2->getSpriteFrame() != f2)
             _weapon2->setSpriteFrame(f2);

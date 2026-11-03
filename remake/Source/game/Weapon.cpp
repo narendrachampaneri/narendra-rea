@@ -25,6 +25,16 @@ int Weapon::takeBurstShots()
     return due;
 }
 
+float Weapon::maxZoomScale() const
+{
+    if (!_info)
+        return 1.0f;
+    float best = 1.0f;
+    for (int i = 0; i < _info->zoomCount; ++i)
+        best = std::min(best, _info->zooms[i]);
+    return best;
+}
+
 void Weapon::nextZoom()
 {
     if (_info)

@@ -418,8 +418,26 @@ void Soldier::updateStep(float dt, const PadState& pad)
 
 bool Soldier::dualActive() const
 {
-    return _boosts.dualWield && !_dead && _weapon && _secondary && economy::isHandgun(_weapon->id()) &&
-           economy::isHandgun(_secondary->id());
+    const auto melee = [](const Weapon& w) { return w.info() && w.info()->melee; };
+    return _dual && !_dead && _weapon && _secondary && !melee(*_weapon) && !melee(*_secondary);
+}
+
+Weapon& Soldier::scopeWeapon()
+{
+    if (dualActive() && _secondary->maxZoomScale() < _weapon->maxZoomScale())
+        return *_secondary;
+    return *_weapon;
+}
+
+std::unique_ptr<Weapon> Soldier::takeWeaponDual(std::unique_ptr<Weapon> weapon)
+{
+    emitSound(SoundId::Reload);
+    struct Reapply { Soldier* s; ~Reapply() { s->applyWeaponBoosts(); } } reapply{this};
+    if (weapon)
+        weapon->setMods(0, 0, 1);
+    _dual = true;
+    std::swap(_secondary, weapon);
+    return weapon;  // what the second hand held before (maybe nothing)
 }
 
 bool Soldier::fireSecondary()

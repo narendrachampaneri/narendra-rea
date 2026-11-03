@@ -76,7 +76,7 @@ struct StartMatch { std::uint32_t seed = 0; HostOptions options; std::vector<Pla
 // --- In the match --------------------------------------------------------------------------
 enum InputBits : std::uint16_t
 {
-    kFire = 1, kTouched = 2, kMelee = 4, kGrenade = 8, kReload = 16, kSwitch = 32, kPickUp = 64, kZoom = 128, kMine = 256,
+    kFire = 1, kTouched = 2, kMelee = 4, kGrenade = 8, kReload = 16, kSwitch = 32, kPickUp = 64, kZoom = 128, kMine = 256, kPickUpDual = 512,
 };
 struct Input
 {

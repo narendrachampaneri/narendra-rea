@@ -29,7 +29,7 @@ TEST_CASE("Save text round-trips every field")
     d.settings.centredCamera = true; d.settings.leftHanded = true; d.settings.autoFire = true; d.settings.vibration = false;
     d.settings.sensitivity = 130; d.settings.quickMessages = false; d.settings.quality = Quality::Extreme; d.settings.frameRate = 120; d.settings.qualityAuto = false;
     d.stats = {120, 80, 14, 7, 5600, 4, 22, 123456};
-    d.avatar.mask = 3; d.settings.showStats = true; d.settings.crosshair = 2; d.settings.buttonOffset = {-20, 15, 0, 0, 40, -30, 5, 5, -400, 400, 7, -7};
+    d.avatar.mask = 3; d.settings.showStats = true; d.settings.crosshair = 2; d.settings.buttonOffset = {-20, 15, 0, 0, 40, -30, 5, 5, -400, 400, 7, -7, 3, 4, -5, 6}; d.settings.hudScale = {80, 120, 100, 150, 100, 100, 70, 200}; d.settings.invertMove = 3; d.settings.invertAim = 1;
     d.friends["Ann"] = {10, 4, 3};
     d.friends["Bo Jr"] = {1, 9, 1};
     d.lastSeenVersion = "0.6.0";
@@ -265,31 +265,47 @@ TEST_CASE("Gas grenade: the upgrade turns throws into a cloud that hurts enemies
     CHECK(m.fighter(bot)->soldier->health() <= botHealth);
 }
 
-TEST_CASE("Pro Pack dual wield: two handguns fire together, one does not")
+TEST_CASE("Two guns by choice: the second pick-up puts a gun in the other hand, both fire, the stronger scope zooms")
 {
     using namespace mm::game;
     const auto data = loadOutpost();
-    for (bool pro : {false, true})
-    {
-        Match m(*mm::assets::findMap("outpost"), data);
-        m.setUpgrades(0, (1u << GoldenEagle) | (pro ? (1u << mm::economy::kProBit) : 0u));
-        m.giveWeapon(0, WeaponId::Deagle);
-        auto& s = m.player();
-        REQUIRE(s.secondary());
-        CHECK(s.dualActive() == pro);
-        const int clip2 = s.secondary()->clip();
-        PadState fire;
-        fire.firing = true;
-        for (int i = 0; i < 120; ++i)
-            m.step(1.0f / 60.0f, fire);
-        if (pro)
-            CHECK(s.secondary()->clip() < clip2);
-        else
-            CHECK(s.secondary()->clip() == clip2);
-    }
+    Match m(*mm::assets::findMap("outpost"), data);
+    auto& s = m.player();
+    CHECK_FALSE(s.dualActive());  // one gun by default
+    CHECK(&s.scopeWeapon() == &s.weapon());
     CHECK(mm::economy::networkMask(mm::save::SaveData{}) == 0);
+
+    CHECK(s.takeWeaponDual(std::make_unique<Weapon>(WeaponId::Sniper)) == nullptr);
+    REQUIRE(s.dualActive());
+    REQUIRE(s.secondary());
+    CHECK(s.secondary()->id() == WeaponId::Sniper);
+    CHECK(&s.scopeWeapon() == s.secondaryWeapon());  // the sniper has the stronger scope (7X)
+
+    const int clip1 = s.weapon().clip(), clip2 = s.secondary()->clip();
+    PadState fire;
+    fire.firing = true;
+    for (int i = 0; i < 120; ++i)
+        m.step(1.0f / 60.0f, fire);
+    CHECK(s.weapon().clip() < clip1);
+    CHECK(s.secondary()->clip() < clip2);
+
+    PadState zoom;
+    zoom.zoom = true;
+    m.step(1.0f / 60.0f, zoom);
+    CHECK(s.secondary()->zoomIndex() == 1);  // the scope weapon zoomed, not the AK47
+    CHECK(s.weapon().zoomIndex() == 0);
 }
 
+TEST_CASE("Zoom labels are the original's digits")
+{
+    using mm::game::WeaponId;
+    using mm::game::zoomLabel;
+    CHECK(std::string(zoomLabel(WeaponId::AK47, 2)) == "4X");
+    CHECK(std::string(zoomLabel(WeaponId::Sniper, 3)) == "7X");
+    CHECK(std::string(zoomLabel(WeaponId::M14, 2)) == "6X");
+    CHECK(std::string(zoomLabel(WeaponId::Magnum, 1)) == "3X");
+    CHECK(std::string(zoomLabel(WeaponId::Machete, 0)) == "1X");
+}
 TEST_CASE("Proximity mine: arms after a second, hurts an enemy that walks in, never the owner")
 {
     using namespace mm::game;

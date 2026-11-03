@@ -25,6 +25,7 @@ PadState padFromInput(const Input& in)
     p.pickUp      = in.bits & kPickUp;
     p.zoom        = in.bits & kZoom;
     p.mine        = in.bits & kMine;
+    p.pickUpDual  = in.bits & kPickUpDual;
     return p;
 }
 
@@ -34,7 +35,7 @@ Input inputFromPad(const PadState& p, std::uint32_t seq)
     in.seq   = seq;
     in.bits  = (p.firing ? kFire : 0) | (p.moveTouched ? kTouched : 0) | (p.melee ? kMelee : 0) |
                (p.grenade ? kGrenade : 0) | (p.reload ? kReload : 0) | (p.switchWeapon ? kSwitch : 0) |
-               (p.pickUp ? kPickUp : 0) | (p.zoom ? kZoom : 0) | (p.mine ? kMine : 0);
+               (p.pickUp ? kPickUp : 0) | (p.zoom ? kZoom : 0) | (p.mine ? kMine : 0) | (p.pickUpDual ? kPickUpDual : 0);
     in.moveX = static_cast<std::int8_t>(std::clamp(std::lround(p.moveOffset.x * 100.0f), -100L, 100L));
     in.moveY = static_cast<std::int8_t>(std::clamp(std::lround(p.moveOffset.y * 100.0f), -100L, 100L));
     float a  = std::fmod(p.aimAngle, 360.0f);

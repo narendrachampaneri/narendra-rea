@@ -44,6 +44,14 @@ Where the original had nothing recoverable (drone kinds, mine numbers, gas numbe
 gamepad layout) the remake uses its own documented default; all of them are marked NEW in the
 code and in the sections below.
 
+## HUD and controls like the original (rc5)
+- CONTROLS screen as in the original: MOVEMENT and AIMING circles, SWAP, INVERT arrows per stick (NONE / X / Y / X Y), PLACEMENT.
+- PLACEMENT screen as in the original: the real controls on a light jungle backdrop (movement stick, aim stick, grenade, melee, reload, zoom); drag to move, [+] / [-] scale the chosen one, DEFAULT, DONE. Positions and sizes are saved.
+- Default HUD positions follow the original's placement screenshot: zoom top left, reload top right, grenade next to the movement stick, punch next to the aim stick. One grenade button (the extra mine button is gone).
+- The zoom button shows the weapon's zoom digits in the original's own strings (read from the game library): AK47 1X/2X/4X, M14 1X/4X/6X, sniper 1X/3X/5X/7X and so on.
+- One gun by default. A second pick-up button (the original's "dual" pick-up) puts a weapon in the other hand: both guns fire together, reload together, and the stronger scope of the two is the one the zoom button cycles. The mod's automatic dual wield and two-bullets-a-shot are OFF (owner's decision); unlimited ammo, instant reload and endless fuel stay on.
+- Crouch (push the move stick down on the ground): a crouching soldier's head lets bullets pass (the original's isDucked rule).
+
 ## Multiplayer screens (rc3, as in the original recording)
 MULTIPLAYER -> SIGNING IN and QUICK PLAY (greyed: no online service) / LAN WIFI -> LOCAL GAME ("FOUND n GAMES:", arrows to pick a game, JOIN, HOST top right, BACK; plus small IP and QR boxes at the bottom, which the original did not have) -> HOST -> SELECT MAP (map between arrows, PLAY, BACK) -> lobby (players with READY / NOT READY, "WAITING FOR PLAYERS TO JOIN...", START / gear / EXIT, chat bubble; the gear opens TEAM / GAME STATS / DONE, and GAME STATS shows the match options and the host's address). Solo DEATHMATCH also goes through SELECT MAP.
 

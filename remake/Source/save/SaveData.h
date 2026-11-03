@@ -46,7 +46,9 @@ struct Settings
     int frameRate = 60;          // 30, 60, 90, 120
     // NEW (M12): button-placement editor. Offsets in points from the default place of
     // melee, grenade, zoom, reload, pick-up, mine (x then y each); 0 = original placement.
-    std::array<int, 12> buttonOffset{};
+    std::array<int, 16> buttonOffset{};  // 8 elements: see app/HudLayout.h
+    std::array<int, 8> hudScale{100, 100, 100, 100, 100, 100, 100, 100};  // percent, same elements
+    int invertMove = 0, invertAim = 0;  // CONTROLS > INVERT: 0 none, 1 X, 2 Y, 3 X and Y
     bool showStats = false;  // NEW (M18): FPS / draw-call counters on screen (for the 4 GB phone checks)
     bool operator==(const Settings&) const = default;
 };

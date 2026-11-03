@@ -52,7 +52,10 @@ std::string toText(const SaveData& d)
       << ' ' << s.quickMessages << ' ' << static_cast<int>(s.quality) << ' ' << s.frameRate << ' ' << s.qualityAuto << ' ' << s.crosshair;
     for (int off : s.buttonOffset)
         o << ' ' << off;
-    o << ' ' << s.showStats << "\n";
+    o << ' ' << s.showStats << ' ' << s.invertMove << ' ' << s.invertAim;
+    for (int sc : s.hudScale)
+        o << ' ' << sc;
+    o << "\n";
     const Stats& t = d.stats;
     o << "stats " << t.kills << ' ' << t.deaths << ' ' << t.matches << ' ' << t.bestSurvivalWave << ' '
       << t.bestSurvivalScore << ' ' << t.bestCoopWave << ' ' << t.bestDeathmatchKills << ' ' << t.playSeconds << "\n";
@@ -130,6 +133,16 @@ std::optional<SaveData> fromText(std::string_view text)
             int stats = 0;
             if (v >> stats)
                 s.showStats = stats != 0;
+            if (!(v >> s.invertMove >> s.invertAim))
+                s.invertMove = s.invertAim = 0;
+            s.invertMove = std::clamp(s.invertMove, 0, 3);
+            s.invertAim  = std::clamp(s.invertAim, 0, 3);
+            for (int& sc : s.hudScale)
+            {
+                if (!(v >> sc))
+                    sc = 100;
+                sc = std::clamp(sc, 50, 200);
+            }
             s.blood = blood; s.centredCamera = centred; s.leftHanded = left; s.autoFire = auto_;
             s.vibration = vib; s.quickMessages = qm;
             s.soundVolume = std::clamp(s.soundVolume, 0, 100);

@@ -40,10 +40,17 @@ public:
 
     // SoldierHostController::fire: pulls the trigger; true when a shot left the barrel.
     bool fire();
-    // Pro Pack dual wield: with two handguns in hand the second one fires with the first.
+    // Two guns, one in each hand (the "pick up as second gun" button, HUD::onPressPickupDualButton):
+    // both fire together. Which gun's scope counts is decided by scopeWeapon().
     bool dualActive() const;
     bool fireSecondary();
     Weapon* secondaryWeapon() { return _secondary.get(); }
+    // The weapon whose zoom the soldier uses: the held gun, or with two guns the one with the
+    // stronger scope.
+    Weapon& scopeWeapon();
+    const Weapon& scopeWeapon() const { return const_cast<Soldier*>(this)->scopeWeapon(); }
+    // Picks a weapon up into the second hand; returns what it replaces there.
+    std::unique_ptr<Weapon> takeWeaponDual(std::unique_ptr<Weapon> weapon);
 
     // SoldierController::addDamage: health never goes below 0; the last attacker gets the kill.
     void addDamage(float amount, int attacker, int ammoType);
@@ -159,6 +166,7 @@ private:
     std::unique_ptr<Weapon> _secondary;  // the other one (+0x14c)
     economy::Boosts _boosts;
     void applyWeaponBoosts();
+    bool _dual          = false;         // a gun in each hand (set by takeWeaponDual)
     bool _mirror        = false;
     bool _onGroundNet   = false;
     bool _melee         = false;         // +0x166

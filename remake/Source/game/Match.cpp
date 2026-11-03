@@ -95,6 +95,7 @@ void Match::setRemoteInput(int id, const PadState& in)
         f->netInput.reload       |= old.reload;
         f->netInput.switchWeapon |= old.switchWeapon;
         f->netInput.pickUp       |= old.pickUp;
+        f->netInput.pickUpDual   |= old.pickUpDual;
         f->netInput.zoom         |= old.zoom;
     }
 }
@@ -293,7 +294,7 @@ void Match::updateWeaponSpawns(float dt)
     (void)dt;
 }
 
-void Match::updatePickUps(Fighter& f, bool pickUpPressed)
+void Match::updatePickUps(Fighter& f, bool pickUpPressed, bool pickUpDualPressed)
 {
     // WeaponManager::weaponProximity: nothing while moving faster than 200 points/s; the
     // nearest weapon within 35 points. The same kind as one carried tops its ammo up (that
@@ -340,7 +341,15 @@ void Match::updatePickUps(Fighter& f, bool pickUpPressed)
         return;
     }
     f.nearItem = nearest->uid();
-    if (pickUpPressed)
+    if (pickUpDualPressed && !(nearest->weapon().info() && nearest->weapon().info()->melee))
+    {
+        // Into the second hand: both guns fire together from now on.
+        auto dropped = s.takeWeaponDual(nearest->take());
+        if (dropped)
+            dropItem(std::move(dropped), s.position() + Vec2{0, 10}, s.velocity() + Vec2{0, 60});
+        f.nearItem = -1;
+    }
+    else if (pickUpPressed)
     {
         auto dropped = s.takeWeapon(nearest->take());
         if (dropped)
@@ -625,7 +634,7 @@ void Match::step(float dt, const PadState& pad)
         if (f.remote)
         {
             f.netInput.melee = f.netInput.grenade = f.netInput.reload = f.netInput.switchWeapon = false;
-            f.netInput.pickUp = f.netInput.zoom = false;
+            f.netInput.pickUp = f.netInput.zoom = f.netInput.pickUpDual = false;
         }
         Soldier& s        = *f.soldier;
         if (_options.party.meleeOnly && !(s.weapon().info() && s.weapon().info()->melee))
@@ -650,7 +659,7 @@ void Match::step(float dt, const PadState& pad)
         if (in.mine)
             placeMine(f);
         if (in.zoom)
-            s.weapon().nextZoom();
+            s.scopeWeapon().nextZoom();  // with two guns the stronger scope is the one that zooms
         if (in.melee || (in.firing && s.weapon().info() && s.weapon().info()->melee))
             s.meleeAttack();
 
@@ -664,7 +673,7 @@ void Match::step(float dt, const PadState& pad)
         if (_options.party.unlimitedAmmo && !_options.mirror)
             s.weapon().refill();
         updateMelee(f);
-        updatePickUps(f, in.pickUp);
+        updatePickUps(f, in.pickUp, in.pickUpDual);
     }
     if (_options.weaponPickups)
         updateWeaponSpawns(dt);

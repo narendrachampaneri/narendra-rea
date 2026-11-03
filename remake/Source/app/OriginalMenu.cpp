@@ -6,6 +6,7 @@
 
 #include "app/AudioSystem.h"
 #include "app/GameScene.h"
+#include "app/HudLayout.h"
 #include "app/HomeScene.h"
 #include "app/Menus.h"
 #include "app/LobbyScene.h"
@@ -364,15 +365,78 @@ bool ControlsScene::init()
 {
     if (!Scene::init())
         return false;
-    auto& cfg = SaveStore::get().data().settings;
-    auto save = [] { SaveStore::get().commit(); SaveStore::get().applySettings(); };
-    buildListMenu(this,
-                  {toggle("SWAP STICKS", [&cfg] { return cfg.leftHanded; }, [&cfg, save] { cfg.leftHanded = !cfg.leftHanded; save(); }),
-                   toggle("AUTO FIRE", [&cfg] { return cfg.autoFire; }, [&cfg, save] { cfg.autoFire = !cfg.autoFire; save(); }),
-                   button("PLACEMENT", [] {
-                       Director::getInstance()->pushScene(TransitionFade::create(0.2f, utils::createInstance<ButtonEditorScene>()));
-                   })},
-                  false, goSettings);
+    // The original's CONTROLS screen: MOVEMENT [circle] - SWAP - AIMING [circle], INVERT arrows for
+    // each stick (NONE / X / Y / X Y), PLACEMENT, BACK.
+    buildListMenu(this, {}, false, goSettings);
+    auto* director     = Director::getInstance();
+    const auto visible = director->getVisibleSize();
+    const auto origin  = director->getVisibleOrigin();
+    auto& cfg          = SaveStore::get().data().settings;
+    const float cx = origin.x + visible.width / 2, top = origin.y + visible.height;
+
+    struct Group { Node* node; LabelAtlas* value; int* invert; };
+    auto makeGroup = [&](const char* title, int* invert, float x) {
+        auto* g = Node::create();
+        g->setPosition(x, top - 70);
+        addChild(g, 6);
+        auto* ring = Sprite::createWithSpriteFrameName("movePad.png");
+        ring->setScale(0.9f);
+        ring->setOpacity(190);
+        g->addChild(ring, 0);
+        auto* label = ui::atlasLabel(title);
+        label->setScale(0.32f);
+        label->setAnchorPoint(Vec2::ANCHOR_MIDDLE);
+        g->addChild(label, 1);
+        auto* inv = ui::atlasLabel("INVERT:");
+        inv->setScale(0.20f);
+        inv->setAnchorPoint(Vec2::ANCHOR_MIDDLE);
+        inv->setPosition(0, -62);
+        g->addChild(inv, 1);
+        auto* value = ui::atlasLabel("NONE");
+        value->setScale(0.30f);
+        value->setAnchorPoint(Vec2::ANCHOR_MIDDLE);
+        value->setPosition(0, -80);
+        g->addChild(value, 1);
+        static const char* kNames[4] = {"NONE", "X", "Y", "X Y"};
+        auto show = [value, invert] { value->setString(kNames[std::clamp(*invert, 0, 3)]); };
+        show();
+        auto step = [invert, show](int d) {
+            *invert = (*invert + d + 4) % 4;
+            SaveStore::get().commit();
+            show();
+        };
+        auto* left  = ui::panelButton("b03_left.png", " ", [step](Object*) { AudioSystem::get().play(audio::SoundId::Grenade1); step(-1); });
+        auto* right = ui::panelButton("b03_right.png", " ", [step](Object*) { AudioSystem::get().play(audio::SoundId::Grenade1); step(1); });
+        auto* arrows = Menu::create(left, right, nullptr);
+        arrows->setPosition(Vec2::ZERO);
+        left->setPosition(-64, -76);
+        right->setPosition(64, -76);
+        g->addChild(arrows, 2);
+        return g;
+    };
+    Node* moveGroup = makeGroup("MOVEMENT", &cfg.invertMove, cx - 150);
+    Node* aimGroup  = makeGroup("AIMING", &cfg.invertAim, cx + 150);
+    auto placeGroups = [&cfg, moveGroup, aimGroup, cx] {
+        moveGroup->setPositionX(cfg.leftHanded ? cx + 150 : cx - 150);
+        aimGroup->setPositionX(cfg.leftHanded ? cx - 150 : cx + 150);
+    };
+    placeGroups();
+    auto* swap = ui::panelButton("b03_sml.png", "SWAP", [&cfg, placeGroups](Object*) {
+        AudioSystem::get().play(audio::SoundId::Grenade1);
+        cfg.leftHanded = !cfg.leftHanded;
+        SaveStore::get().commit();
+        SaveStore::get().applySettings();
+        placeGroups();
+    });
+    auto* placement = ui::panelButton("b03_big.png", "PLACEMENT", [](Object*) {
+        AudioSystem::get().play(audio::SoundId::Grenade1);
+        Director::getInstance()->pushScene(TransitionFade::create(0.2f, utils::createInstance<ButtonEditorScene>()));
+    });
+    auto* menu = Menu::create(swap, placement, nullptr);
+    menu->setPosition(Vec2::ZERO);
+    swap->setPosition(cx, top - 66);
+    placement->setPosition(cx, origin.y + 70);
+    addChild(menu, 6);
     return true;
 }
 void ControlsScene::onEnter()
