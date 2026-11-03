@@ -44,6 +44,9 @@ Where the original had nothing recoverable (drone kinds, mine numbers, gas numbe
 gamepad layout) the remake uses its own documented default; all of them are marked NEW in the
 code and in the sections below.
 
+## Team colours in the lobby (rc6, as in the old game)
+In the lobby gear panel the TEAM piece sits between two arrows and cycles: no colour, pink, cyan, orange, blue, yellow. Players who pick the same colour are a team (their bullets do not hurt each other, their kills count together); players with no colour play on their own. If everybody picks the same colour they are all one team. The player list shows each person's colour as a bar under the name, with READY / NOT READY. The result names the winning colour ("BLUE TEAM WINS") when a team beat every person and every other team. Co-op still puts everybody on one side. The old automatic Team Deathmatch balancing is gone (colours decide). CHAT FILTER is shown but does nothing yet.
+
 ## HUD and controls like the original (rc5)
 - CONTROLS screen as in the original: MOVEMENT and AIMING circles, SWAP, INVERT arrows per stick (NONE / X / Y / X Y), PLACEMENT.
 - PLACEMENT screen as in the original: the real controls on a light jungle backdrop (movement stick, aim stick, grenade, melee, reload, zoom); drag to move, [+] / [-] scale the chosen one, DEFAULT, DONE. Positions and sizes are saved.

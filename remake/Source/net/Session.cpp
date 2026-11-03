@@ -177,7 +177,7 @@ HostSession::Peer* HostSession::peerByEndpoint(const Endpoint& ep)
 }
 
 void HostSession::setHostReady(bool ready) { _players[0].ready = ready; sendLobby(); }
-void HostSession::setHostTeam(int team) { _players[0].team = static_cast<std::uint8_t>(team); sendLobby(); }
+void HostSession::setHostTeam(int team) { _players[0].team = static_cast<std::uint8_t>(std::clamp(team, 0, static_cast<int>(kTeamColours))); sendLobby(); }
 
 void HostSession::broadcastAll(const Message& m)
 {
@@ -392,7 +392,7 @@ void HostSession::handle(const Packet& p)
                     if (PlayerInfo* pi = player(peer->id))
                     {
                         pi->ready = m.ready;
-                        pi->team  = std::min<std::uint8_t>(m.team, 2);
+                        pi->team  = std::min<std::uint8_t>(m.team, kTeamColours);
                     }
                     sendLobby();
                 }
@@ -780,8 +780,8 @@ std::string ClientSession::resultTitle() const
         return {};
     if (_result->options.mode == GameMode::CoopSurvival)
         return "GAME OVER  -  WAVE " + std::to_string(_wave);
-    if (_result->options.mode == GameMode::TeamDeathmatch)
-        return _result->winnerTeam == 0 ? "DRAW" : (_result->winnerTeam == 1 ? "TEAM 1 WINS" : "TEAM 2 WINS");
+    if (_result->winnerTeam > 0 && _result->winnerTeam <= kTeamColours)
+        return std::string(teamColourName(_result->winnerTeam)) + " TEAM WINS";
     return _result->rows.empty() ? "MATCH OVER" : _result->rows.front().name + " WINS";
 }
 

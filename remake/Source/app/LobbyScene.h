@@ -2,7 +2,13 @@
 // ready / start, quick messages. Placeholder styling until the M6 menus.
 #pragma once
 
+#include <string>
+#include <vector>
+
 #include "axmol.h"
+
+#include "net/Protocol.h"
+#include "save/SaveData.h"
 
 namespace mm::app
 {
@@ -26,6 +32,12 @@ private:
     ax::Menu* _gearColumn = nullptr;
     ax::Menu* _chatMenu = nullptr;
     ax::Label* _waiting = nullptr;
+    ax::Node* _teamRow = nullptr;
+    ax::DrawNode* _teamPiece = nullptr;
+    ax::Node* _rowsNode = nullptr;
+    std::string _rowsSig;
+    void drawTeamPiece();
+    void rebuildRows(const std::vector<net::PlayerInfo>& players);
     static constexpr int kOptionRows = 16;
     ax::Label* _options[kOptionRows] = {};
     ax::Label* _players = nullptr;

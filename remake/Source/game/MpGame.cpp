@@ -15,25 +15,14 @@ MultiplayerGame::MultiplayerGame(const assets::MapDef& def, const assets::MapDat
     _options.minutes = std::clamp<int>(_options.minutes, 1, 8);
     _timeLeft        = _options.minutes * 60.0f;
 
-    if (_options.mode == GameMode::TeamDeathmatch)
-    {
-        bool anyTeam = false;
-        for (const auto& p : _players)
-            anyTeam |= p.team != 0;
-        int next = 1;
-        for (auto& p : _players)
-        {
-            if (!anyTeam || p.team == 0)
-                p.team = static_cast<std::uint8_t>(next);
-            next = next == 1 ? 2 : 1;
-        }
-    }
-    else if (_options.mode == GameMode::CoopSurvival)
+    // The old lobby's team colours: players who picked the same colour (1-5) are a team, players
+    // with no colour (0) play on their own. Co-op puts everybody on one side against the drones.
+    if (_options.mode == GameMode::CoopSurvival)
         for (auto& p : _players)
             p.team = 1;
     else
         for (auto& p : _players)
-            p.team = 0;
+            p.team = std::min<std::uint8_t>(p.team, net::kTeamColours);
 
     MatchOptions mo;
     mo.seed          = seed;
@@ -105,14 +94,33 @@ void MultiplayerGame::spawnWave()
 void MultiplayerGame::finish(ModeState s)
 {
     _state = s;
-    // Winner: most kills (Deathmatch), the team with most kills (Team Deathmatch).
-    if (_options.mode == net::GameMode::TeamDeathmatch)
+    // Winner: most kills for a person, the colour with most kills for a team; _winnerTeam is the
+    // winning colour when a team beat every person and every other team, else 0.
+    if (_options.mode != net::GameMode::CoopSurvival)
     {
-        int kills[3] = {0, 0, 0};
+        int kills[net::kTeamColours + 1] = {};
+        int bestSolo = 0;
         for (const auto& f : _match->fighters())
-            if (f.team >= 1 && f.team <= 2)
+        {
+            if (f.team >= 1 && f.team <= net::kTeamColours)
                 kills[f.team] += f.kills;
-        _winnerTeam = kills[1] == kills[2] ? 0 : (kills[1] > kills[2] ? 1 : 2);
+            else
+                bestSolo = std::max(bestSolo, f.kills);
+        }
+        int bestTeam = 0, bestColour = 0;
+        bool tie     = false;
+        for (int c = 1; c <= net::kTeamColours; ++c)
+        {
+            if (kills[c] > bestTeam)
+            {
+                bestTeam   = kills[c];
+                bestColour = c;
+                tie        = false;
+            }
+            else if (kills[c] == bestTeam && bestTeam > 0)
+                tie = true;
+        }
+        _winnerTeam = (!tie && bestTeam > bestSolo) ? bestColour : 0;
     }
 }
 
@@ -157,17 +165,18 @@ void MultiplayerGame::step(float dt, const PadState& hostPad)
     _timeLeft -= dt;
     if (_options.killLimit > 0)
     {
+        // Team kills count together; people with no colour count on their own.
+        int kills[net::kTeamColours + 1] = {};
         int best = 0;
         for (const auto& f : _match->fighters())
-            best = std::max(best, f.kills);
-        if (_options.mode == GameMode::TeamDeathmatch)
         {
-            int kills[3] = {0, 0, 0};
-            for (const auto& f : _match->fighters())
-                if (f.team >= 1 && f.team <= 2)
-                    kills[f.team] += f.kills;
-            best = std::max(kills[1], kills[2]);
+            if (f.team >= 1 && f.team <= net::kTeamColours)
+                kills[f.team] += f.kills;
+            else
+                best = std::max(best, f.kills);
         }
+        for (int c = 1; c <= net::kTeamColours; ++c)
+            best = std::max(best, kills[c]);
         if (best >= _options.killLimit)
             _timeLeft = 0.0f;
     }
@@ -215,8 +224,8 @@ std::string MultiplayerGame::resultTitle() const
 {
     if (_options.mode == net::GameMode::CoopSurvival)
         return "GAME OVER  -  WAVE " + std::to_string(_wave);
-    if (_options.mode == net::GameMode::TeamDeathmatch)
-        return _winnerTeam == 0 ? "DRAW" : (_winnerTeam == 1 ? "TEAM 1 WINS" : "TEAM 2 WINS");
+    if (_winnerTeam > 0)
+        return std::string(net::teamColourName(_winnerTeam)) + " TEAM WINS";
     const auto rows = results();
     return rows.empty() ? "MATCH OVER" : rows.front().name + " WINS";
 }

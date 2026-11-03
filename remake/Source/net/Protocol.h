@@ -53,6 +53,15 @@ struct PlayerInfo
     bool ready = false, host = false;
     std::uint16_t upgrades = 0;  // purchased upgrades (bit n = config::kUpgrades[n]); ignored in Fair mode
 };
+// Lobby team colours (the old game): 0 = none (on your own), 1..5 = pink, cyan, orange, blue, yellow.
+constexpr std::uint8_t kTeamColours = 5;
+
+inline const char* teamColourName(int team)
+{
+    static const char* kNames[] = {"NO TEAM", "PINK", "CYAN", "ORANGE", "BLUE", "YELLOW"};
+    return kNames[team < 0 ? 0 : (team > kTeamColours ? 0 : team)];
+}
+
 struct HostOptions
 {
     GameMode mode = GameMode::Deathmatch;

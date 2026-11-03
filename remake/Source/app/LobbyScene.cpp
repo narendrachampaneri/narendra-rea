@@ -19,6 +19,14 @@ namespace mm::app
 
 namespace
 {
+// The old lobby's team colours: pink, cyan, orange, blue, yellow (0 = no colour).
+Color4F teamColour(int team)
+{
+    static const Color4F kColours[] = {{0, 0, 0, 0},       {1.0f, 0.50f, 1.0f, 1}, {0.12f, 0.88f, 0.94f, 1},
+                                       {1.0f, 0.63f, 0.04f, 1}, {0.06f, 0.14f, 1.0f, 1}, {1.0f, 0.90f, 0.04f, 1}};
+    return kColours[std::clamp(team, 0, 5)];
+}
+
 const char* kModes[] = {"DEATHMATCH", "TEAM DEATHMATCH", "CO-OP SURVIVAL"};
 
 // The maps a Wi-Fi match can use (the 12 of the original rotation) and Co-op's survival map.
@@ -192,6 +200,7 @@ bool LobbyScene::init()
         AudioSystem::get().play(audio::SoundId::Grenade1);
         _mainColumn->setVisible(false);
         _gearColumn->setVisible(true);
+        _teamRow->setVisible(true);
     });
     if (auto* cog = Sprite::createWithSpriteFrameName("cog.png"))
     {
@@ -218,16 +227,21 @@ bool LobbyScene::init()
                            safe.getMinY() + 12 + chat->getContentSize().height / 2);
     addChild(_chatMenu, 5);
 
-    // The gear's panel: TEAM, GAME STATS (the options), DONE.
-    auto* teamBtn = ui::panelButton("b03_top.png", "TEAM", [this](Object*) {
-        _team = (_team + 1) % 3;
+    // The gear's panel as in the old game: the TEAM colour between two arrows (same colour = a
+    // team, no colour = on your own), CHAT FILTER, GAME STATS (the options), DONE.
+    auto stepTeam = [this](int d) {
+        _team = (_team + d + (net::kTeamColours + 1)) % (net::kTeamColours + 1);
         if (auto* host = NetContext::get().host())
             host->setHostTeam(_team);
         else if (auto* client = NetContext::get().client())
             client->setReady(_ready, _team);
+        drawTeamPiece();
         refresh();
-    });
-    auto* statsBtn = ui::panelButton("b03_mid.png", "GAME STATS", [this](Object*) {
+    };
+    auto* prevTeam = ui::panelButton("b03_left.png", " ", [stepTeam](Object*) { AudioSystem::get().play(audio::SoundId::Grenade1); stepTeam(-1); });
+    auto* nextTeam = ui::panelButton("b03_right.png", " ", [stepTeam](Object*) { AudioSystem::get().play(audio::SoundId::Grenade1); stepTeam(1); });
+    auto* chatFilter = ui::panelButton("b03_top.png", "CHAT FILTER: NONE", [](Object*) {});
+    auto* statsBtn   = ui::panelButton("b03_mid.png", "GAME STATS", [this](Object*) {
         _optionsMenu->setVisible(!_optionsMenu->isVisible());
         _address->setVisible(_optionsMenu->isVisible());
     });
@@ -235,13 +249,34 @@ bool LobbyScene::init()
         _optionsMenu->setVisible(false);
         _address->setVisible(false);
         _gearColumn->setVisible(false);
+        _teamRow->setVisible(false);
         _mainColumn->setVisible(true);
     });
-    _gearColumn = Menu::create(teamBtn, statsBtn, doneBtn, nullptr);
+    _gearColumn = Menu::create(chatFilter, statsBtn, doneBtn, nullptr);
     _gearColumn->alignItemsVerticallyWithPadding(0);
     _gearColumn->setPosition(_mainColumn->getPosition());
     _gearColumn->setVisible(false);
     addChild(_gearColumn, 5);
+    // The TEAM piece: a six-sided plate in the team colour with the word on it.
+    _teamRow = Node::create();
+    _teamRow->setPosition(_mainColumn->getPositionX(), _mainColumn->getPositionY() + 2.5f * chatFilter->getContentSize().height + 2);
+    _teamRow->setVisible(false);
+    addChild(_teamRow, 5);
+    _teamPiece = DrawNode::create();
+    _teamRow->addChild(_teamPiece, 0);
+    auto* teamLabel = ui::atlasLabel("TEAM");
+    teamLabel->setScale(0.32f);
+    teamLabel->setAnchorPoint(Vec2::ANCHOR_MIDDLE);
+    _teamRow->addChild(teamLabel, 2);
+    auto* teamArrows = Menu::create(prevTeam, nextTeam, nullptr);
+    teamArrows->setPosition(Vec2::ZERO);
+    prevTeam->setPosition(-chatFilter->getContentSize().width / 2 + 20, 0);
+    nextTeam->setPosition(chatFilter->getContentSize().width / 2 - 20, 0);
+    _teamRow->addChild(teamArrows, 1);
+    drawTeamPiece();
+    // The player rows (name, READY state, a bar in the team colour) are built in refresh().
+    _rowsNode = Node::create();
+    addChild(_rowsNode, 5);
 
     auto* keys          = EventListenerKeyboard::create();
     keys->onKeyReleased = [this](EventKeyboard::KeyCode code, ax::Event*) {
@@ -259,6 +294,68 @@ void LobbyScene::onEnter()
     Scene::onEnter();
     platform::setGameHandlesBack(true);
     _ready = false;
+}
+
+void LobbyScene::drawTeamPiece()
+{
+    _teamPiece->clear();
+    if (_team == 0)
+        return;  // no colour: you play on your own
+    const Vec2 plate[] = {{-57, 23}, {57, 23}, {57, -8}, {40, -23}, {-57, -23}};
+    _teamPiece->drawSolidPoly(plate, 5, teamColour(_team));
+}
+
+// One row per player as in the old lobby: rank chevron, head, name, READY / NOT READY, and a bar
+// in the team colour under it (players with the same colour are a team).
+void LobbyScene::rebuildRows(const std::vector<net::PlayerInfo>& players)
+{
+    std::string sig;
+    for (const auto& p : players)
+        sig += fmt::format("{}|{}|{}|{};", p.name, p.ready || p.host, static_cast<int>(p.team), p.id);
+    if (sig == _rowsSig)
+        return;
+    _rowsSig = sig;
+    _rowsNode->removeAllChildren();
+    const auto visible = _director->getVisibleSize();
+    const auto origin  = _director->getVisibleOrigin();
+    const auto safe    = _director->getSafeAreaRect();
+    float y            = origin.y + visible.height - 60;
+    for (const auto& p : players)
+    {
+        auto* row = Node::create();
+        row->setPosition(safe.getMinX() + 4, y);
+        _rowsNode->addChild(row);
+        if (p.team != 0)
+        {
+            auto* bar = DrawNode::create();
+            const Vec2 blade[] = {{0, 0}, {5, 26}, {15, 21}, {26, 0}};
+            bar->drawSolidPoly(blade, 4, teamColour(p.team));
+            bar->drawSolidRect({0, 0}, {200, 3}, teamColour(p.team));
+            row->addChild(bar, 0);
+        }
+        if (auto* chevron = Sprite::createWithSpriteFrameName("rank1.png"))
+        {
+            chevron->setPosition(12, 14);
+            row->addChild(chevron, 1);
+        }
+        if (auto* head = Sprite::createWithSpriteFrameName("head" + std::to_string(1 + (p.id * 5) % save::kHeads) + ".png"))
+        {
+            head->setScale(0.75f);
+            head->setPosition(54, 16);
+            row->addChild(head, 1);
+        }
+        auto* name = Label::createWithTTF(p.name, "fonts/arial.ttf", 13);
+        name->setAnchorPoint({0, 0.5f});
+        name->setPosition(72, 20);
+        row->addChild(name, 1);
+        auto* state = ui::atlasLabel((p.ready || p.host) ? "READY" : "NOT READY");
+        state->setScale(0.20f);
+        state->setAnchorPoint({0, 0.5f});
+        state->setPosition(72, 7);
+        state->setColor((p.ready || p.host) ? Color3B(90, 230, 90) : Color3B(240, 40, 40));
+        row->addChild(state, 1);
+        y -= 38;
+    }
 }
 
 void LobbyScene::leave()
@@ -303,13 +400,8 @@ void LobbyScene::refresh()
     for (int g = 0; g < 5; ++g)
         _options[11 + g]->setString(std::string("PICK-UPS: ") + kGroupNames[g] + " " + onoff(o.weaponGroups & (1 << g)));
 
-    std::string list;
-    for (const auto& p : players)
-    {
-        list += fmt::format("{}{}{}   {}\n", p.host ? "* " : "", p.name, p.team ? fmt::format("   [team {}]", p.team) : "",
-                            (p.ready || p.host) ? "READY" : "NOT READY");
-    }
-    _players->setString(list);
+    rebuildRows(players);
+    _players->setVisible(false);
     _waiting->setString(isHost() ? (players.size() < 2 ? "WAITING FOR PLAYERS TO JOIN..." : "")
                                  : "WAITING FOR THE HOST TO START...");
     const auto address = ctx.localAddress();

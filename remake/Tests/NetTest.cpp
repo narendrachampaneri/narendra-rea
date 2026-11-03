@@ -468,33 +468,37 @@ TEST_CASE("A kill on the host shows up in every scoreboard; the match ends with 
     CHECK(a.clientState() == ClientState::Playing);
 }
 
-TEST_CASE("Team Deathmatch balances teams and the winning team is announced")
+TEST_CASE("Colour teams: players who pick the same colour are a team; the result names the team")
 {
     World w;
     HostOptions o;
-    o.mode    = GameMode::TeamDeathmatch;
+    o.mode    = GameMode::Deathmatch;
     o.minutes = 1;
     w.host->setOptions(o);
     auto& a = w.addClient("Ann");
     auto& b = w.addClient("Bo");
     auto& c = w.addClient("Cy");
     w.joinAll();
-    for (auto* cl : {&a, &b, &c})
-        cl->setReady(true);
+    w.host->setHostTeam(1);  // pink: host and Ann
+    a.setReady(true, 1);
+    b.setReady(true, 4);     // blue: Bo and Cy
+    c.setReady(true, 4);
     w.pump(0.3f);
     REQUIRE(w.host->startMatch());
-    int team1 = 0, team2 = 0;
+    int pink = 0, blue = 0;
     for (const auto& p : w.host->players())
-        (p.team == 1 ? team1 : team2)++;
-    CHECK(team1 == 2);
-    CHECK(team2 == 2);
+    {
+        pink += p.team == 1;
+        blue += p.team == 4;
+    }
+    CHECK(pink == 2);
+    CHECK(blue == 2);
     w.pump(0.8f);
-    // Same-team bullets do not hurt.
     auto& hm = w.host->driver()->match();
-    CHECK(hm.fighter(0)->team == 1);
+    CHECK(hm.fighter(0)->team == 1);  // same-colour bullets do not hurt
     w.pump(61.0f);
     CHECK(w.host->state() == HostState::Ended);
-    CHECK(a.resultTitle() == "DRAW");
+    CHECK(a.resultTitle().find("TEAM WINS") == std::string::npos);  // nobody scored: no team is announced
 }
 
 TEST_CASE("Leaving, kicking and timeouts free the slot")
@@ -724,4 +728,35 @@ TEST_CASE("QR join code: round trip, and rubbish is refused")
     CHECK_FALSE(parseJoinCode("MMJOIN1;192.168.0.1;99999").has_value());
     CHECK_FALSE(parseJoinCode("MMJOIN1;192.168.0.1;abc").has_value());
     CHECK_FALSE(parseJoinCode("MMJOIN1;192.168.0.1").has_value());
+}
+
+TEST_CASE("Team colours: same colour is a team, no colour plays alone")
+{
+    using namespace mm;
+    using namespace mm::net;
+    CHECK(kTeamColours == 5);
+    CHECK(std::string(teamColourName(0)) == "NO TEAM");
+    CHECK(std::string(teamColourName(3)) == "ORANGE");
+    CHECK(std::string(teamColourName(9)) == "NO TEAM");
+
+    World w;
+    HostOptions o;
+    o.mode = GameMode::Deathmatch;
+    o.map  = 0;
+    w.host->setOptions(o);
+    auto& a = w.addClient("Ann");
+    auto& b = w.addClient("Bo");
+    w.joinAll();
+    w.host->setHostTeam(2);       // host: cyan
+    a.setReady(true, 2);          // Ann: cyan too -> a team with the host
+    b.setReady(true, 0);          // Bo: no colour -> on his own
+    w.pump(0.5f);
+    REQUIRE(w.host->startMatch());
+    w.pump(1.0f);
+    const auto& m = w.host->driver()->match();
+    auto* mm_ = const_cast<game::Match&>(m).fighter(0);
+    REQUIRE(mm_);
+    CHECK(mm_->team == 2);
+    CHECK(const_cast<game::Match&>(m).fighter(a.myId())->team == 2);
+    CHECK(const_cast<game::Match&>(m).fighter(b.myId())->team == 0);
 }
