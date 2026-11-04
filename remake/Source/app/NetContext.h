@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 
+#include "game/Driver.h"
 #include "net/Session.h"
 
 namespace mm::app
@@ -36,10 +37,19 @@ public:
     // Quick messages (net::kQuickMessages) from either side.
     void sendChat(int message);
     std::vector<std::pair<int, int>> takeChat();  // (player id, message) since the last call
+    // The table of the last Wi-Fi match this phone played, for the lobby's LAST MATCH button.
+    struct LastMatch
+    {
+        bool valid = false;
+        std::string title;
+        std::vector<game::GameDriver::Row> rows;
+    };
+    LastMatch& lastMatch() { return _lastMatch; }
     std::string localAddress() const;  // "192.168.43.1" or "" without Wi-Fi
 
 private:
     NetContext() = default;
+    LastMatch _lastMatch;
     net::MapResolver resolver();
 
     std::unique_ptr<net::Transport> _game, _discovery;

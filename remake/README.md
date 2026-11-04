@@ -44,6 +44,12 @@ Where the original had nothing recoverable (drone kinds, mine numbers, gas numbe
 gamepad layout) the remake uses its own documented default; all of them are marked NEW in the
 code and in the sections below.
 
+## Lobby polish (rc8)
+- The coloured TEAM plate is exactly the gap between its two arrows (it spilled over them before).
+- GAME STATS opens a proper dark panel with the match options in two columns (host taps a line to change it), the host's IP and the SHOW QR button, instead of a long list over the player rows. The player rows hide while it is open.
+- New LAST MATCH button in the gear panel: the table of the previous Wi-Fi match this phone played (rank, team colour, name, kills, deaths, and the result line). It is kept until the app is closed.
+- "WAITING FOR PLAYERS TO JOIN..." sits above the logo text with an outline so it stays readable.
+
 ## Team colours in the lobby (rc6, as in the old game)
 In the lobby gear panel the TEAM piece sits between two arrows and cycles: no colour, pink, cyan, orange, blue, yellow. Players who pick the same colour are a team (their bullets do not hurt each other, their kills count together); players with no colour play on their own. If everybody picks the same colour they are all one team. The player list shows each person's colour as a bar under the name, with READY / NOT READY. The result names the winning colour ("BLUE TEAM WINS") when a team beat every person and every other team. Co-op still puts everybody on one side. The old automatic Team Deathmatch balancing is gone (colours decide). CHAT FILTER is shown but does nothing yet.
 

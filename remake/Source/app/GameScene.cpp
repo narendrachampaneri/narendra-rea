@@ -691,6 +691,13 @@ void GameScene::showEnd()
 {
     _ended = true;
     record();
+    if (_networked)
+    {
+        auto& last = NetContext::get().lastMatch();
+        last.valid = true;
+        last.title = _driver->resultTitle();
+        last.rows  = _driver->results();
+    }
     if (!_networked)
         setPaused(true);
     const auto visible = _director->getVisibleSize();

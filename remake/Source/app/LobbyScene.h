@@ -35,6 +35,9 @@ private:
     ax::Node* _teamRow = nullptr;
     ax::DrawNode* _teamPiece = nullptr;
     ax::Node* _rowsNode = nullptr;
+    ax::Node* _statsPanel = nullptr;
+    ax::Node* _lastPanel = nullptr;
+    void showLastMatch(bool show);
     std::string _rowsSig;
     void drawTeamPiece();
     void rebuildRows(const std::vector<net::PlayerInfo>& players);

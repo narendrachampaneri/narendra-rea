@@ -59,16 +59,36 @@ bool LobbyScene::init()
     _title = Label::createWithTTF("", "fonts/arial.ttf", 18);
     addChild(_title, 5);
 
+    // GAME STATS: a dark panel with the match options in two columns (the host taps a line to
+    // change it, guests just read), the host's address and the QR button. Hidden until opened.
+    const auto safeRect = _director->getSafeAreaRect();
+    constexpr float kPanelW = 470.0f, kPanelH = 262.0f;
+    _statsPanel = Node::create();
+    _statsPanel->setPosition(safeRect.getMinX() + 12 + kPanelW / 2, origin.y + visible.height / 2 + 4);
+    _statsPanel->setVisible(false);
+    addChild(_statsPanel, 7);
+    auto* panelBg = DrawNode::create();
+    panelBg->drawSolidRect({-kPanelW / 2, -kPanelH / 2}, {kPanelW / 2, kPanelH / 2}, Color4F(0.02f, 0.01f, 0.08f, 0.86f));
+    panelBg->drawRect({-kPanelW / 2, -kPanelH / 2}, {kPanelW / 2, kPanelH / 2}, Color4F(0.55f, 0.62f, 1.0f, 0.55f));
+    _statsPanel->addChild(panelBg, 0);
+    auto* panelTitle = ui::atlasLabel("GAME STATS");
+    panelTitle->setScale(0.30f);
+    panelTitle->setAnchorPoint(Vec2::ANCHOR_MIDDLE);
+    panelTitle->setPosition(0, kPanelH / 2 - 18);
+    _statsPanel->addChild(panelTitle, 1);
     auto* menu = Menu::create();
     menu->setPosition(Vec2::ZERO);
-    menu->setVisible(false);
     _optionsMenu = menu;
-    addChild(menu, 7);
+    _statsPanel->addChild(menu, 2);
+    _lastPanel = Node::create();
+    _lastPanel->setPosition(_statsPanel->getPosition());
+    _lastPanel->setVisible(false);
+    addChild(_lastPanel, 7);
 
     // Left: the options. The host taps a line to change it; guests just read them.
     for (int i = 0; i < kOptionRows; ++i)
     {
-        auto* label = Label::createWithTTF("", "fonts/arial.ttf", 10);
+        auto* label = Label::createWithTTF("", "fonts/digitalix.ttf", 9);
         label->setAnchorPoint({0, 0.5f});
         _options[i] = label;
         auto* item  = MenuItemLabel::create(label, [this, i](Object*) {
@@ -113,19 +133,18 @@ bool LobbyScene::init()
             refresh();
         });
         item->setAnchorPoint({0, 0.5f});
-        item->setPosition(origin.x + 14, origin.y + visible.height - 40 - i * 17);
+        item->setPosition(-kPanelW / 2 + 14 + (i / 8) * (kPanelW / 2), kPanelH / 2 - 52 - (i % 8) * 22);
         menu->addChild(item);
     }
 
     _players = Label::createWithTTF("", "fonts/arial.ttf", 11);
-    _players->setAnchorPoint({0, 1});
-    _players->setPosition(origin.x + 20, origin.y + visible.height - 24);
+    _players->setVisible(false);
     addChild(_players, 5);
 
-    _address = Label::createWithTTF("", "fonts/arial.ttf", 9);
+    _address = Label::createWithTTF("", "fonts/digitalix.ttf", 9);
     _address->setAnchorPoint({0, 0.5f});
-    _address->setPosition(origin.x + 14, origin.y + visible.height - 40 - kOptionRows * 17);
-    addChild(_address, 5);
+    _address->setPosition(-kPanelW / 2 + 14, -kPanelH / 2 + 18);
+    _statsPanel->addChild(_address, 1);
 
     if (isHost())
     {
@@ -162,23 +181,25 @@ bool LobbyScene::init()
                         const Vec2 p = c0 + Vec2((x + 2) * cell, side - (y + 3) * cell);
                         _qrBox->drawSolidRect(p, p + Vec2(cell, cell), ax::Color4F::BLACK);
                     }
-            addChild(_qrBox, 20);
+            addChild(_qrBox, 30);
         });
-        auto* qrMenu = Menu::create(qr, nullptr);
-        qrMenu->setScale(0.6f);
-        qrMenu->setPosition(origin.x + 70, origin.y + 24);
-        addChild(qrMenu, 5);
+        qr->setScale(0.6f);
+        auto* qrMenu = Menu::create();
+        qrMenu->setPosition(Vec2::ZERO);
+        qr->setPosition(kPanelW / 2 - 64, -kPanelH / 2 + 22);
+        qrMenu->addChild(qr);
+        _statsPanel->addChild(qrMenu, 2);
     }
 
     _chat = Label::createWithTTF("", "fonts/arial.ttf", 10);
     _chat->setAnchorPoint({0, 0.5f});
     _chat->setPosition(origin.x + 14, origin.y + 70);
     addChild(_chat, 5);
-    _address->setVisible(false);
 
-    _waiting = Label::createWithTTF("", "fonts/arial.ttf", 9);
+    _waiting = Label::createWithTTF("", "fonts/digitalix.ttf", 10);
     _waiting->setAnchorPoint({0.5f, 0.5f});
-    _waiting->setPosition(origin.x + visible.width / 2, origin.y + 12);
+    _waiting->setPosition(origin.x + visible.width / 2, origin.y + 84);
+    _waiting->enableOutline(Color4B::BLACK, 2);
     addChild(_waiting, 5);
 
     // Bottom right: START (READY for guests), the gear, EXIT, and a chat bubble.
@@ -242,24 +263,31 @@ bool LobbyScene::init()
     auto* nextTeam = ui::panelButton("b03_right.png", " ", [stepTeam](Object*) { AudioSystem::get().play(audio::SoundId::Grenade1); stepTeam(1); });
     auto* chatFilter = ui::panelButton("b03_top.png", "CHAT FILTER: NONE", [](Object*) {});
     auto* statsBtn   = ui::panelButton("b03_mid.png", "GAME STATS", [this](Object*) {
-        _optionsMenu->setVisible(!_optionsMenu->isVisible());
-        _address->setVisible(_optionsMenu->isVisible());
+        _lastPanel->setVisible(false);
+        const bool show = !_statsPanel->isVisible();
+        _statsPanel->setVisible(show);
+        _rowsNode->setVisible(!show);
+    });
+    auto* lastBtn = ui::panelButton("b03_mid.png", "LAST MATCH", [this](Object*) {
+        _statsPanel->setVisible(false);
+        showLastMatch(!_lastPanel->isVisible());
     });
     auto* doneBtn = ui::panelButton("b03_bot.png", "DONE", [this](Object*) {
-        _optionsMenu->setVisible(false);
-        _address->setVisible(false);
+        _statsPanel->setVisible(false);
+        _lastPanel->setVisible(false);
+        _rowsNode->setVisible(true);
         _gearColumn->setVisible(false);
         _teamRow->setVisible(false);
         _mainColumn->setVisible(true);
     });
-    _gearColumn = Menu::create(chatFilter, statsBtn, doneBtn, nullptr);
+    _gearColumn = Menu::create(chatFilter, statsBtn, lastBtn, doneBtn, nullptr);
     _gearColumn->alignItemsVerticallyWithPadding(0);
-    _gearColumn->setPosition(_mainColumn->getPosition());
+    _gearColumn->setPosition(_mainColumn->getPositionX(), _mainColumn->getPositionY() + 0.5f * chatFilter->getContentSize().height);
     _gearColumn->setVisible(false);
     addChild(_gearColumn, 5);
     // The TEAM piece: a six-sided plate in the team colour with the word on it.
     _teamRow = Node::create();
-    _teamRow->setPosition(_mainColumn->getPositionX(), _mainColumn->getPositionY() + 2.5f * chatFilter->getContentSize().height + 2);
+    _teamRow->setPosition(_gearColumn->getPositionX(), _gearColumn->getPositionY() + 2.5f * chatFilter->getContentSize().height + 2);
     _teamRow->setVisible(false);
     addChild(_teamRow, 5);
     _teamPiece = DrawNode::create();
@@ -301,7 +329,8 @@ void LobbyScene::drawTeamPiece()
     _teamPiece->clear();
     if (_team == 0)
         return;  // no colour: you play on your own
-    const Vec2 plate[] = {{-57, 23}, {57, 23}, {57, -8}, {40, -23}, {-57, -23}};
+    // Exactly the gap between the two arrows (their inner edges are 41 points from the centre).
+    const Vec2 plate[] = {{-41, 20}, {41, 20}, {41, -6}, {27, -20}, {-41, -20}};
     _teamPiece->drawSolidPoly(plate, 5, teamColour(_team));
 }
 
@@ -355,6 +384,78 @@ void LobbyScene::rebuildRows(const std::vector<net::PlayerInfo>& players)
         state->setColor((p.ready || p.host) ? Color3B(90, 230, 90) : Color3B(240, 40, 40));
         row->addChild(state, 1);
         y -= 38;
+    }
+}
+
+// LAST MATCH: the table of the previous match (rank, team colour bar, name, kills, deaths).
+void LobbyScene::showLastMatch(bool show)
+{
+    _lastPanel->setVisible(show);
+    _rowsNode->setVisible(!show);
+    if (!show)
+        return;
+    _lastPanel->removeAllChildren();
+    constexpr float W = 470.0f, H = 262.0f;
+    auto* bg = DrawNode::create();
+    bg->drawSolidRect({-W / 2, -H / 2}, {W / 2, H / 2}, Color4F(0.02f, 0.01f, 0.08f, 0.86f));
+    bg->drawRect({-W / 2, -H / 2}, {W / 2, H / 2}, Color4F(0.55f, 0.62f, 1.0f, 0.55f));
+    _lastPanel->addChild(bg, 0);
+    auto* title = ui::atlasLabel("LAST MATCH");
+    title->setScale(0.30f);
+    title->setAnchorPoint(Vec2::ANCHOR_MIDDLE);
+    title->setPosition(0, H / 2 - 18);
+    _lastPanel->addChild(title, 1);
+    const auto& last = NetContext::get().lastMatch();
+    if (!last.valid)
+    {
+        auto* none = Label::createWithTTF("NO MATCH PLAYED YET", "fonts/digitalix.ttf", 10);
+        none->setPosition(0, 0);
+        _lastPanel->addChild(none, 1);
+        return;
+    }
+    auto* result = Label::createWithTTF(last.title, "fonts/digitalix.ttf", 10);
+    result->setColor(Color3B(255, 220, 90));
+    result->setPosition(0, H / 2 - 40);
+    _lastPanel->addChild(result, 1);
+    auto head = [&](const char* text, float x, float anchor) {
+        auto* l = Label::createWithTTF(text, "fonts/digitalix.ttf", 8);
+        l->setColor(Color3B(160, 175, 255));
+        l->setAnchorPoint({anchor, 0.5f});
+        l->setPosition(x, H / 2 - 62);
+        _lastPanel->addChild(l, 1);
+    };
+    head("NAME", -W / 2 + 56, 0.0f);
+    head("KILLS", W / 2 - 90, 1.0f);
+    head("DEATHS", W / 2 - 24, 1.0f);
+    float y = H / 2 - 82;
+    int rank = 0;
+    for (const auto& r : last.rows)
+    {
+        if (++rank > 8)
+            break;
+        if (r.team > 0)
+        {
+            auto* bar = DrawNode::create();
+            bar->drawSolidRect({-W / 2 + 14, y - 9}, {-W / 2 + 18, y + 9}, teamColour(r.team));
+            _lastPanel->addChild(bar, 1);
+        }
+        auto* rk = Label::createWithTTF(std::to_string(rank) + ".", "fonts/digitalix.ttf", 10);
+        rk->setAnchorPoint({0, 0.5f});
+        rk->setPosition(-W / 2 + 26, y);
+        _lastPanel->addChild(rk, 1);
+        auto* name = Label::createWithTTF(r.name, "fonts/arial.ttf", 11);
+        name->setAnchorPoint({0, 0.5f});
+        name->setPosition(-W / 2 + 56, y);
+        name->setColor(r.me ? Color3B(255, 220, 80) : Color3B::WHITE);
+        _lastPanel->addChild(name, 1);
+        for (auto [value, x] : {std::pair{r.kills, W / 2 - 90}, std::pair{r.deaths, W / 2 - 24}})
+        {
+            auto* v = Label::createWithTTF(std::to_string(value), "fonts/digitalix.ttf", 10);
+            v->setAnchorPoint({1, 0.5f});
+            v->setPosition(x, y);
+            _lastPanel->addChild(v, 1);
+        }
+        y -= 22;
     }
 }
 
