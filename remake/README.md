@@ -44,6 +44,9 @@ Where the original had nothing recoverable (drone kinds, mine numbers, gas numbe
 gamepad layout) the remake uses its own documented default; all of them are marked NEW in the
 code and in the sections below.
 
+## Store crash found and fixed (rc11)
+The owner's rc10 recording showed the app closing (back to the file manager) when STORE was tapped: a crash, not only a black screen. Cause (in my rc9/rc10 Store code): a button's first child is its picture, not its text label, so the lookup of the label returned nothing and the Store then used it. Fixed with a proper lookup (`ui::buttonLabel`) and null checks. The "problem while parsing the package" box seen in the file manager was a stale installer dialog; the APK itself was complete and valid (79,828,914 bytes, zip test passes). The earlier black screens (rc4-rc8) may have been a different problem in the old pill widgets; the other screens still built with them are converted next if they show it.
+
 ## Store, third attempt (rc10)
 rc9 was still black on the owner's phone (the Store drew only after the app was paused and resumed). rc10 builds the Store only from the pieces of the screens that always render (the shared list-menu backdrop with BACK, original button pieces, bitmap-font labels, one plain DrawNode, one TTF label like the lobby): no `style::` widgets, no custom touch listeners, no scheduled fits. The STORE button enters it with a direct scene switch (no fade). If this is black again, the cause is not the widgets; the next step would be log lines in the Store and the transition code. The other screens still built with the `style::` widgets (OPTIONS, avatar customiser, scores, news/about) are suspect for the same black screen and are converted next.
 

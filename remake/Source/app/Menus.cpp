@@ -243,7 +243,7 @@ bool StoreScene::init()
         }
         refresh();
     });
-    _buyLabel = dynamic_cast<LabelAtlas*>(_buy->getChildren().front());
+    _buyLabel = ui::buttonLabel(_buy);
     auto* buyMenu = Menu::create(_buy, nullptr);
     buyMenu->setPosition(Vec2::ZERO);
     _buy->setPosition(cx, panelB + 28);
@@ -273,7 +273,9 @@ void StoreScene::refresh()
     {
         auto* item = _items[slot];
         const int i = _page * kPerPage + slot;
-        auto* label = dynamic_cast<LabelAtlas*>(item->getChildren().front());
+        auto* label = ui::buttonLabel(item);
+        if (!label)
+            continue;
         if (i >= kStoreItems)
         {
             item->setVisible(false);
@@ -301,7 +303,8 @@ void StoreScene::refresh()
     _price->setString(owned ? "OWNED" : "PRICE " + std::to_string(storePrice(_selected)));
     _info->setString(pro ? "Pro Pack: two handguns fire together, and the Pro avatar items (masks)." : kUpgradeInfo[_selected]);
     _buy->setVisible(!owned);
-    _buyLabel->setString("BUY " + std::to_string(storePrice(_selected)));
+    if (_buyLabel)
+        _buyLabel->setString("BUY " + std::to_string(storePrice(_selected)));
 }
 
 // ============================== avatar ============================================================

@@ -84,7 +84,7 @@ void buildListMenu(Scene* scene, std::vector<MenuEntry> entries, bool home, std:
     auto refresh = [items] {
         for (auto& [item, e] : *items)
         {
-            if (auto* l = dynamic_cast<LabelAtlas*>(item->getChildren().front()))
+            if (auto* l = ui::buttonLabel(item))
                 l->setString(e.label());
             const bool lit = e.enabled && (!e.lit || e.lit());
             item->setColor(lit ? Color3B::WHITE : Color3B(110, 110, 130));

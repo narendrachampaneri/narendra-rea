@@ -71,6 +71,16 @@ MenuItemSprite* panelButton(std::string_view frame, std::string_view text, const
     return item;
 }
 
+LabelAtlas* buttonLabel(MenuItemSprite* item)
+{
+    if (!item)
+        return nullptr;
+    for (auto* child : item->getChildren())
+        if (auto* label = dynamic_cast<LabelAtlas*>(child))
+            return label;
+    return nullptr;
+}
+
 void toast(Node* scene, std::string_view text)
 {
     auto* director     = Director::getInstance();
