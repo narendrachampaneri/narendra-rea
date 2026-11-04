@@ -149,24 +149,31 @@ bool StoreScene::init()
 {
     if (!Scene::init())
         return false;
-    addChild(style::background(), 0);
-    addChild(style::heading("STORE"), 5);
-    addBack(this, toSettingsMenu);
+    // Built only from the pieces of the screens that always render on the owner's phone
+    // (buildListMenu for the backdrop and BACK, ui::panelButton, ui::atlasLabel, plain DrawNode):
+    // no style:: widgets here.
+    buildListMenu(this, {}, false, toSettingsMenu);
     const auto safe = Director::getInstance()->getSafeAreaRect();
 
-    _coins = ui::atlasLabel("");
+    auto* title = ui::atlasLabel("STORE");
+    title->setScale(0.42f);
+    title->setAnchorPoint(Vec2::ANCHOR_MIDDLE);
+    title->setPosition(origin().x + screen().width / 2, origin().y + screen().height - 24);
+    addChild(title, 6);
+
+    _coins = ui::atlasLabel("0 COINS");
     _coins->setScale(0.26f);
     _coins->setColor(Color3B(255, 210, 70));
     _coins->setAnchorPoint(Vec2::ANCHOR_MIDDLE_RIGHT);
     _coins->setPosition(safe.getMaxX() - 12, origin().y + screen().height - 24);
-    addChild(_coins, 10);
+    addChild(_coins, 6);
 
     // Left: the page of five upgrades as the stacked button pieces.
     _list = Menu::create();
     for (int slot = 0; slot < kPerPage; ++slot)
     {
         const char* frame = slot == 0 ? "b03_top.png" : (slot == kPerPage - 1 ? "b03_bot.png" : "b03_mid.png");
-        auto* item        = ui::panelButton(frame, " ", [this, slot](Object*) {
+        auto* item        = ui::panelButton(frame, "ITEM", [this, slot](Object*) {
             AudioSystem::get().play(audio::SoundId::Grenade1);
             const int i = _page * kPerPage + slot;
             if (i < kStoreItems)
@@ -179,51 +186,51 @@ bool StoreScene::init()
     const float listW = _items.front()->getContentSize().width;
     const float listX = safe.getMinX() + 12 + listW / 2;
     _list->setPosition(listX, origin().y + screen().height / 2 - 6);
-    addChild(_list, 5);
+    addChild(_list, 6);
 
     // Page arrows under the list, with "1/3" between them.
     auto* prev = ui::panelButton("b03_left.png", " ", [this](Object*) { _page = (_page + 2) % 3; _selected = -1; refresh(); });
     auto* next = ui::panelButton("b03_right.png", " ", [this](Object*) { _page = (_page + 1) % 3; _selected = -1; refresh(); });
     auto* pager = Menu::create(prev, next, nullptr);
     pager->setPosition(Vec2::ZERO);
-    const float pagerY = origin().y + 42;
+    const float pagerY = origin().y + 62;
     prev->setPosition(listX - 52, pagerY);
     next->setPosition(listX + 52, pagerY);
-    addChild(pager, 5);
+    addChild(pager, 6);
     _pageLabel = ui::atlasLabel("1/3");
     _pageLabel->setScale(0.26f);
     _pageLabel->setAnchorPoint(Vec2::ANCHOR_MIDDLE);
     _pageLabel->setPosition(listX, pagerY);
-    addChild(_pageLabel, 5);
+    addChild(_pageLabel, 6);
 
     // Right: the details panel.
     const float panelL = safe.getMinX() + 12 + listW + 14, panelR = safe.getMaxX() - 12;
     const float panelT = origin().y + screen().height - 46, panelB = origin().y + 70;
     auto* box = DrawNode::create();
     box->drawSolidRect({panelL, panelB}, {panelR, panelT}, Color4F(0.02f, 0.01f, 0.08f, 0.82f));
-    box->drawRect({panelL, panelB}, {panelR, panelT}, Color4F(0.55f, 0.62f, 1.0f, 0.5f));
-    addChild(box, 4);
+    addChild(box, 5);
     const float cx = (panelL + panelR) / 2;
-    _name = ui::atlasLabel("");
+    _name = ui::atlasLabel(" ");
     _name->setAnchorPoint(Vec2::ANCHOR_MIDDLE);
     _name->setPosition(cx, panelT - 22);
     addChild(_name, 6);
-    _price = ui::atlasLabel("");
+    _price = ui::atlasLabel(" ");
     _price->setAnchorPoint(Vec2::ANCHOR_MIDDLE);
     _price->setScale(0.28f);
     _price->setColor(Color3B(255, 210, 70));
     _price->setPosition(cx, panelT - 52);
     addChild(_price, 6);
-    _info = style::text("", 11);
+    _info = Label::createWithTTF("Tap an upgrade to read what it does.", "fonts/arial.ttf", 11);
     _info->setAnchorPoint({0.5f, 1.0f});
     _info->setMaxLineWidth(panelR - panelL - 24);
     _info->setAlignment(TextHAlignment::CENTER);
     _info->setPosition(cx, panelT - 74);
     addChild(_info, 6);
 
-    auto buy = style::pillWithLabel("BUY", {120, 30}, [this] {
+    _buy = ui::panelButton("b03_sml.png", "BUY", [this](Object*) {
         if (_selected < 0)
             return;
+        AudioSystem::get().play(audio::SoundId::Grenade1);
         auto& save = SaveStore::get();
         const auto result = _selected == kProIndex ? economy::buyProPack(save.data()) : economy::buyUpgrade(save.data(), _selected);
         switch (result)
@@ -235,11 +242,12 @@ bool StoreScene::init()
         default: break;
         }
         refresh();
-    }, style::kGood);
-    _buy      = buy.node;
-    _buyLabel = buy.label;
+    });
+    _buyLabel = dynamic_cast<LabelAtlas*>(_buy->getChildren().front());
+    auto* buyMenu = Menu::create(_buy, nullptr);
+    buyMenu->setPosition(Vec2::ZERO);
     _buy->setPosition(cx, panelB + 28);
-    addChild(_buy, 8);
+    addChild(buyMenu, 7);
     refresh();
     return true;
 }
@@ -280,8 +288,8 @@ void StoreScene::refresh()
     }
     if (_selected < 0)
     {
-        _name->setString("");
-        _price->setString("");
+        _name->setString(" ");
+        _price->setString(" ");
         _info->setString("Tap an upgrade to read what it does.");
         _buy->setVisible(false);
         return;

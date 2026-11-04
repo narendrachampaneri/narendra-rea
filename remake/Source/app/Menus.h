@@ -33,7 +33,7 @@ private:
     ax::LabelAtlas* _price = nullptr;
     ax::LabelAtlas* _pageLabel = nullptr;
     ax::Label* _info = nullptr;
-    ax::Node* _buy = nullptr;
+    ax::MenuItemSprite* _buy = nullptr;
     ax::LabelAtlas* _buyLabel = nullptr;
     ax::Menu* _list = nullptr;
     std::vector<ax::MenuItemSprite*> _items;

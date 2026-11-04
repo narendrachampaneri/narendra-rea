@@ -44,6 +44,9 @@ Where the original had nothing recoverable (drone kinds, mine numbers, gas numbe
 gamepad layout) the remake uses its own documented default; all of them are marked NEW in the
 code and in the sections below.
 
+## Store, third attempt (rc10)
+rc9 was still black on the owner's phone (the Store drew only after the app was paused and resumed). rc10 builds the Store only from the pieces of the screens that always render (the shared list-menu backdrop with BACK, original button pieces, bitmap-font labels, one plain DrawNode, one TTF label like the lobby): no `style::` widgets, no custom touch listeners, no scheduled fits. The STORE button enters it with a direct scene switch (no fade). If this is black again, the cause is not the widgets; the next step would be log lines in the Store and the transition code. The other screens still built with the `style::` widgets (OPTIONS, avatar customiser, scores, news/about) are suspect for the same black screen and are converted next.
+
 ## Store rebuilt, black-screen cause removed (rc9)
 Finding from the owner's recording: after STORE was tapped the screen stayed black until the app was paused and resumed, then the (fully built) Store appeared. Every screen that used my own "pill" buttons with outlined TTF labels and the pop-in animation (first-launch, Store, options, avatar, scores) showed it; the screens built with the original button pieces never did. Fixes: pill labels now use the original bitmap font (no outlined TTF), screen titles use it too, and the pop-in animation is off. The Store is rebuilt in the original style: five upgrades per page as the stacked original button pieces with page arrows, a details panel (name, price, description, BUY), the original BACK button bottom left, and all 15 items on sale. If a screen is still black after this, the cause is somewhere else and the next step is logging.
 
