@@ -1,6 +1,7 @@
 #include "app/Style.h"
 
 #include <algorithm>
+#include <cmath>
 
 #include "app/AudioSystem.h"
 #include "app/Ui.h"
@@ -64,11 +65,20 @@ Pill pillWithLabel(const std::string& labelText, Size size, std::function<void()
     auto* l = Label::createWithTTF(labelText, "fonts/digitalix.ttf", std::min(13.0f, size.height * 0.46f));
     l->enableOutline(Color4B(0, 0, 0, 160), 1);
     l->setPosition(size / 2);
-    // One line, shrunk to fit the button (long names must not wrap into the next row).
+    // One line, scaled down to fit the button (long names must not wrap into the next row).
+    // A cheap re-check a few times a second follows later setString calls; the engine's own
+    // shrink-to-fit overflow froze the Store on the owner's phone.
     l->enableWrap(false);
-    l->setOverflow(Label::Overflow::SHRINK);
-    l->setDimensions(size.width - 10.0f, size.height);
     root->addChild(l, 1);
+    auto fit = [l, size](float) {
+        const float w    = l->getContentSize().width;
+        const float room = size.width - 12.0f;
+        const float s    = (w > room && w > 0.0f) ? room / w : 1.0f;
+        if (std::abs(l->getScale() - s) > 0.01f)
+            l->setScale(s);
+    };
+    fit(0.0f);
+    root->schedule(fit, 0.15f, "fit");
 
     auto* touch = EventListenerTouchOneByOne::create();
     touch->setSwallowTouches(true);
