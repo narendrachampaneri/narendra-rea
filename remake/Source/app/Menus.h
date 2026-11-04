@@ -27,11 +27,16 @@ private:
     void select(int index);  // 0..13 upgrades, 14 = Pro Pack
     void refresh();
     int _selected = -1;
-    ax::Label* _coins = nullptr;
+    int _page     = 0;
+    ax::LabelAtlas* _coins = nullptr;
+    ax::LabelAtlas* _name = nullptr;
+    ax::LabelAtlas* _price = nullptr;
+    ax::LabelAtlas* _pageLabel = nullptr;
     ax::Label* _info = nullptr;
     ax::Node* _buy = nullptr;
-    ax::Label* _buyLabel = nullptr;
-    std::vector<std::pair<ax::Node*, ax::Label*>> _cells;
+    ax::LabelAtlas* _buyLabel = nullptr;
+    ax::Menu* _list = nullptr;
+    std::vector<ax::MenuItemSprite*> _items;
 };
 
 // Drag the round in-game buttons where the thumbs reach them (saved as offsets).

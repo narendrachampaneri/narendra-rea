@@ -32,13 +32,14 @@ Node* background()
     return art;
 }
 
-Label* heading(const std::string& s)
+LabelAtlas* heading(const std::string& s)
 {
+    // Screen title in the original bitmap font (the same one the LOCAL GAME / SELECT MAP titles use).
     const auto visible = Director::getInstance()->getVisibleSize();
     const auto origin  = Director::getInstance()->getVisibleOrigin();
-    auto* l            = Label::createWithTTF(s, "fonts/digitalix.ttf", 20);
-    l->setColor(Color3B(190, 205, 255));
-    l->enableOutline(Color4B::BLACK, 2);
+    auto* l            = ui::atlasLabel(s);
+    l->setScale(0.42f);
+    l->setAnchorPoint(Vec2::ANCHOR_MIDDLE);
     l->setPosition(origin.x + visible.width / 2, origin.y + visible.height - 24);
     return l;
 }
@@ -62,19 +63,19 @@ Pill pillWithLabel(const std::string& labelText, Size size, std::function<void()
     d->setPosition(size / 2);
     d->setColor(tintFor(colour));
     root->addChild(d);
-    auto* l = Label::createWithTTF(labelText, "fonts/digitalix.ttf", std::min(13.0f, size.height * 0.46f));
-    l->enableOutline(Color4B(0, 0, 0, 160), 1);
+    // The label is the original bitmap font too (a TTF label with an outline froze the screen on the
+    // owner's phone until the app was paused and resumed).
+    auto* l = ui::atlasLabel(labelText);
+    l->setAnchorPoint(Vec2::ANCHOR_MIDDLE);
     l->setPosition(size / 2);
-    // One line, scaled down to fit the button (long names must not wrap into the next row).
-    // A cheap re-check a few times a second follows later setString calls; the engine's own
-    // shrink-to-fit overflow froze the Store on the owner's phone.
-    l->enableWrap(false);
     root->addChild(l, 1);
-    auto fit = [l, size](float) {
-        const float w    = l->getContentSize().width;
-        const float room = size.width - 12.0f;
-        const float s    = (w > room && w > 0.0f) ? room / w : 1.0f;
-        if (std::abs(l->getScale() - s) > 0.01f)
+    // Text size like the original buttons (0.40 on a 41-point button); shrunk when a long text no
+    // longer fits. Re-checked a few times a second so a later setString also fits.
+    const float base = 0.40f * size.height / 41.0f;
+    auto fit         = [l, size, base](float) {
+        const float w = l->getContentSize().width;
+        const float s = (w * base > size.width - 12.0f && w > 0.0f) ? (size.width - 12.0f) / w : base;
+        if (std::abs(l->getScale() - s) > 0.002f)
             l->setScale(s);
     };
     fit(0.0f);
@@ -170,22 +171,10 @@ Node* slider(Size size, int min, int max, int value, std::function<void(int)> on
     return root;
 }
 
-void popIn(Node* root, float firstDelay, float step)
+void popIn(Node*, float, float)
 {
-    float delay = firstDelay;
-    for (Node* child : root->getChildren())
-    {
-        if (child->getTag() == -99)
-            continue;
-        const Vec2 home = child->getPosition();
-        child->setPosition(home + Vec2(0, -14));
-        child->setOpacity(0);
-        child->runAction(Sequence::create(DelayTime::create(delay),
-                                          Spawn::create(EaseOut::create(MoveTo::create(0.22f, home), 2.0f),
-                                                        FadeIn::create(0.22f), nullptr),
-                                          nullptr));
-        delay += step;
-    }
+    // Intentionally empty: the slide-and-fade of every child showed a black screen on the owner's
+    // phone for the screens that used it. Kept so callers need no change.
 }
 
 Node* dialog(const std::string& message, const std::string& yes, const std::string& no, std::function<void()> onYes,

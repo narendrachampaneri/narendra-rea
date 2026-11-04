@@ -18,7 +18,7 @@ inline const ax::Color3B kBad{220, 80, 80};
 // Full-screen background: a vertical gradient with a faint stripe pattern.
 ax::Node* background();
 // Screen heading, top centre.
-ax::Label* heading(const std::string& text);
+ax::LabelAtlas* heading(const std::string& text);
 ax::Label* text(const std::string& s, float size = 12, ax::Color3B colour = ax::Color3B::WHITE);
 
 // A rounded button that squashes when pressed. `size` in points.
@@ -28,7 +28,7 @@ ax::Node* pill(const std::string& label, ax::Size size, std::function<void()> on
 struct Pill
 {
     ax::Node* node  = nullptr;
-    ax::Label* label = nullptr;
+    ax::LabelAtlas* label = nullptr;  // the original bitmap font: UPPER CASE letters, digits, punctuation
 };
 Pill pillWithLabel(const std::string& label, ax::Size size, std::function<void()> onTap,
                    ax::Color3B colour = ax::Color3B(52, 84, 170));

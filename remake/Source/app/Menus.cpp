@@ -1,4 +1,5 @@
 #include "app/Menus.h"
+#include "app/OriginalMenu.h"
 #include "app/HudLayout.h"
 
 #include "app/AudioSystem.h"
@@ -32,14 +33,23 @@ Vec2 centre()
 Size screen() { return Director::getInstance()->getVisibleSize(); }
 Vec2 origin() { return Director::getInstance()->getVisibleOrigin(); }
 
-// "BACK" in the top left corner of every sub screen.
-void addBack(Scene* scene)
+// The original's BACK button, bottom left of every sub screen (and the device back key).
+void addBack(Scene* scene, std::function<void()> target = home)
 {
-    auto* b = style::pill("< BACK", {84, 26}, home, Color3B(90, 90, 110));
-    b->setPosition(origin().x + 52, origin().y + screen().height - 22);
-    scene->addChild(b, 10);
-    style::onBack(scene, home);
+    auto* back = ui::panelButton("b03_sml.png", "BACK", [target](Object*) {
+        AudioSystem::get().play(audio::SoundId::Grenade1);
+        target();
+    });
+    auto* menu = Menu::create(back, nullptr);
+    const auto safe = Director::getInstance()->getSafeAreaRect();
+    menu->setPosition(safe.getMinX() + 12 + back->getContentSize().width / 2, safe.getMinY() + 12 + back->getContentSize().height / 2);
+    scene->addChild(menu, 10);
+    style::onBack(scene, target);
 }
+
+void toSettingsMenu() { Director::getInstance()->replaceScene(TransitionFade::create(0.3f, utils::createInstance<SettingsMenuScene>())); }
+void toRank() { Director::getInstance()->replaceScene(TransitionFade::create(0.3f, utils::createInstance<RankScene>())); }
+void toConfigure() { Director::getInstance()->replaceScene(TransitionFade::create(0.3f, utils::createInstance<ConfigureScene>())); }
 }  // namespace
 
 // ============================== first launch ============================================================
@@ -103,6 +113,8 @@ void FirstLaunchScene::onEnter()
 }
 
 // ============================== store ==============================================================
+// The STORE in the original's style: the upgrades as a stacked list of the original button pieces
+// (five a page, arrows to turn the page), the chosen one explained on the right with BUY.
 
 namespace
 {
@@ -122,44 +134,95 @@ const char* kUpgradeInfo[] = {
     "Rifles reload 30% faster.",
     "Mask pack for your avatar (needs the Pro Pack).",
 };
-constexpr int kProIndex = 14;
-bool onSale(int) { return true; }  // everything in the store works now
+constexpr int kProIndex = 14, kStoreItems = 15, kPerPage = 5;
+
+std::string upper(std::string s)
+{
+    std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c) { return static_cast<char>(std::toupper(c)); });
+    return s;
+}
+std::string storeName(int i) { return i == kProIndex ? "PRO PACK" : upper(std::string(config::kUpgrades[i].name)); }
+int storePrice(int i) { return i == kProIndex ? config::kProPackPrice : config::kUpgrades[i].price; }
 }  // namespace
 
 bool StoreScene::init()
 {
     if (!Scene::init())
         return false;
-    addChild(style::background(), 0);  // z 0 like the screens that render; -10 showed black on the phone
+    addChild(style::background(), 0);
     addChild(style::heading("STORE"), 5);
-    addBack(this);
+    addBack(this, toSettingsMenu);
+    const auto safe = Director::getInstance()->getSafeAreaRect();
 
-    _coins = style::text("", 14, style::kAccent);
-    _coins->setAnchorPoint({1, 0.5f});
-    _coins->setPosition(origin().x + screen().width - 14, origin().y + screen().height - 22);
+    _coins = ui::atlasLabel("");
+    _coins->setScale(0.26f);
+    _coins->setColor(Color3B(255, 210, 70));
+    _coins->setAnchorPoint(Vec2::ANCHOR_MIDDLE_RIGHT);
+    _coins->setPosition(safe.getMaxX() - 12, origin().y + screen().height - 24);
     addChild(_coins, 10);
 
-    const float colW = std::min(230.0f, (screen().width - 30) / 2), rowH = 26;
-    const float left = origin().x + screen().width / 2 - colW / 2 - 4, right = origin().x + screen().width / 2 + colW / 2 + 4;
-    const float top  = origin().y + screen().height - 58;
-    for (int i = 0; i < 15; ++i)
+    // Left: the page of five upgrades as the stacked button pieces.
+    _list = Menu::create();
+    for (int slot = 0; slot < kPerPage; ++slot)
     {
-        const bool pro = i == kProIndex;
-        const std::string name = pro ? "PRO PACK" : config::kUpgrades[i].name;
-        auto cell = style::pillWithLabel(name, {colW, rowH - 3}, [this, i] { select(i); });
-        const int col = pro ? 0 : i / 7;
-        const int row = pro ? 7 : i % 7;
-        cell.node->setPosition(col == 0 ? left : right, top - row * rowH);
-        addChild(cell.node, 5);
-        _cells.push_back({cell.node, cell.label});
+        const char* frame = slot == 0 ? "b03_top.png" : (slot == kPerPage - 1 ? "b03_bot.png" : "b03_mid.png");
+        auto* item        = ui::panelButton(frame, " ", [this, slot](Object*) {
+            AudioSystem::get().play(audio::SoundId::Grenade1);
+            const int i = _page * kPerPage + slot;
+            if (i < kStoreItems)
+                select(i);
+        });
+        _items.push_back(item);
+        _list->addChild(item);
     }
+    _list->alignItemsVerticallyWithPadding(0);
+    const float listW = _items.front()->getContentSize().width;
+    const float listX = safe.getMinX() + 12 + listW / 2;
+    _list->setPosition(listX, origin().y + screen().height / 2 - 6);
+    addChild(_list, 5);
+
+    // Page arrows under the list, with "1/3" between them.
+    auto* prev = ui::panelButton("b03_left.png", " ", [this](Object*) { _page = (_page + 2) % 3; _selected = -1; refresh(); });
+    auto* next = ui::panelButton("b03_right.png", " ", [this](Object*) { _page = (_page + 1) % 3; _selected = -1; refresh(); });
+    auto* pager = Menu::create(prev, next, nullptr);
+    pager->setPosition(Vec2::ZERO);
+    const float pagerY = origin().y + 42;
+    prev->setPosition(listX - 52, pagerY);
+    next->setPosition(listX + 52, pagerY);
+    addChild(pager, 5);
+    _pageLabel = ui::atlasLabel("1/3");
+    _pageLabel->setScale(0.26f);
+    _pageLabel->setAnchorPoint(Vec2::ANCHOR_MIDDLE);
+    _pageLabel->setPosition(listX, pagerY);
+    addChild(_pageLabel, 5);
+
+    // Right: the details panel.
+    const float panelL = safe.getMinX() + 12 + listW + 14, panelR = safe.getMaxX() - 12;
+    const float panelT = origin().y + screen().height - 46, panelB = origin().y + 70;
+    auto* box = DrawNode::create();
+    box->drawSolidRect({panelL, panelB}, {panelR, panelT}, Color4F(0.02f, 0.01f, 0.08f, 0.82f));
+    box->drawRect({panelL, panelB}, {panelR, panelT}, Color4F(0.55f, 0.62f, 1.0f, 0.5f));
+    addChild(box, 4);
+    const float cx = (panelL + panelR) / 2;
+    _name = ui::atlasLabel("");
+    _name->setAnchorPoint(Vec2::ANCHOR_MIDDLE);
+    _name->setPosition(cx, panelT - 22);
+    addChild(_name, 6);
+    _price = ui::atlasLabel("");
+    _price->setAnchorPoint(Vec2::ANCHOR_MIDDLE);
+    _price->setScale(0.28f);
+    _price->setColor(Color3B(255, 210, 70));
+    _price->setPosition(cx, panelT - 52);
+    addChild(_price, 6);
     _info = style::text("", 11);
-    _info->setAnchorPoint({0, 1});
-    _info->setMaxLineWidth(screen().width - 150);
-    _info->setPosition(origin().x + 14, origin().y + 44);
-    addChild(_info, 5);
-    auto buy = style::pillWithLabel("BUY", {110, 30}, [this] {
-        if (_selected < 0 || !onSale(_selected))
+    _info->setAnchorPoint({0.5f, 1.0f});
+    _info->setMaxLineWidth(panelR - panelL - 24);
+    _info->setAlignment(TextHAlignment::CENTER);
+    _info->setPosition(cx, panelT - 74);
+    addChild(_info, 6);
+
+    auto buy = style::pillWithLabel("BUY", {120, 30}, [this] {
+        if (_selected < 0)
             return;
         auto& save = SaveStore::get();
         const auto result = _selected == kProIndex ? economy::buyProPack(save.data()) : economy::buyUpgrade(save.data(), _selected);
@@ -175,10 +238,9 @@ bool StoreScene::init()
     }, style::kGood);
     _buy      = buy.node;
     _buyLabel = buy.label;
-    _buy->setPosition(origin().x + screen().width - 70, origin().y + 36);
+    _buy->setPosition(cx, panelB + 28);
     addChild(_buy, 8);
     refresh();
-    style::popIn(this, 0.0f, 0.02f);
     return true;
 }
 
@@ -197,32 +259,41 @@ void StoreScene::select(int index)
 void StoreScene::refresh()
 {
     auto& save = SaveStore::get().data();
-    _coins->setString(fmt::format("{} COINS", save.coins));
-    for (int i = 0; i < 15; ++i)
+    _coins->setString(std::to_string(save.coins) + " COINS");
+    _pageLabel->setString(std::to_string(_page + 1) + "/3");
+    for (int slot = 0; slot < kPerPage; ++slot)
     {
-        const bool pro   = i == kProIndex;
-        const bool owned = pro ? save.proPack : economy::owns(save, i);
-        const int price  = pro ? config::kProPackPrice : config::kUpgrades[i].price;
-        const std::string name = pro ? "PRO PACK" : config::kUpgrades[i].name;
-        std::string text = name + (owned ? "  (OWNED)" : (onSale(i) ? "  " + std::to_string(price) : "  SOON"));
-        _cells[i].second->setString(text);
-        style::setPillColour(_cells[i].first, i == _selected ? Color3B(200, 120, 40)
-                                              : owned        ? Color3B(50, 110, 70)
-                                              : !onSale(i)   ? Color3B(70, 70, 90)
-                                                             : Color3B(52, 84, 170));
+        auto* item = _items[slot];
+        const int i = _page * kPerPage + slot;
+        auto* label = dynamic_cast<LabelAtlas*>(item->getChildren().front());
+        if (i >= kStoreItems)
+        {
+            item->setVisible(false);
+            continue;
+        }
+        item->setVisible(true);
+        const bool owned = i == kProIndex ? save.proPack : economy::owns(save, i);
+        label->setString(storeName(i));
+        const float w = label->getContentSize().width;
+        label->setScale(std::min(0.40f, (item->getContentSize().width - 20.0f) / std::max(w, 1.0f)));
+        item->setColor(i == _selected ? Color3B(255, 215, 120) : (owned ? Color3B(150, 255, 160) : Color3B::WHITE));
     }
     if (_selected < 0)
     {
+        _name->setString("");
+        _price->setString("");
         _info->setString("Tap an upgrade to read what it does.");
         _buy->setVisible(false);
         return;
     }
     const bool pro = _selected == kProIndex;
-    _info->setString(pro ? "Pro Pack: two handguns fire together, and the Pro avatar items (masks)."
-                         : kUpgradeInfo[_selected]);
     const bool owned = pro ? save.proPack : economy::owns(save, _selected);
-    _buy->setVisible(onSale(_selected) && !owned);
-    _buyLabel->setString(fmt::format("BUY  {}", pro ? config::kProPackPrice : config::kUpgrades[_selected].price));
+    _name->setString(storeName(_selected));
+    _name->setScale(std::min(0.34f, 170.0f / std::max(_name->getContentSize().width, 1.0f)));
+    _price->setString(owned ? "OWNED" : "PRICE " + std::to_string(storePrice(_selected)));
+    _info->setString(pro ? "Pro Pack: two handguns fire together, and the Pro avatar items (masks)." : kUpgradeInfo[_selected]);
+    _buy->setVisible(!owned);
+    _buyLabel->setString("BUY " + std::to_string(storePrice(_selected)));
 }
 
 // ============================== avatar ============================================================
@@ -233,7 +304,7 @@ bool AvatarScene::init()
         return false;
     addChild(style::background(), 0);  // z 0 like the screens that render; -10 showed black on the phone
     addChild(style::heading("AVATAR"), 5);
-    addBack(this);
+    addBack(this, toRank);
 
     const char* names[5] = {"HEAD", "BODY", "ARMS", "LEGS", "MASK"};
     const int counts[5]  = {save::kHeads, save::kBodies, save::kArms, save::kLegs, save::kMasks};
@@ -408,7 +479,7 @@ bool SettingsScene::init()
         return false;
     addChild(style::background(), 0);  // z 0 like the screens that render; -10 showed black on the phone
     addChild(style::heading("SETTINGS"), 5);
-    addBack(this);
+    addBack(this, toConfigure);
     auto& store = SaveStore::get();
     auto& cfg   = store.data().settings;
 
@@ -469,7 +540,7 @@ bool SettingsScene::init()
     addCycle(right, yr,
              [&cfg] {
                  static const char* n[] = {"SMOOTH", "MEDIUM", "HIGH", "EXTREME"};
-                 return std::string("GRAPHICS: ") + (cfg.qualityAuto ? "AUTO" : n[static_cast<int>(cfg.quality)]) + "  (restart)";
+                 return std::string("GRAPHICS: ") + (cfg.qualityAuto ? "AUTO" : n[static_cast<int>(cfg.quality)]) + "  (RESTART)";
              },
              [&cfg] {
                  if (cfg.qualityAuto)
