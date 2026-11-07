@@ -167,8 +167,6 @@ bool GameScene::init(const assets::MapDef& def, std::unique_ptr<game::GameDriver
     _ownedDriver = std::move(owned);
     _driver      = driver;
     _match       = &_driver->match();
-    if (!_networked)
-        _match->setUpgrades(0, economy::networkMask(SaveStore::get().data()));
 
     _soldier = SoldierView::create(SaveStore::get().data().avatar);
     _map->addChild(_soldier, MapView::kZEntities);
@@ -613,8 +611,7 @@ void GameScene::updateCrosshair()
     const float a   = s.fireAngle() * 3.14159265f / 180.0f;
     const auto p    = s.position();
     // Laser Sight upgrade: a thin red beam from the muzzle to the first wall (drawing is NEW).
-    const bool laser = (s.isMirror() ? SaveStore::get().boosts().laserSight : s.boosts().laserSight) &&
-                       economy::hasLaserSightSupport(s.weapon().id()) && !s.weapon().isReloading();
+    const bool laser = false;  // the Laser Sight upgrade is gone with the shop
     if (laser)
     {
         const game::Vec2 from = s.muzzlePosition();
@@ -735,13 +732,6 @@ void GameScene::showEnd()
     head->setPosition(origin.x + visible.width * 0.8f, visible.height - 50);
     _endPanel->addChild(head);
 
-    if (_coinsEarned > 0)
-    {
-        auto* coins = Label::createWithTTF(fmt::format("+{} COINS", _coinsEarned), "fonts/arial.ttf", 14);
-        coins->setColor(Color3B(255, 220, 80));
-        coins->setPosition(origin + Vec2(visible.width * 0.5f, 52));
-        _endPanel->addChild(coins);
-    }
     auto* menu = Menu::create();
     menu->setPosition(Vec2::ZERO);
     _endPanel->addChild(menu);

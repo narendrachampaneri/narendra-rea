@@ -117,8 +117,39 @@ bool LobbyScene::init()
                 }
                 break;
             }
-            case 2: o.minutes = o.minutes % 8 + 1; break;
+            case 2:
+            {
+                static constexpr int kMinutes[] = {1, 2, 3, 4, 5, 6, 8, 10, 15, 20, 30};
+                int k = 0;
+                while (k < 10 && kMinutes[k] <= o.minutes) ++k;
+                o.minutes = static_cast<std::uint8_t>(kMinutes[o.minutes >= 30 ? 0 : k]);
+                break;
+            }
             case 3: o.maxPlayers = o.maxPlayers >= 12 ? 2 : o.maxPlayers + 1; break;
+            case 16:
+            {
+                static constexpr int kKills[] = {0, 5, 10, 15, 20, 25, 30, 50};
+                int k = 0;
+                while (k < 7 && kKills[k] <= o.killLimit) ++k;
+                o.killLimit = static_cast<std::uint8_t>(o.killLimit >= 50 ? 0 : kKills[k]);
+                break;
+            }
+            case 17:
+            {
+                static constexpr int kDamage[] = {25, 50, 100, 150, 200, 250};
+                int k = 0;
+                while (k < 5 && kDamage[k] <= o.damagePct) ++k;
+                o.damagePct = static_cast<std::uint8_t>(o.damagePct >= 250 ? 25 : kDamage[k]);
+                break;
+            }
+            case 18:
+            {
+                static constexpr int kGravity[] = {25, 50, 75, 100, 150, 200};
+                int k = 0;
+                while (k < 5 && kGravity[k] <= o.gravityPct) ++k;
+                o.gravityPct = static_cast<std::uint8_t>(o.gravityPct >= 200 ? 25 : kGravity[k]);
+                break;
+            }
             case 4: o.fair = !o.fair; break;
             case 5: o.respawn = o.respawn >= 15 ? 3 : o.respawn + 2; break;
             case 6: o.friendlyFire = !o.friendlyFire; break;
@@ -133,7 +164,13 @@ bool LobbyScene::init()
             refresh();
         });
         item->setAnchorPoint({0, 0.5f});
-        item->setPosition(-kPanelW / 2 + 14 + (i / 8) * (kPanelW / 2), kPanelH / 2 - 52 - (i % 8) * 22);
+        // Page 0 (match): MODE MAP LENGTH MAX PLAYERS KILL LIMIT / RESPAWN FRIENDLY FIRE FAIR DAMAGE GRAVITY.
+        // Page 1: the party options and the pick-up groups. Rows are placed by their slot on the page.
+        static constexpr int kSlot[kOptionRows] = {0, 1, 2, 3, 7, 5, 6, 0, 1, 2, 3, 4, 5, 6, 7, 8, 4, 8, 9};
+        const int slot = kSlot[i];
+        item->setAnchorPoint({0, 0.5f});
+        item->setPosition(-kPanelW / 2 + 14 + (slot / 5) * (kPanelW / 2), kPanelH / 2 - 52 - (slot % 5) * 30);
+        item->setTag(i);
         menu->addChild(item);
     }
 
@@ -189,6 +226,20 @@ bool LobbyScene::init()
         qr->setPosition(kPanelW / 2 - 64, -kPanelH / 2 + 22);
         qrMenu->addChild(qr);
         _statsPanel->addChild(qrMenu, 2);
+    }
+
+    {
+        // The second page holds the party options and the pick-up groups.
+        auto* pageButton = ui::panelButton("b03_mid.png", "NEXT PAGE", [this](Object*) {
+            _page = 1 - _page;
+            applyPage();
+        });
+        pageButton->setScale(0.6f);
+        pageButton->setPosition(kPanelW / 2 - 164, -kPanelH / 2 + 22);
+        auto* pageMenu = Menu::create();
+        pageMenu->setPosition(Vec2::ZERO);
+        pageMenu->addChild(pageButton);
+        _statsPanel->addChild(pageMenu, 2);
     }
 
     _chat = Label::createWithTTF("", "fonts/arial.ttf", 10);
@@ -468,6 +519,18 @@ void LobbyScene::leave()
     _director->replaceScene(TransitionFade::create(0.3f, utils::createInstance<HomeScene>()));
 }
 
+void LobbyScene::applyPage()
+{
+    if (!_optionsMenu)
+        return;
+    for (int i = 0; i < kOptionRows; ++i)
+    {
+        const bool onPageOne = i >= 7 && i <= 15;
+        if (auto* item = _optionsMenu->getChildByTag(i))
+            item->setVisible(onPageOne == (_page == 1));
+    }
+}
+
 void LobbyScene::refresh()
 {
     auto& ctx = NetContext::get();
@@ -500,6 +563,11 @@ void LobbyScene::refresh()
     static const char* kGroupNames[] = {"PISTOLS", "SMGS + RIFLES", "SHOTGUN + SNIPER", "HEAVY", "MELEE"};
     for (int g = 0; g < 5; ++g)
         _options[11 + g]->setString(std::string("PICK-UPS: ") + kGroupNames[g] + " " + onoff(o.weaponGroups & (1 << g)));
+
+    _options[16]->setString(o.killLimit == 0 ? "KILL LIMIT: NONE" : fmt::format("KILL LIMIT: {}", o.killLimit));
+    _options[17]->setString(fmt::format("DAMAGE: {}%", o.damagePct));
+    _options[18]->setString(fmt::format("GRAVITY: {}%", o.gravityPct));
+    applyPage();
 
     rebuildRows(players);
     _players->setVisible(false);

@@ -41,7 +41,7 @@ private:
     std::string _rowsSig;
     void drawTeamPiece();
     void rebuildRows(const std::vector<net::PlayerInfo>& players);
-    static constexpr int kOptionRows = 16;
+    static constexpr int kOptionRows = 19;
     ax::Label* _options[kOptionRows] = {};
     ax::Label* _players = nullptr;
     ax::Label* _chat = nullptr;
@@ -50,6 +50,8 @@ private:
     bool _leaving = false;
     bool _ready = false;
     int _team = 0;
+    int _page = 0;  // GAME STATS page: 0 match, 1 party and pick-ups
+    void applyPage();
 };
 
 }  // namespace mm::app

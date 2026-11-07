@@ -189,32 +189,16 @@ mm::assets::MapData loadOutpost()
 }
 }  // namespace
 
-TEST_CASE("Upgrades change the soldier: clip, reload, regen, Golden Eagle, grenades")
+TEST_CASE("The shop is gone: an upgrade mask changes nothing")
 {
     const auto data = loadOutpost();
     mm::game::Match m(*mm::assets::findMap("outpost"), data);
-    std::uint16_t mask = (1u << RifleClip) | (1u << RifleReload) | (1u << GoldenEagle) | (1u << GrenadePlus) |
-                         (1u << HealthRecharge) | (1u << Accuracy);
-    m.setUpgrades(0, mask);
+    mm::game::Match plain(*mm::assets::findMap("outpost"), data);
+    m.setUpgrades(0, 0x3fff);
     auto& s = m.player();
-    const auto& ak = s.weapon();
-    CHECK(ak.clipCapacity() == 44);  // 35 + 25 %, rounded
-    CHECK(ak.reloadTime() == doctest::Approx(1.4f));
-    REQUIRE(s.secondary());
-    CHECK(s.secondary()->id() == mm::game::WeaponId::GoldDeagle);
-    CHECK(s.grenades() == 3);
-    // Twice the health regeneration: wound him and wait three seconds.
-    for (int i = 0; i < 300; ++i)
-        m.step(1.0f / 60.0f, {});
-    s.setHealth(50.0f);
-    for (int i = 0; i < 180; ++i)
-        m.step(1.0f / 60.0f, {});
-    CHECK(s.health() == doctest::Approx(56.0f).epsilon(0.01));  // 3 s x 2 per second
-    // Accuracy: the spread is 20 % tighter.
-    mm::game::Weapon plain(mm::game::WeaponId::AK47);
-    mm::game::Weapon tight(mm::game::WeaponId::AK47);
-    tight.setMods(0, 0, 0.8f);
-    CHECK(std::fabs(tight.randomFiringAngle()) == doctest::Approx(0.8f * std::fabs(plain.randomFiringAngle())));
+    CHECK(s.weapon().clipCapacity() == 35);
+    CHECK(s.secondary() == nullptr);
+    CHECK(s.grenades() == plain.player().grenades());
 }
 
 TEST_CASE("Fair mode ignores upgrades")
@@ -238,31 +222,6 @@ TEST_CASE("The upgrade mask travels in Join and the lobby")
     const auto back = mm::net::decode(mm::net::encode(l));
     REQUIRE(back.has_value());
     CHECK(std::get<mm::net::LobbyState>(*back).players[0].upgrades == 0x155);
-}
-
-TEST_CASE("Gas grenade: the upgrade turns throws into a cloud that hurts enemies only")
-{
-    using namespace mm::game;
-    const auto data = loadOutpost();
-    Match m(*mm::assets::findMap("outpost"), data);
-    m.setUpgrades(0, 1u << GasNade);
-    const int bot = m.addBot("Bot");
-    m.spawnFighter(bot);
-    for (int i = 0; i < 120; ++i)
-        m.step(1.0f / 60.0f, {});
-    // Put the bot at the thrower's feet and drop a cloud by hand through a throw.
-    PadState throwIt;
-    throwIt.grenade = true;
-    throwIt.aimAngle = 270.0f;  // straight down
-    m.step(1.0f / 60.0f, throwIt);
-    CHECK(m.grenades().size() == 1);
-    CHECK(m.grenades()[0]->gas);
-    const float botHealth = m.fighter(bot)->soldier->health();
-    for (int i = 0; i < 60 * 3; ++i)
-        m.step(1.0f / 60.0f, {});
-    CHECK_FALSE(m.gasClouds().empty());
-    CHECK(m.player().health() >= 99.0f);  // never hurts the thrower
-    CHECK(m.fighter(bot)->soldier->health() <= botHealth);
 }
 
 TEST_CASE("Two guns by choice: the second pick-up puts a gun in the other hand, both fire, the stronger scope zooms")

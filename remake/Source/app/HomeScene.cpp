@@ -30,8 +30,7 @@ bool HomeScene::init()
         e.enabled = enabled;
         entries.push_back(std::move(e));
     };
-    // As in the original build: UPGRADE is shown but greyed out.
-    add("UPGRADE", nullptr, false);
+    // The shop (UPGRADE) was removed: pure gameplay.
     add("QUICK PLAY", [go] {
         std::vector<const assets::MapDef*> pool;
         for (const auto& m : assets::kMaps)

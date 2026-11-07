@@ -72,7 +72,9 @@ void Match::setUpgrades(int id, std::uint16_t mask)
     Fighter* f = fighter(id);
     if (!f)
         return;
-    f->boosts = _options.allowBoosts ? economy::boostsFor(mask) : economy::Boosts{};
+    // Pure gameplay: the shop and its upgrades were removed, so nobody ever has a boost.
+    (void)mask;
+    f->boosts = economy::Boosts{};
     if (f->soldier && !f->soldier->isMirror())
         f->soldier->setBoosts(f->boosts);
 }
@@ -199,6 +201,7 @@ void Match::hitSoldier(Fighter& f, cpShape*, float damage, bool network, int att
                        Vec2 dir)
 {
     (void)network;
+    damage *= _options.damageScale;
     if (_options.party.oneShotKills)
         damage = 1000.0f;
     f.soldier->addDamage(damage, attacker, ammoType);
@@ -593,7 +596,7 @@ void Match::fireShots(Fighter& f, int shots, Weapon* gun)
 
 float Match::gravityFactor() const
 {
-    return _def.gravityFactor * (_options.party.lowGravity ? rules::kPartyLowGravity : 1.0f);
+    return _def.gravityFactor * _options.gravityScale * (_options.party.lowGravity ? rules::kPartyLowGravity : 1.0f);
 }
 
 void Match::placeMine(Fighter& f)
@@ -664,6 +667,8 @@ void Match::step(float dt, const PadState& pad)
             s.meleeAttack();
 
         int shots = s.weapon().takeBurstShots();
+        if (shots > 0)
+            s.emitSound(fireSound(s.weapon().id()));  // each shot of an M16 burst is heard
         if (in.firing && s.fire())
             ++shots;
         if (shots > 0)

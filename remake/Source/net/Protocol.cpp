@@ -43,6 +43,8 @@ void putOptions(Writer& w, const HostOptions& o)
     w.u8(o.friendlyFire ? 1 : 0);
     w.u8(o.party);
     w.u8(o.weaponGroups);
+    w.u8(static_cast<std::uint8_t>(o.damagePct / 5));
+    w.u8(static_cast<std::uint8_t>(o.gravityPct / 5));
 }
 HostOptions getOptions(Reader& r)
 {
@@ -57,6 +59,8 @@ HostOptions getOptions(Reader& r)
     o.friendlyFire = r.u8() != 0;
     o.party      = r.u8() & 0x0f;
     o.weaponGroups = r.u8() & 0x1f;
+    o.damagePct  = static_cast<std::uint8_t>(std::clamp(r.u8() * 5, 25, 255));
+    o.gravityPct = static_cast<std::uint8_t>(std::clamp(r.u8() * 5, 25, 200));
     return o;
 }
 void putPlayers(Writer& w, const std::vector<PlayerInfo>& ps)

@@ -138,6 +138,7 @@ public:
     // Test hooks.
     cpBody* body() const { return _body; }
     void setHealth(float hp) { _health = hp; }
+    void emitSound(audio::SoundId id, float volume = 1.0f);
 
 private:
     friend struct SoldierCallbacks;
@@ -145,7 +146,6 @@ private:
     void tiltBody();
     void applyImpulseAlong(Vec2 dir, float response, float target, float dt);
     void setMaterial(float gravity, float elasticity, float friction);
-    void emitSound(audio::SoundId id, float volume = 1.0f);
 
     Physics& _physics;
     EventQueue& _events;

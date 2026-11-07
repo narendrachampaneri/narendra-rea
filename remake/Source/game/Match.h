@@ -71,6 +71,8 @@ struct MatchOptions
     bool friendlyFire  = false; // team mates hurt each other (never, in the original rules)
     bool respawn      = true;  // bots come back (unlimited lives, SoldierManager +0x35)
     bool playerRespawn = true; // the local player comes back
+    float damageScale  = 1.0f;  // host stat: damage dealt
+    float gravityScale = 1.0f;  // host stat: gravity
     std::uint32_t seed = 1;
 };
 

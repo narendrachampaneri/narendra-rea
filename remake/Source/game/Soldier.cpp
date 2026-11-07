@@ -444,7 +444,10 @@ bool Soldier::fireSecondary()
 {
     if (!dualActive())
         return false;
-    return _secondary->triggerPull() == Weapon::Trigger::Fired;
+    if (_secondary->triggerPull() != Weapon::Trigger::Fired)
+        return false;
+    emitSound(fireSound(_secondary->id()), 0.8f);  // the second gun has its own voice
+    return true;
 }
 
 bool Soldier::fire()

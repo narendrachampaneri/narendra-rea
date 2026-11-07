@@ -12,7 +12,7 @@ MultiplayerGame::MultiplayerGame(const assets::MapDef& def, const assets::MapDat
     : _def(def), _options(options), _players(std::move(players)), _seed(seed)
 {
     using net::GameMode;
-    _options.minutes = std::clamp<int>(_options.minutes, 1, 8);
+    _options.minutes = std::clamp<int>(_options.minutes, 1, 30);
     _timeLeft        = _options.minutes * 60.0f;
 
     // The old lobby's team colours: players who picked the same colour (1-5) are a team, players
@@ -32,6 +32,8 @@ MultiplayerGame::MultiplayerGame(const assets::MapDef& def, const assets::MapDat
     mo.respawnTime   = static_cast<float>(_options.respawn);
     mo.friendlyFire  = _options.friendlyFire;
     mo.weaponGroups  = _options.weaponGroups;
+    mo.damageScale   = _options.damagePct / 100.0f;
+    mo.gravityScale  = _options.gravityPct / 100.0f;
     mo.party.lowGravity    = _options.party & 1;
     mo.party.unlimitedAmmo = _options.party & 2;
     mo.party.oneShotKills  = _options.party & 4;

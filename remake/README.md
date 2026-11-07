@@ -44,6 +44,12 @@ Where the original had nothing recoverable (drone kinds, mine numbers, gas numbe
 gamepad layout) the remake uses its own documented default; all of them are marked NEW in the
 code and in the sections below.
 
+## Pure gameplay, host settings, per-gun voices (rc12)
+- The shop is gone: no STORE and no UPGRADE buttons, no coins on the end screen, and upgrades (`Match::setUpgrades`) do nothing, so everybody plays with the same base stats. The old save fields and the economy code stay only so old saves still load.
+- Lobby GAME STATS has two pages (NEXT PAGE button). Page 1 (host taps a line to step through its values): MODE, MAP, LENGTH (1-30 min), MAX PLAYERS, KILL LIMIT (none-50), RESPAWN TIME, FRIENDLY FIRE, FAIR MODE, DAMAGE (25-250 %), GRAVITY (25-200 %). Page 2: the party options and the pick-up groups. New values travel in the lobby message (two new bytes after the pick-up groups).
+- Gun sounds: every gun already fires with its own original sound id (`fireSound`, ids from each gun's `playSound`). Now the second gun of a manual pair and every shot of an M16 burst also play their gun's sound; before only the first shot was heard.
+- Not done and not claimed: a full match against the old game on a phone. Gameplay differences the owner finds should be sent as recordings.
+
 ## Store crash found and fixed (rc11)
 The owner's rc10 recording showed the app closing (back to the file manager) when STORE was tapped: a crash, not only a black screen. Cause (in my rc9/rc10 Store code): a button's first child is its picture, not its text label, so the lookup of the label returned nothing and the Store then used it. Fixed with a proper lookup (`ui::buttonLabel`) and null checks. The "problem while parsing the package" box seen in the file manager was a stale installer dialog; the APK itself was complete and valid (79,828,914 bytes, zip test passes). The earlier black screens (rc4-rc8) may have been a different problem in the old pill widgets; the other screens still built with them are converted next if they show it.
 

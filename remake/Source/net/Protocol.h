@@ -76,6 +76,8 @@ struct HostOptions
     // bit2 one-shot kills, bit3 melee only.
     std::uint8_t party = 0;
     std::uint8_t weaponGroups = 0x1f;  // allowed pick-up groups (game/Weapons.h weaponGroup)
+    std::uint8_t damagePct  = 100;     // damage dealt, in percent (25..300): lower = tougher soldiers
+    std::uint8_t gravityPct = 100;     // gravity, in percent (25..200)
     bool operator==(const HostOptions&) const = default;
 };
 struct LobbyState { HostOptions options; std::vector<PlayerInfo> players; };

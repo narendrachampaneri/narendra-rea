@@ -306,12 +306,7 @@ bool SettingsMenuScene::init()
     if (!Scene::init())
         return false;
     buildListMenu(this,
-                  {button("STORE", [] {
-                       // No fade into the Store: the fade left a black screen there on the owner's phone.
-                       if (auto* s = utils::createInstance<StoreScene>())
-                           Director::getInstance()->replaceScene(s);
-                   }),
-                   button("AVATAR", [] { go(utils::createInstance<RankScene>()); }),
+                  {button("AVATAR", [] { go(utils::createInstance<RankScene>()); }),
                    button("CONFIGURE", [] { go(utils::createInstance<ConfigureScene>()); }),
                    button("CONTROLS", [] { go(utils::createInstance<ControlsScene>()); })},
                   false, goHome);
